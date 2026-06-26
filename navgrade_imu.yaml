@@ -1,0 +1,16 @@
+name: Navigation-Grade RLG INS
+
+# All values in datasheet units; load_imu_spec() converts to SI.
+# Reference: typical ring-laser-gyro aircraft INS / marine-grade strapdown.
+
+gyro:
+  arw_deg_per_rt_hr:       0.002   # Angular Random Walk [°/√hr]
+  bias_instab_deg_per_hr:  0.01    # Bias instability, Gauss-Markov std [°/hr]
+  bias_tau_s:              3600.0  # GM correlation time [s]
+  repeatability_deg_per_hr: 0.01   # Turn-on bias repeatability [°/hr]
+
+accel:
+  vrw_m_per_s_per_rt_hr:   0.005   # Velocity Random Walk [m/s/√hr]
+  bias_instab_ug:           5.0    # Bias instability, Gauss-Markov std [µg]
+  bias_tau_s:              3600.0  # GM correlation time [s]
+  repeatability_ug:         25.0   # Turn-on bias repeatability [µg]

@@ -1,0 +1,61 @@
+name: BQN Rafael Hernandez Departure
+
+departure:
+  lat_deg:  18.4949
+  lon_deg: -67.1294
+  alt_ft:   237.0        # MSL elevation of runway threshold
+  nav_bank_angle_deg: 25.0   # bank angle for inter-waypoint turns
+
+simulation_time:
+  dt_s: 0.1              # 10 Hz; overridden by dt argument to build_trajectory()
+
+phases:
+
+  - type:           ground_roll
+    heading_deg:    82.0
+    run_length_m:   1800.0
+    speed_final_kt: 150.0
+
+  - type:        takeoff
+    heading_deg: 82.0
+    pitch_deg:   10.0
+    speed_kt:    250.0
+    duration_s:  20.0
+
+  - type:           climb
+    pitch_deg:      10.0
+    speed_kt:       250.0
+    to_altitude_ft: 15000.0
+
+  - type:     waypoint             # entrance into first loiter
+    lat_deg:  18.85
+    lon_deg:  -66.80
+    alt_ft:   15000.0
+    speed_kt: 250.0
+    loiter:
+      n_turns:        5
+      bank_angle_deg: 30.0
+      direction:      right
+
+  - type:          speed_ramp
+    speed_end_kt:  300.0
+    duration_s:    20.0
+
+  - type:     waypoint             # entrance into second loiter
+    lat_deg:  17.00
+    lon_deg:  -66.50
+    alt_ft:   15000.0
+    speed_kt: 300.0
+    loiter:
+      n_turns:        5
+      bank_angle_deg: 30.0
+
+  - type:            speed_ramp
+    speed_end_mach:  0.8
+    duration_s:      40.0
+
+  - type:     waypoint             # sprint leg destination
+    lat_deg:  15.00
+    lon_deg:  -68.00
+    alt_ft:   15000.0
+    speed_kt: 300.0
