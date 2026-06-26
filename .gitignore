@@ -1,2 +1,5 @@
 .claude
-__pychache__
+__pycache__/
+*.egg-info/
+.pytest_cache/
+maps/

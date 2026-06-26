@@ -1,0 +1,26 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "ins_sim"
+version = "0.1.0"
+description = "Navigation-grade IMU/strapdown inertial navigation simulation"
+requires-python = ">=3.11"
+dependencies = [
+    "numpy",
+    "scipy",
+    "pyyaml",
+    "matplotlib",
+    "seaborn",
+    "folium",
+]
+
+[project.optional-dependencies]
+dev = ["pytest"]
+
+[tool.setuptools.packages.find]
+include = ["ins_sim*"]
+
+[tool.setuptools.package-data]
+ins_sim = ["config/*.yaml"]

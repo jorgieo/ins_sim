@@ -1,0 +1,29 @@
+name: Tiny fixture trajectory (ground_roll + takeoff + one waypoint)
+
+departure:
+  lat_deg:  18.4949
+  lon_deg: -67.1294
+  alt_ft:   237.0
+  nav_bank_angle_deg: 25.0
+
+simulation_time:
+  dt_s: 0.5
+
+phases:
+
+  - type:           ground_roll
+    heading_deg:    90.0
+    run_length_m:   200.0
+    speed_final_kt: 100.0
+
+  - type:        takeoff
+    heading_deg: 90.0
+    pitch_deg:   5.0
+    speed_kt:    120.0
+    duration_s:  5.0
+
+  - type:     waypoint
+    lat_deg:  18.50
+    lon_deg:  -67.10
+    alt_ft:   237.0
+    speed_kt: 120.0
