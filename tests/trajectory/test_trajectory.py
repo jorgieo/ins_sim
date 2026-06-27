@@ -53,7 +53,7 @@ def test_truth_trajectory_straight_line_heading_and_quaternion_convention():
     # quat ~= [0, 0, 0, 1] -- scalar-last [x, y, z, w] convention.
     waypoints = [[0.0, 0.0, 0.0], [0.0, 5000.0, 0.0]]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory(path, speed=100.0, dt=0.1)
+    truth = TruthTrajectory.from_spline(path, speed=100.0, dt=0.1)
 
     interior = slice(20, -20)   # avoid spline-endpoint derivative artifacts
     heading_deg = np.rad2deg(truth.euler[interior, 2])
@@ -74,7 +74,7 @@ def test_truth_trajectory_level_zero_heading_quat_is_near_identity():
     # heading=0 (due north), no turn, no climb -> phi=theta=psi~0 -> quat ~= [0,0,0,1].
     waypoints = [[0.0, 0.0, 0.0], [5000.0, 0.0, 0.0]]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory(path, speed=100.0, dt=0.1)
+    truth = TruthTrajectory.from_spline(path, speed=100.0, dt=0.1)
     mid = len(truth.t) // 2
     quat_mid = truth.R_b2n[mid].as_quat()
     np.testing.assert_allclose(quat_mid, [0.0, 0.0, 0.0, 1.0], atol=1e-6)
@@ -83,7 +83,7 @@ def test_truth_trajectory_level_zero_heading_quat_is_near_identity():
 def test_truth_trajectory_rotations_are_orthonormal():
     waypoints = [[0.0, 0.0, 0.0], [1000.0, 500.0, -50.0], [3000.0, 1500.0, -100.0]]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory(path, speed=80.0, dt=0.1)
+    truth = TruthTrajectory.from_spline(path, speed=80.0, dt=0.1)
     R = truth.R_b2n.as_matrix()
     should_be_identity = np.einsum('kij,kil->kjl', R, R)
     eye = np.tile(np.eye(3), (len(truth.t), 1, 1))

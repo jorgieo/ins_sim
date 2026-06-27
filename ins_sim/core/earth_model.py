@@ -40,13 +40,17 @@ def earth_rate_n(lat):
     """Computes Earth's rotation rate expressed in the local NED frame.
 
     Args:
-        lat: Geodetic latitude φ [rad].
+        lat: Geodetic latitude φ [rad]. Scalar or shape (M,).
 
     Returns:
-        numpy.ndarray: ω_ie_n, shape (3,), Earth rotation rate vector
-            [rad/s] resolved in the NED navigation frame.
+        numpy.ndarray: ω_ie_n, Earth rotation rate vector [rad/s]
+            resolved in the NED navigation frame. Shape (3,) for
+            scalar `lat`, shape (M, 3) for `lat` of shape (M,).
     """
-    return np.array([WGS84_OMEGA * np.cos(lat), 0.0, -WGS84_OMEGA * np.sin(lat)])
+    lat = np.asarray(lat)
+    zeros = np.zeros_like(lat)
+    return np.stack(
+        [WGS84_OMEGA * np.cos(lat), zeros, -WGS84_OMEGA * np.sin(lat)], axis=-1)
 
 
 def transport_rate_n(v_n, lat, h):
@@ -56,21 +60,25 @@ def transport_rate_n(v_n, lat, h):
     motion over the curved Earth, expressed in NED.
 
     Args:
-        v_n: NED velocity [v_N, v_E, v_D], shape (3,) [m/s].
-        lat: Geodetic latitude φ [rad].
-        h: Geodetic altitude [m].
+        v_n: NED velocity [v_N, v_E, v_D]. Shape (3,) or (M, 3) [m/s].
+        lat: Geodetic latitude φ [rad]. Scalar or shape (M,).
+        h: Geodetic altitude [m]. Scalar or shape (M,).
 
     Returns:
-        numpy.ndarray: ω_en_n, shape (3,), transport rate vector [rad/s]
-            resolved in the NED navigation frame.
+        numpy.ndarray: ω_en_n, transport rate vector [rad/s] resolved
+            in the NED navigation frame. Shape (3,) for scalar inputs,
+            shape (M, 3) for inputs of shape (3,)/(M,)/(M,).
     """
+    v_n = np.asarray(v_n)
+    lat = np.asarray(lat)
+    h = np.asarray(h)
     R_M, R_N = wgs84_radii(lat)
-    vN, vE, _ = v_n
-    return np.array([
+    vN, vE = v_n[..., 0], v_n[..., 1]
+    return np.stack([
          vE / (R_N + h),
         -vN / (R_M + h),
         -vE * np.tan(lat) / (R_N + h),
-    ])
+    ], axis=-1)
 
 
 def normal_gravity(lat, h):

@@ -22,7 +22,7 @@ def _tiny_truth():
         [5000.0, 2000.0, -100.0],
     ])
     path = NEDSplinePath(waypoints)
-    return TruthTrajectory(path, speed=500.0, dt=0.1)   # ~10.8 s of flight
+    return TruthTrajectory.from_spline(path, speed=500.0, dt=0.1)   # ~10.8 s of flight
 
 
 def test_pipeline_via_main_functions_runs_fast_and_consistently():

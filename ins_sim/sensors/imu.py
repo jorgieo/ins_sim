@@ -2,6 +2,7 @@ from dataclasses import dataclass
 
 import numpy as np
 import yaml
+from scipy.signal import lfilter
 
 
 @dataclass
@@ -102,16 +103,18 @@ def generate_imu_samples(truth, spec: IMUSpec,
     b_g_repeat = rng.normal(0.0, spec.gyro_br_std,  size=3)
     b_a_repeat = rng.normal(0.0, spec.accel_br_std, size=3)
 
-    # Gauss-Markov drift histories
+    # Gauss-Markov drift histories: discrete AR(1) recursion b[k] = a*b[k-1]
+    # + sg*w[k] with b[0] = 0, implemented as an IIR filter over white noise
+    # that is zeroed at index 0 (so the filter's zero initial condition
+    # reproduces b[0] = 0 exactly).
     a_g = np.exp(-dt / spec.gyro_bi_tau)
     a_a = np.exp(-dt / spec.accel_bi_tau)
     sg  = np.sqrt(1.0 - a_g * a_g) * spec.gyro_bi_std
     sa  = np.sqrt(1.0 - a_a * a_a) * spec.accel_bi_std
-    b_g_drift = np.zeros((M, 3))
-    b_a_drift = np.zeros((M, 3))
-    for k in range(1, M):
-        b_g_drift[k] = a_g * b_g_drift[k-1] + sg * rng.normal(size=3)
-        b_a_drift[k] = a_a * b_a_drift[k-1] + sa * rng.normal(size=3)
+    w_g = rng.normal(size=(M, 3)); w_g[0] = 0.0
+    w_a = rng.normal(size=(M, 3)); w_a[0] = 0.0
+    b_g_drift = lfilter([1.0], [1.0, -a_g], sg * w_g, axis=0)
+    b_a_drift = lfilter([1.0], [1.0, -a_a], sa * w_a, axis=0)
 
     # White noise: ARW/√dt is the discrete-time σ that yields integrated
     # angle uncertainty growing as ARW · √t, independent of sample rate.

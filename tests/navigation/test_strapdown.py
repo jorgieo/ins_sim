@@ -44,16 +44,13 @@ def test_strapdown_zero_noise_self_consistency():
     """
     Feeding a TruthTrajectory's own (noiseless) omega_b/f_b back into
     strapdown_navgrade with altitude aiding should reproduce the truth
-    position to within a bounded fraction of the path length -- a coarse
-    sanity check, not bit-exactness. TruthTrajectory derives omega_b/f_b
-    from the continuous-time rotating-frame equations (np.gradient-based
-    vel_n/acc_n); only build_trajectory's truth re-derives discrete
-    forward-difference formulas specifically matched to strapdown_navgrade's
-    forward-Euler recursion (verified bit-exact in main.py's own
-    self-consistency check). Confirmed empirically that the residual here
-    does not shrink with dt -- it's a structural truth/integrator mismatch,
-    not a discretization error -- so this test only guards against gross
-    bugs (sign flips, wrong frame, etc.), not numerical precision.
+    position bit-exactly. TruthTrajectory derives omega_b/f_b using the
+    same exact-discrete forward-difference formulas (rotation-vector
+    exponential for attitude, forward-Euler for velocity/position) that
+    strapdown_navgrade's recursion implements, for both the spline-based
+    (`from_spline`) and YAML-phase-based (`build_trajectory`) construction
+    paths -- so there is no structural truth/integrator mismatch to bound
+    against; any nonzero residual here would indicate a real bug.
     """
     waypoints = [
         [0.0, 0.0, 0.0],
@@ -62,7 +59,7 @@ def test_strapdown_zero_noise_self_consistency():
         [5000.0, 2000.0, -100.0],
     ]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory(path, speed=100.0, dt=0.1)
+    truth = TruthTrajectory.from_spline(path, speed=100.0, dt=0.1)
 
     init_state = (truth.lat[0], truth.lon[0], truth.alt[0],
                  truth.vel_n[0].copy(), truth.R_b2n[0].as_quat())
@@ -70,4 +67,4 @@ def test_strapdown_zero_noise_self_consistency():
         truth.omega_b, truth.f_b, init_state, truth.dt, alt_truth=truth.alt)
 
     err = np.linalg.norm(pos_ned - truth.pos_n, axis=1)
-    assert err.max() < 0.05 * path.length
+    assert err.max() < 1e-6

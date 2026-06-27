@@ -53,14 +53,15 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
     R_curr = Rot.from_quat(quat[0])
     lat0 = lat[0]                      # reference for local NED display
     alt0 = alt[0]
+    R_M0, R_N0 = wgs84_radii(lat0)      # loop-invariant: lat0 never changes
+    g_n = np.zeros(3)                  # reused each iteration
 
     for k in range(M - 1):
         # --- 1. Local rotating-Earth quantities at step k --------------
         w_ie = earth_rate_n(lat[k])
         w_en = transport_rate_n(vel[k], lat[k], alt[k])
         w_in = w_ie + w_en                                     # nav-frame rate
-        g_k  = normal_gravity(lat[k], alt[k])
-        g_n  = np.array([0.0, 0.0, g_k])
+        g_n[2] = normal_gravity(lat[k], alt[k])
 
         # --- 2. Body-rate relative to nav frame -----------------------
         # The gyro saw ω_ib_b. Subtract the nav-frame's own rotation
@@ -94,7 +95,6 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
 
         # Local NED position relative to start (for plotting against truth)
         # Linearized lat/lon-to-meters using current latitude radii.
-        R_M0, R_N0 = wgs84_radii(lat0)
         pos_ned[k+1, 0] = (lat[k+1] - lat0) * (R_M0 + alt0)
         pos_ned[k+1, 1] = (lon[k+1] - lon[0]) * (R_N0 + alt0) * np.cos(lat0)
         pos_ned[k+1, 2] = -(alt[k+1] - alt0)

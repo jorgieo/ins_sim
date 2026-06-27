@@ -65,3 +65,28 @@ def test_transport_rate_n_nonzero_velocity():
     assert w_en[0] == pytest.approx(5.0 / (R_N + h))
     assert w_en[1] == pytest.approx(-10.0 / (R_M + h))
     assert w_en[2] == pytest.approx(-5.0 * np.tan(lat) / (R_N + h))
+
+
+def test_earth_rate_n_array_matches_scalar_loop():
+    lats = np.deg2rad(np.array([0.0, 38.97, -45.0, 89.0]))
+    batched = earth_rate_n(lats)
+    looped = np.array([earth_rate_n(lat) for lat in lats])
+    assert batched.shape == (len(lats), 3)
+    np.testing.assert_allclose(batched, looped)
+
+
+def test_transport_rate_n_array_matches_scalar_loop():
+    lats = np.deg2rad(np.array([0.0, 38.97, -45.0, 89.0]))
+    alts = np.array([0.0, 100.0, 5000.0, -10.0])
+    v_n = np.array([
+        [10.0, 5.0, 0.0],
+        [0.0, 0.0, 0.0],
+        [-20.0, 30.0, 1.0],
+        [5.0, -5.0, 2.0],
+    ])
+    batched = transport_rate_n(v_n, lats, alts)
+    looped = np.array([
+        transport_rate_n(v_n[k], lats[k], alts[k]) for k in range(len(lats))
+    ])
+    assert batched.shape == (len(lats), 3)
+    np.testing.assert_allclose(batched, looped)
