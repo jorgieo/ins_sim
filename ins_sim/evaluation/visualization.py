@@ -206,4 +206,26 @@ def build_folium_map(truth, pos_runs, lat_runs, lon_runs, n_trials):
         color='navy', weight=2, opacity=1.0, tooltip='Truth track',
     ).add_to(fmap)
 
+    # Time/error markers along the envelope -- the band's width-vs-distance
+    # shape alone doesn't reveal the underlying time-domain growth (it's
+    # quadratic early, flattens near the Schuler half-period, then resumes),
+    # so call out elapsed time and the current 95th-pct value explicitly.
+    t_min = truth.t / 60.0
+    marker_interval_min = 5.0
+    next_t = 0.0
+    for k in range(len(t_min)):
+        if t_min[k] >= next_t:
+            folium.CircleMarker(
+                location=[lat_deg[k], lon_deg[k]],
+                radius=4, color='black', weight=1,
+                fill=True, fill_color='white', fill_opacity=0.9,
+                popup=folium.Popup(
+                    f"t = {t_min[k]:.1f} min<br>"
+                    f"95th-pct error: {p95_horiz[k]:.0f} m "
+                    f"({p95_horiz[k]/NM:.2f} nm)",
+                    max_width=200,
+                ),
+            ).add_to(fmap)
+            next_t += marker_interval_min
+
     return fmap
