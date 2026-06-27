@@ -534,9 +534,11 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
         tuple: (truth, v_sprint, R_turn) — same tuple shape as the
             former build_bqn_trajectory(), kept for compatibility with
             existing callers, where:
-                truth: Object exposing t, dt, pos_n, vel_n, acc_n, lat,
+                truth: A TruthTrajectory instance built from the
+                    phase-generated position/velocity/Euler-angle
+                    profiles, exposing t, dt, pos_n, vel_n, acc_n, lat,
                     lon, alt, euler, R_b2n, omega_b (ω_ib_b), f_b, and
-                    g_loc — the same interface as TruthTrajectory.
+                    g_loc.
                 v_sprint: Sprint-leg speed [m/s] if a Mach-targeted
                     speed_ramp phase is present, else None.
                 R_turn: Turn radius [m] of the first coordinated turn
