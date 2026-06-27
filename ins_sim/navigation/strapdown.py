@@ -5,10 +5,9 @@ from ins_sim.core.earth_model import earth_rate_n, transport_rate_n, normal_grav
 
 
 def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
-    """
-    Local-level (NED) strapdown integration with full rotating-Earth
-    corrections. Per step:
+    """Runs local-level (NED) strapdown integration with rotating-Earth corrections.
 
+    Per step:
       1. Evaluate ω_ie_n, ω_en_n, g(φ,h) at the current state.
       2. Compute body-rate-relative-to-nav:
                  ω_nb_b = ω_ib_b − C_n^b · (ω_ie_n + ω_en_n)
@@ -18,13 +17,32 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
                  v̇_n = f_n − (2ω_ie_n + ω_en_n) × v_n + g_n
       6. Forward-Euler geodetic position update.
 
-    alt_truth  : optional array (M,) of truth altitude [m MSL]. When
-                 provided it is used as barometric altitude aiding, which
-                 stabilises the inherently unstable vertical channel of a
-                 free-inertial navigator (eigenvalue +ωs without aiding).
-    init_state : (lat0, lon0, alt0, v_n0, q_b2n_0)   q in scalar-last form
-    Returns    : pos_ned (M,3) relative to start, lat/lon/alt arrays,
-                 vel_n, quat
+    Args:
+        omega_meas: Measured body angular rate ω_ib_b, shape (M, 3)
+            [rad/s].
+        f_meas: Measured specific force f_b, shape (M, 3) [m/s²].
+        init_state: Initial state tuple (lat0, lon0, alt0, v_n0,
+            q_b2n_0), where lat0/lon0 are geodetic [rad], alt0 is
+            altitude [m MSL], v_n0 is NED velocity (shape (3,) [m/s]),
+            and q_b2n_0 is the initial body-to-NED quaternion in
+            scalar-last form (shape (4,)).
+        dt: Sample interval [s].
+        alt_truth: Optional truth altitude array, shape (M,) [m MSL].
+            When provided it is used as barometric altitude aiding,
+            which stabilises the inherently unstable vertical channel
+            of a free-inertial navigator (eigenvalue +ωs without
+            aiding). Defaults to None.
+
+    Returns:
+        tuple: (pos_ned, lat, lon, alt, vel, quat) where:
+            pos_ned (numpy.ndarray): NED position relative to start,
+                shape (M, 3) [m].
+            lat (numpy.ndarray): Geodetic latitude, shape (M,) [rad].
+            lon (numpy.ndarray): Geodetic longitude, shape (M,) [rad].
+            alt (numpy.ndarray): Geodetic altitude, shape (M,) [m MSL].
+            vel (numpy.ndarray): NED velocity, shape (M, 3) [m/s].
+            quat (numpy.ndarray): Body-to-NED quaternion, scalar-last,
+                shape (M, 4).
     """
     M = len(omega_meas)
     lat = np.zeros(M); lon = np.zeros(M); alt = np.zeros(M)

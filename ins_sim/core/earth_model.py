@@ -17,11 +17,17 @@ WGS84_OMEGA = 7.2921151467e-5         # Earth rotation rate [rad/s]
 
 
 def wgs84_radii(lat):
-    """
-    Radii of curvature at geodetic latitude `lat` [rad].
+    """Computes the WGS-84 radii of curvature at a given geodetic latitude.
 
-    R_M (meridian)        — used for north-south motion: dφ = v_N / (R_M + h) dt
-    R_N (prime vertical)  — used for east-west motion:   dλ = v_E / ((R_N + h) cos φ) dt
+    Args:
+        lat: Geodetic latitude φ [rad].
+
+    Returns:
+        tuple[float, float]: (R_M, R_N) where:
+            R_M: Meridian radius of curvature [m], used for north-south
+                motion: dφ = v_N / (R_M + h) · dt.
+            R_N: Prime-vertical radius of curvature [m], used for
+                east-west motion: dλ = v_E / ((R_N + h) · cos φ) · dt.
     """
     sphi2 = np.sin(lat) ** 2
     den   = np.sqrt(1.0 - WGS84_E2 * sphi2)
@@ -31,14 +37,32 @@ def wgs84_radii(lat):
 
 
 def earth_rate_n(lat):
-    """Earth rotation rate ω_ie expressed in the local NED frame."""
+    """Computes Earth's rotation rate expressed in the local NED frame.
+
+    Args:
+        lat: Geodetic latitude φ [rad].
+
+    Returns:
+        numpy.ndarray: ω_ie_n, shape (3,), Earth rotation rate vector
+            [rad/s] resolved in the NED navigation frame.
+    """
     return np.array([WGS84_OMEGA * np.cos(lat), 0.0, -WGS84_OMEGA * np.sin(lat)])
 
 
 def transport_rate_n(v_n, lat, h):
-    """
-    Rotation rate of the NED frame relative to ECEF (a.k.a. craft rate),
-    expressed in NED. Comes from the vehicle moving over the curved Earth.
+    """Computes the transport rate (craft rate) of the NED frame relative to ECEF.
+
+    Rotation rate of the local-level NED frame caused by the vehicle's
+    motion over the curved Earth, expressed in NED.
+
+    Args:
+        v_n: NED velocity [v_N, v_E, v_D], shape (3,) [m/s].
+        lat: Geodetic latitude φ [rad].
+        h: Geodetic altitude [m].
+
+    Returns:
+        numpy.ndarray: ω_en_n, shape (3,), transport rate vector [rad/s]
+            resolved in the NED navigation frame.
     """
     R_M, R_N = wgs84_radii(lat)
     vN, vE, _ = v_n
@@ -50,10 +74,16 @@ def transport_rate_n(v_n, lat, h):
 
 
 def normal_gravity(lat, h):
-    """
-    Somigliana formula for surface gravity plus a free-air altitude
-    correction. Accurate to ~1 µg (10⁻⁸ m/s²) below 10 km, which is
-    well below navigation-grade accelerometer bias.
+    """Computes normal gravity via the Somigliana formula with a free-air correction.
+
+    Args:
+        lat: Geodetic latitude φ [rad].
+        h: Geodetic altitude [m].
+
+    Returns:
+        float: Local gravity magnitude g(φ, h) [m/s²]. Accurate to ~1 µg
+            (10⁻⁸ m/s²) below 10 km altitude, well below navigation-grade
+            accelerometer bias.
     """
     g_e = 9.7803253359          # equatorial gravity
     k   = 1.93185265241e-3      # Somigliana ratio constant

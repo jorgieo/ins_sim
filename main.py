@@ -15,10 +15,23 @@ NM = 1852.0
 
 
 def run_self_consistency_check(truth, dt):
-    """
-    Zero-noise strapdown using the truth IMU outputs directly -- verifies
-    that the truth trajectory's omega_b/f_b are self-consistent with
-    strapdown_navgrade's mechanization. Pure function, no I/O.
+    """Runs a zero-noise strapdown integration to verify truth IMU self-consistency.
+
+    Feeds the truth trajectory's own ω_ib_b and f_b directly into
+    strapdown_navgrade and compares the result against the truth
+    position, verifying that the two are self-consistent under the
+    same mechanization. Pure function, no I/O.
+
+    Args:
+        truth: Truth trajectory object exposing lat, lon, alt, vel_n,
+            R_b2n, omega_b (ω_ib_b), f_b, and pos_n.
+        dt: Sample interval [s].
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (zero_err, zp) where
+            zero_err is the 3D position error norm at each time step,
+            shape (M,) [m], and zp is the zero-noise strapdown NED
+            position, shape (M, 3) [m].
     """
     zero_spec = IMUSpec(gyro_arw=0, gyro_bi_std=0, gyro_br_std=0,
                         accel_vrw=0, accel_bi_std=0, accel_br_std=0)
@@ -32,10 +45,22 @@ def run_self_consistency_check(truth, dt):
 
 
 def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0):
-    """
-    Run the noisy-IMU Monte Carlo ensemble and the 95th-pct radial error
-    envelope. Truth-agnostic -- works with any duck-typed truth object
+    """Runs the noisy-IMU Monte Carlo ensemble and the 95th-pct error envelope.
+
+    Truth-agnostic -- works with any duck-typed truth object
     (build_trajectory- or TruthTrajectory-built).
+
+    Args:
+        truth: Truth trajectory object exposing t, dt, lat, lon, alt,
+            vel_n, R_b2n, omega_b, f_b, and pos_n.
+        spec: IMU error-parameter set.
+        n_trials: Number of independent Monte Carlo trials.
+        seed: Seed for the master random generator. Defaults to 0.
+
+    Returns:
+        tuple: (pos_runs, euler_runs, lat_runs, lon_runs, r95) — see
+            run_monte_carlo and percentile_envelope for the shape and
+            meaning of each element.
     """
     pos_runs, euler_runs, lat_runs, lon_runs = run_monte_carlo(
         truth, spec, n_trials=n_trials, seed=seed)
@@ -44,6 +69,15 @@ def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0):
 
 
 def print_trajectory_summary(truth):
+    """Prints a one-line summary of trajectory length, duration, and sampling.
+
+    Args:
+        truth: Truth trajectory object exposing pos_n, t, dt, and
+            g_loc.
+
+    Returns:
+        None: Prints to stdout.
+    """
     total_dist = np.sum(np.linalg.norm(np.diff(truth.pos_n, axis=0), axis=1))
     print(f"Total path  : {total_dist/NM:.1f} nm  ({total_dist/1e3:.0f} km)")
     print(f"Duration    : {truth.t[-1]/60:.1f} min  ({truth.t[-1]:.0f} s)")
@@ -52,6 +86,16 @@ def print_trajectory_summary(truth):
 
 
 def print_self_consistency_summary(truth, zero_err):
+    """Prints the zero-noise self-consistency error at several time fractions.
+
+    Args:
+        truth: Truth trajectory object exposing t, acc_n, and f_b.
+        zero_err: Zero-noise position error norm at each time step,
+            shape (M,) [m], as returned by run_self_consistency_check.
+
+    Returns:
+        None: Prints to stdout.
+    """
     print(f"Zero-noise error  start: {zero_err[0]:.3f} m  max: {zero_err.max():.1f} m  end: {zero_err[-1]:.1f} m")
 
     M_diag = len(truth.t)
@@ -64,6 +108,16 @@ def print_self_consistency_summary(truth, zero_err):
 
 
 def main():
+    """Runs the end-to-end INS Monte Carlo simulation and renders its outputs.
+
+    Builds the truth trajectory from the default mission YAML, verifies
+    truth IMU self-consistency, runs the noisy-IMU Monte Carlo ensemble
+    using the default IMU spec, then renders and saves the summary
+    figure and an interactive Folium map.
+
+    Returns:
+        None.
+    """
     simulation_start = datetime.now()
 
     dt       = 0.1      # 10 Hz — adequate for long-range INS simulation

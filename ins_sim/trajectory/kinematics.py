@@ -13,9 +13,7 @@ from ins_sim.trajectory.spline import NEDSplinePath
 # 1. Navigation-grade truth trajectory
 # =========================================================================
 class TruthTrajectory:
-    """
-    Truth state derived from the spline, expressed in a way that is
-    self-consistent with rotating-Earth navigation kinematics.
+    """Truth state derived from a spline path, consistent with rotating-Earth navigation kinematics.
 
     Computed at every sample:
       • NED position relative to start (from the spline)
@@ -28,10 +26,42 @@ class TruthTrajectory:
       • Specific force f_b that a perfect accelerometer would output —
         derived from the rotating-frame velocity equation so that a
         Coriolis-aware strapdown can recover the truth exactly
+
+    Attributes:
+        dt (float): Sample interval [s].
+        t (numpy.ndarray): Time vector, shape (M,) [s].
+        pos_n (numpy.ndarray): NED position relative to start, shape
+            (M, 3) [m].
+        vel_n (numpy.ndarray): NED velocity, shape (M, 3) [m/s].
+        lat (numpy.ndarray): Geodetic latitude φ, shape (M,) [rad].
+        lon (numpy.ndarray): Geodetic longitude λ, shape (M,) [rad].
+        alt (numpy.ndarray): Geodetic altitude h, shape (M,) [m MSL].
+        euler (numpy.ndarray): Euler angles [φ_roll, θ_pitch,
+            ψ_heading], shape (M, 3) [rad].
+        R_b2n (scipy.spatial.transform.Rotation): Body-to-NED rotation,
+            vectorized over all M samples.
+        omega_b (numpy.ndarray): Truth gyro output ω_ib_b, shape
+            (M, 3) [rad/s].
+        f_b (numpy.ndarray): Truth accelerometer output f_b, shape
+            (M, 3) [m/s²].
+        g_loc (numpy.ndarray): Local gravity magnitude g(φ, h), shape
+            (M,) [m/s²].
     """
     def __init__(self, path: NEDSplinePath, speed: float, dt: float,
                  lat0_deg: float = 38.97, lon0_deg: float = -76.49,
                  alt0: float = 100.0):
+        """Builds the truth trajectory by traversing a spline path at constant speed.
+
+        Args:
+            path: NED spline path to traverse.
+            speed: Along-path speed [m/s], assumed constant.
+            dt: Sample interval [s].
+            lat0_deg: Initial geodetic latitude [deg]. Defaults to
+                38.97.
+            lon0_deg: Initial geodetic longitude [deg]. Defaults to
+                -76.49.
+            alt0: Initial geodetic altitude [m MSL]. Defaults to 100.0.
+        """
         self.dt = dt
         lat0 = np.deg2rad(lat0_deg)
         lon0 = np.deg2rad(lon0_deg)
@@ -121,6 +151,18 @@ class TruthTrajectory:
 # =========================================================================
 
 def _ground_roll(hdg_deg, v_final, run_len, dt):
+    """Generates a constant-acceleration ground-roll (takeoff run) segment.
+
+    Args:
+        hdg_deg: Ground-roll heading [deg].
+        v_final: Speed at end of roll [m/s].
+        run_len: Ground-roll distance [m].
+        dt: Sample interval [s].
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3).
+    """
     a     = v_final ** 2 / (2.0 * run_len)
     t_end = v_final / a
     N     = max(2, int(t_end / dt) + 1)
@@ -138,6 +180,22 @@ def _ground_roll(hdg_deg, v_final, run_len, dt):
 
 
 def _climb(entry, hdg_deg, speed, alt_ned_start, alt_ned_end, pitch_deg=10.0, dt=0.1):
+    """Generates a constant-pitch, constant-speed climb (or descent) segment.
+
+    Args:
+        entry: Entry NED position, shape (3,) [m].
+        hdg_deg: Ground-track heading [deg].
+        speed: Airspeed along the climb path [m/s].
+        alt_ned_start: Starting NED Down coordinate [m].
+        alt_ned_end: Ending NED Down coordinate [m].
+        pitch_deg: Pitch angle γ [deg]. Defaults to 10.0.
+        dt: Sample interval [s]. Defaults to 0.1.
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3). The Down component
+            of velocity is negative while climbing.
+    """
     hdg   = np.deg2rad(hdg_deg)
     gamma = np.deg2rad(pitch_deg)
     v_h   = speed * np.cos(gamma)
@@ -154,6 +212,19 @@ def _climb(entry, hdg_deg, speed, alt_ned_start, alt_ned_end, pitch_deg=10.0, dt
 
 
 def _straight(entry, hdg_deg, dist_m, speed, dt):
+    """Generates a straight, level, constant-speed segment.
+
+    Args:
+        entry: Entry NED position, shape (3,) [m].
+        hdg_deg: Heading [deg].
+        dist_m: Distance to travel [m].
+        speed: Speed [m/s].
+        dt: Sample interval [s].
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3).
+    """
     hdg = np.deg2rad(hdg_deg)
     N   = max(2, int(dist_m / (speed * dt)) + 1)
     t_  = np.arange(N) * dt
@@ -166,7 +237,25 @@ def _straight(entry, hdg_deg, dist_m, speed, dt):
 
 
 def _turn(entry, hdg_start_deg, hdg_end_deg, speed, alt_ned, R_turn, dt):
-    """Coordinated horizontal turn; direction chosen as shortest arc."""
+    """Generates a coordinated, constant-altitude horizontal turn.
+
+    Direction is chosen as the shortest arc from hdg_start_deg to
+    hdg_end_deg.
+
+    Args:
+        entry: Entry NED position, shape (3,) [m].
+        hdg_start_deg: Initial heading [deg].
+        hdg_end_deg: Target heading [deg].
+        speed: Speed [m/s], assumed constant through the turn.
+        alt_ned: Constant NED Down coordinate during the turn [m].
+        R_turn: Turn radius [m].
+        dt: Sample interval [s].
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray, float]: (pos, vel,
+            exit_hdg), NED position and velocity arrays (each shape
+            (N, 3)), and the exiting heading [deg].
+    """
     omega = speed / R_turn
     hdg0  = np.deg2rad(hdg_start_deg)
     delta = np.deg2rad(hdg_end_deg) - hdg0
@@ -188,7 +277,23 @@ def _turn(entry, hdg_start_deg, hdg_end_deg, speed, alt_ned, R_turn, dt):
 
 
 def _loiter(entry, hdg_deg, speed, alt_ned, n_revs, R_turn, direction='right', dt=0.1):
-    """n complete horizontal circles."""
+    """Generates n complete horizontal circles at constant altitude.
+
+    Args:
+        entry: Entry NED position, shape (3,) [m].
+        hdg_deg: Initial heading [deg].
+        speed: Speed [m/s], assumed constant through the loiter.
+        alt_ned: Constant NED Down coordinate during the loiter [m].
+        n_revs: Number of complete revolutions.
+        R_turn: Turn radius [m].
+        direction: Turn direction, 'right' or 'left'. Defaults to
+            'right'.
+        dt: Sample interval [s]. Defaults to 0.1.
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3).
+    """
     omega = speed / R_turn
     sign  = 1.0 if direction == 'right' else -1.0
     hdg0  = np.deg2rad(hdg_deg)
@@ -209,7 +314,23 @@ def _loiter(entry, hdg_deg, speed, alt_ned, n_revs, R_turn, direction='right', d
 
 def _pitch_transition(entry, hdg_deg, speed, pitch_start_deg, pitch_end_deg,
                       v_end=None, dur=20.0, dt=0.1):
-    """Smoothly ramp pitch (and optionally speed) over `dur` seconds."""
+    """Smoothly ramps pitch angle, and optionally speed, over `dur` seconds at constant heading.
+
+    Args:
+        entry: Entry NED position, shape (3,) [m].
+        hdg_deg: Heading [deg], held constant.
+        speed: Initial speed [m/s].
+        pitch_start_deg: Initial pitch angle [deg].
+        pitch_end_deg: Final pitch angle [deg].
+        v_end: Final speed [m/s]. Defaults to `speed` (no speed
+            change) when None.
+        dur: Duration of the ramp [s]. Defaults to 20.0.
+        dt: Sample interval [s]. Defaults to 0.1.
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3).
+    """
     if v_end is None:
         v_end = speed
     N    = max(2, int(dur / dt) + 1)
@@ -234,7 +355,21 @@ def _pitch_transition(entry, hdg_deg, speed, pitch_start_deg, pitch_end_deg,
 
 
 def _takeoff(entry, hdg_deg, speed, pitch_deg, speed_end, duration_s, dt=0.1):
-    """Rotation phase: pitch 0→pitch_deg, speed→speed_end, at fixed heading."""
+    """Generates the rotation/takeoff phase: pitch and speed ramp at fixed heading.
+
+    Args:
+        entry: Entry NED position, shape (3,) [m].
+        hdg_deg: Heading [deg], held constant.
+        speed: Initial speed [m/s].
+        pitch_deg: Final pitch angle [deg], ramped from 0.
+        speed_end: Final speed [m/s].
+        duration_s: Duration of the rotation [s].
+        dt: Sample interval [s]. Defaults to 0.1.
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3).
+    """
     return _pitch_transition(
         entry, hdg_deg, speed,
         pitch_start_deg=0.0, pitch_end_deg=pitch_deg,
@@ -242,7 +377,22 @@ def _takeoff(entry, hdg_deg, speed, pitch_deg, speed_end, duration_s, dt=0.1):
 
 
 def _speed_ramp(entry, hdg_deg, v_start, v_end, alt_ned, dur=20.0, dt=0.1):
-    """Linear speed change at constant heading and altitude."""
+    """Generates a linear speed change at constant heading and altitude.
+
+    Args:
+        entry: Entry NED position (first two components used), shape
+            (3,) [m].
+        hdg_deg: Heading [deg], held constant.
+        v_start: Initial speed [m/s].
+        v_end: Final speed [m/s].
+        alt_ned: Constant NED Down coordinate [m].
+        dur: Duration of the ramp [s]. Defaults to 20.0.
+        dt: Sample interval [s]. Defaults to 0.1.
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
+            and velocity arrays, each shape (N, 3).
+    """
     N    = max(2, int(dur / dt) + 1)
     t_   = np.arange(N) * dt
     spd  = v_start + (v_end - v_start) * t_ / t_[-1]
@@ -260,7 +410,18 @@ def _speed_ramp(entry, hdg_deg, v_start, v_end, alt_ned, dur=20.0, dt=0.1):
 
 
 def _geodetic_bearing(lat1_deg, lon1_deg, lat2_deg, lon2_deg):
-    """Forward azimuth (deg, 0–360) from point 1 to point 2."""
+    """Computes the forward azimuth from one geodetic point to another.
+
+    Args:
+        lat1_deg: Latitude of point 1 [deg].
+        lon1_deg: Longitude of point 1 [deg].
+        lat2_deg: Latitude of point 2 [deg].
+        lon2_deg: Longitude of point 2 [deg].
+
+    Returns:
+        float: Forward azimuth from point 1 to point 2 [deg], in
+            [0, 360).
+    """
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1_deg, lon1_deg, lat2_deg, lon2_deg])
     dlon = lon2 - lon1
     x = np.sin(dlon) * np.cos(lat2)
@@ -269,7 +430,18 @@ def _geodetic_bearing(lat1_deg, lon1_deg, lat2_deg, lon2_deg):
 
 
 def _geodetic_distance(lat1_deg, lon1_deg, lat2_deg, lon2_deg):
-    """Great-circle distance in metres (Haversine)."""
+    """Computes great-circle distance between two geodetic points via the Haversine formula.
+
+    Args:
+        lat1_deg: Latitude of point 1 [deg].
+        lon1_deg: Longitude of point 1 [deg].
+        lat2_deg: Latitude of point 2 [deg].
+        lon2_deg: Longitude of point 2 [deg].
+
+    Returns:
+        float: Great-circle distance [m], using the WGS-84 semi-major
+            axis as the sphere radius.
+    """
     lat1, lon1, lat2, lon2 = map(np.radians, [lat1_deg, lon1_deg, lat2_deg, lon2_deg])
     dlat = lat2 - lat1; dlon = lon2 - lon1
     a = np.sin(dlat / 2) ** 2 + np.cos(lat1) * np.cos(lat2) * np.sin(dlon / 2) ** 2
@@ -277,7 +449,18 @@ def _geodetic_distance(lat1_deg, lon1_deg, lat2_deg, lon2_deg):
 
 
 def _approx_geodetic(pos_ned, lat0_deg, lon0_deg, alt0_msl):
-    """Flat-Earth NED offset → approximate (lat_deg, lon_deg, alt_msl_m)."""
+    """Converts a flat-Earth NED offset to an approximate geodetic position.
+
+    Args:
+        pos_ned: NED offset from the reference point, shape (3,) [m].
+        lat0_deg: Reference latitude [deg].
+        lon0_deg: Reference longitude [deg].
+        alt0_msl: Reference altitude [m MSL].
+
+    Returns:
+        tuple[float, float, float]: (lat_deg, lon_deg, alt_msl_m),
+            approximate geodetic position.
+    """
     lat = lat0_deg + np.degrees(pos_ned[0] / WGS84_A)
     lon = lon0_deg + np.degrees(pos_ned[1] / (WGS84_A * np.cos(np.radians(lat0_deg))))
     alt = alt0_msl - pos_ned[2]
@@ -288,14 +471,33 @@ def _approx_geodetic(pos_ned, lat0_deg, lon0_deg, alt0_msl):
 # 3. YAML-driven trajectory builder
 # =========================================================================
 def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
-    """
-    Build a phase-by-phase truth trajectory from a YAML definition.
+    """Builds a phase-by-phase truth trajectory from a YAML mission definition.
 
-    Each phase in the YAML maps to a helper function; fields omitted from a
-    phase are inherited from the running state (heading, speed, altitude).
+    Each phase in the YAML maps to a helper function; fields omitted
+    from a phase are inherited from the running state (heading, speed,
+    altitude).
 
-    Returns (truth, v_sprint, R_turn) — same tuple as the former
-    build_bqn_trajectory() for compatibility with existing callers.
+    Args:
+        yaml_path: Path to the YAML mission-phase definition file.
+        dt: Sample interval [s]. When None, defaults to the file's
+            `simulation_time.dt_s` value.
+
+    Returns:
+        tuple: (truth, v_sprint, R_turn) — same tuple shape as the
+            former build_bqn_trajectory(), kept for compatibility with
+            existing callers, where:
+                truth: Object exposing t, dt, pos_n, vel_n, acc_n, lat,
+                    lon, alt, euler, R_b2n, omega_b (ω_ib_b), f_b, and
+                    g_loc — the same interface as TruthTrajectory.
+                v_sprint: Sprint-leg speed [m/s] if a Mach-targeted
+                    speed_ramp phase is present, else None.
+                R_turn: Turn radius [m] of the first coordinated turn
+                    encountered, else None.
+
+    Raises:
+        ValueError: If a phase has an unrecognized `type`, or if a
+            `speed_end_mach` speed_ramp phase appears before any
+            `climb` phase.
     """
     with open(yaml_path) as fh:
         cfg = yaml.safe_load(fh)

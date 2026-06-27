@@ -8,7 +8,22 @@ NM = 1852.0
 
 def plot_error_tube(ax, truth_pos, r95, color="crimson",
                     alpha=0.20, n_circle=24):
-    """Swept volume of the 95th-percentile radial error around truth."""
+    """Draws the swept-volume tube of the radial error envelope around the truth track.
+
+    Args:
+        ax: Matplotlib 3D axes to draw on.
+        truth_pos: Truth NED (or consistently scaled) position, shape
+            (M, 3).
+        r95: Radial error envelope at each time step, shape (M,), in
+            the same units as truth_pos.
+        color: Surface color. Defaults to "crimson".
+        alpha: Surface opacity. Defaults to 0.20.
+        n_circle: Number of points approximating the tube's circular
+            cross-section. Defaults to 24.
+
+    Returns:
+        None: Draws directly onto `ax`.
+    """
     T = np.gradient(truth_pos, axis=0)
     T = T / np.linalg.norm(T, axis=1, keepdims=True)
 
@@ -40,13 +55,30 @@ def plot_error_tube(ax, truth_pos, r95, color="crimson",
 
 
 def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
-    """
-    Build the 2x3 Monte Carlo summary figure: 3D ground track with swept
-    95th-pct error tube, radial error envelope, CEP plot, and pitch/roll/
-    heading attitude envelopes. Does not call plt.show() -- caller decides.
+    """Builds the 2x3 Monte Carlo summary figure.
 
-    Note: applies sns.set_theme(...) as a side effect (global rcParams
-    mutation), matching the original script's behavior.
+    Figure panels: 3D ground track with swept 95th-pct error tube,
+    radial error envelope, CEP plot, and pitch/roll/heading attitude
+    envelopes. Does not call plt.show() -- the caller decides.
+
+    Note:
+        Applies sns.set_theme(...) as a side effect (global rcParams
+        mutation), matching the original script's behavior.
+
+    Args:
+        truth: Truth trajectory object exposing pos_n, t, and euler
+            ([φ, θ, ψ], shape (M, 3) [rad]).
+        pos_runs: NED position per Monte Carlo trial, shape
+            (n_trials, M, 3) [m].
+        euler_runs: Euler angles [φ, θ, ψ] per trial, shape
+            (n_trials, M, 3) [rad].
+        r95: 95th-percentile radial position error envelope, shape
+            (M,) [m].
+        n_trials: Number of Monte Carlo trials represented in
+            pos_runs.
+
+    Returns:
+        matplotlib.figure.Figure: The assembled summary figure.
     """
     sns.set_theme(
         style='whitegrid',
@@ -152,10 +184,26 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
 
 
 def build_folium_map(truth, pos_runs, lat_runs, lon_runs, n_trials):
-    """
-    Build an interactive folium map: sampled Monte Carlo trial tracks, a
-    95th-pct horizontal error envelope polygon, and the truth track. Does
-    not call .save() -- caller decides the output path.
+    """Builds an interactive Folium map of the Monte Carlo trial tracks.
+
+    Plots sampled trial tracks, a 95th-percentile horizontal error
+    envelope polygon, and the truth track, with periodic time/error
+    markers along the truth track. Does not call .save() -- the caller
+    decides the output path.
+
+    Args:
+        truth: Truth trajectory object exposing pos_n, lat, lon, and t.
+        pos_runs: NED position per Monte Carlo trial, shape
+            (n_trials, M, 3) [m].
+        lat_runs: Geodetic latitude per trial, shape (n_trials, M)
+            [rad].
+        lon_runs: Geodetic longitude per trial, shape (n_trials, M)
+            [rad].
+        n_trials: Number of Monte Carlo trials represented in
+            pos_runs.
+
+    Returns:
+        folium.Map: The assembled interactive map.
     """
     P    = truth.pos_n
     step = max(1, len(P) // 4000)

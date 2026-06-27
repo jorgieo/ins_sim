@@ -6,8 +6,7 @@ import yaml
 
 @dataclass
 class IMUSpec:
-    """
-    Navigation-grade IMU error parameters.
+    """Navigation-grade IMU error parameters.
 
     Reference numbers (typical fielded systems, e.g. ring-laser-gyro
     aircraft INS, marine-grade strapdown):
@@ -17,6 +16,21 @@ class IMUSpec:
         Accel VRW           ≈ 0.005 m/s/√hr
         Accel bias instab.  ≈ 5  µg
         Accel repeatability ≈ 25 µg
+
+    Attributes:
+        gyro_arw: Gyro angular random walk [rad/√s].
+        gyro_bi_std: Gyro bias-instability steady-state std dev of the
+            Gauss-Markov process [rad/s].
+        gyro_bi_tau: Gyro bias-instability Gauss-Markov correlation
+            time [s].
+        gyro_br_std: Gyro turn-on bias repeatability std dev [rad/s].
+        accel_vrw: Accelerometer velocity random walk [(m/s)/√s].
+        accel_bi_std: Accelerometer bias-instability steady-state std
+            dev of the Gauss-Markov process [m/s²].
+        accel_bi_tau: Accelerometer bias-instability Gauss-Markov
+            correlation time [s].
+        accel_br_std: Accelerometer turn-on bias repeatability std
+            dev [m/s²].
     """
     # Gyro
     gyro_arw:    float = 0.002 * np.pi/180 / 60          # rad / √s
@@ -31,7 +45,15 @@ class IMUSpec:
 
 
 def load_imu_spec(yaml_path: str) -> IMUSpec:
-    """Load an IMUSpec from a YAML file expressed in datasheet units."""
+    """Loads an IMUSpec from a YAML file expressed in datasheet units.
+
+    Args:
+        yaml_path: Path to a YAML file with `gyro` and `accel` sections
+            in datasheet units (deg/√hr, deg/hr, µg, etc.).
+
+    Returns:
+        IMUSpec: Equivalent error-parameter set converted to SI units.
+    """
     with open(yaml_path) as fh:
         cfg = yaml.safe_load(fh)
     g = cfg["gyro"]
@@ -51,7 +73,8 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
 
 def generate_imu_samples(truth, spec: IMUSpec,
                          rng: np.random.Generator):
-    """
+    """Generates noisy IMU samples from a truth trajectory and an error spec.
+
     Per-axis IMU model:
         measurement = truth + b_repeat + b_drift(t) + η_white(t)
 
@@ -61,6 +84,17 @@ def generate_imu_samples(truth, spec: IMUSpec,
 
     Discrete AR(1) form for the GM drift gives steady-state variance σ²
     independent of dt:    b[k+1] = a·b[k] + √(1−a²)·σ·w,   a = exp(−dt/τ).
+
+    Args:
+        truth: Truth trajectory object exposing `t`, `dt`, `omega_b`
+            (ω_ib_b, shape (M, 3) [rad/s]), and `f_b` (shape (M, 3)
+            [m/s²]).
+        spec: IMU error-parameter set.
+        rng: Seeded NumPy random generator.
+
+    Returns:
+        tuple[numpy.ndarray, numpy.ndarray]: (omega_meas, f_meas), the
+            noisy gyro and accelerometer outputs, each shape (M, 3).
     """
     M, dt = len(truth.t), truth.dt
 

@@ -7,7 +7,27 @@ from ins_sim.navigation.strapdown import strapdown_navgrade
 
 def run_monte_carlo(truth, spec: IMUSpec,
                     n_trials: int, seed: int = 0):
-    """Run n_trials with independent IMU error realizations."""
+    """Runs n_trials independent noisy-IMU strapdown realizations.
+
+    Args:
+        truth: Truth trajectory object exposing t, dt, lat, lon, alt,
+            vel_n, R_b2n, omega_b (ω_ib_b), and f_b.
+        spec: IMU error-parameter set used to generate noisy samples.
+        n_trials: Number of independent Monte Carlo trials.
+        seed: Seed for the master random generator, used to derive an
+            independent child generator per trial. Defaults to 0.
+
+    Returns:
+        tuple: (pos_runs, euler_runs, lat_runs, lon_runs) where:
+            pos_runs (numpy.ndarray): NED position per trial, shape
+                (n_trials, M, 3) [m].
+            euler_runs (numpy.ndarray): Euler angles [φ, θ, ψ] per
+                trial, shape (n_trials, M, 3) [rad].
+            lat_runs (numpy.ndarray): Geodetic latitude per trial,
+                shape (n_trials, M) [rad].
+            lon_runs (numpy.ndarray): Geodetic longitude per trial,
+                shape (n_trials, M) [rad].
+    """
     M = len(truth.t)
     pos_runs   = np.zeros((n_trials, M, 3))
     euler_runs = np.zeros((n_trials, M, 3))
@@ -36,7 +56,17 @@ def run_monte_carlo(truth, spec: IMUSpec,
 
 
 def percentile_envelope(pos_runs, truth_pos, q=95):
-    """Per-time-step q-th percentile of 3D radial error magnitude."""
+    """Computes the per-time-step q-th percentile of 3D radial position error.
+
+    Args:
+        pos_runs: Position per trial, shape (n_trials, M, 3) [m].
+        truth_pos: Truth position, shape (M, 3) [m].
+        q: Percentile to compute, in [0, 100]. Defaults to 95.
+
+    Returns:
+        numpy.ndarray: q-th percentile of 3D radial error magnitude at
+            each time step, shape (M,) [m].
+    """
     err  = pos_runs - truth_pos[None, :, :]
     rerr = np.linalg.norm(err, axis=2)
     return np.percentile(rerr, q, axis=0)
