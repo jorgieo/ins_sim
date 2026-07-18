@@ -18,6 +18,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest"]
+gui = ["PySide6"]
 
 [tool.setuptools.packages.find]
 include = ["ins_sim*"]
