@@ -9,13 +9,16 @@ from pathlib import Path
 
 from importlib import resources
 
+import yaml
 from PySide6.QtCore import Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
+    QDoubleSpinBox,
     QFileDialog,
     QGroupBox,
     QHBoxLayout,
+    QMessageBox,
     QPushButton,
     QSpinBox,
     QVBoxLayout,
@@ -23,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 DEFAULT_TRAJECTORY_NAME = "bqn_departure.yaml"
+DEFAULT_IMU_SPEC_NAME = "imu_spec.yaml"
 
 #: Stable config keys -> human-readable checkbox labels.
 VISUALIZATION_CHOICES = {
@@ -33,7 +37,7 @@ VISUALIZATION_CHOICES = {
 }
 
 
-def packaged_trajectory_files() -> list[Path]:
+def packaged_config_files() -> list[Path]:
     """Lists the .yaml files bundled in ins_sim/config/, sorted by name.
 
     Returns:
@@ -48,12 +52,33 @@ def packaged_trajectory_files() -> list[Path]:
     )
 
 
-class TrajectoryFileSelector(QWidget):
-    """Combo box of packaged trajectory YAMLs plus a Browse... button.
+def _yaml_top_keys(path) -> set:
+    """Returns the top-level mapping keys of a YAML file (empty on any failure)."""
+    try:
+        with open(path, encoding="utf-8") as f:
+            data = yaml.safe_load(f)
+    except Exception:
+        return set()
+    return set(data) if isinstance(data, dict) else set()
 
-    The combo auto-populates with every ``.yaml`` in ``ins_sim/config/``;
-    the Browse button lets the user add an arbitrary external file,
-    which is appended to the combo and selected.
+
+def is_trajectory_yaml(path) -> bool:
+    """True if the YAML looks like a mission/trajectory definition (has phases)."""
+    return "phases" in _yaml_top_keys(path)
+
+
+def is_imu_spec_yaml(path) -> bool:
+    """True if the YAML looks like an IMU error spec (has gyro and accel)."""
+    return {"gyro", "accel"} <= _yaml_top_keys(path)
+
+
+class YamlFileSelector(QWidget):
+    """Combo box of packaged config YAMLs plus a Browse... button.
+
+    The combo auto-populates with the ``.yaml`` files in
+    ``ins_sim/config/`` that pass ``file_filter``; the Browse button
+    lets the user add an arbitrary external file (also validated
+    against the filter), which is appended to the combo and selected.
 
     Signals:
         fileSelected (str): Absolute path of the newly selected file.
@@ -61,13 +86,17 @@ class TrajectoryFileSelector(QWidget):
 
     fileSelected = Signal(str)
 
-    def __init__(self, parent=None):
+    def __init__(self, default_name: str, dialog_title: str = "Select YAML file",
+                 file_filter=None, parent=None):
         super().__init__(parent)
+        self._dialog_title = dialog_title
+        self._file_filter = file_filter
 
         self._combo = QComboBox(self)
-        for path in packaged_trajectory_files():
-            self._combo.addItem(path.name, userData=str(path))
-        default_idx = self._combo.findText(DEFAULT_TRAJECTORY_NAME)
+        for path in packaged_config_files():
+            if file_filter is None or file_filter(path):
+                self._combo.addItem(path.name, userData=str(path))
+        default_idx = self._combo.findText(default_name)
         if default_idx >= 0:
             self._combo.setCurrentIndex(default_idx)
 
@@ -92,11 +121,17 @@ class TrajectoryFileSelector(QWidget):
 
     def _on_browse(self) -> None:
         path, _ = QFileDialog.getOpenFileName(
-            self, "Select trajectory file", str(Path.home()),
+            self, self._dialog_title, str(Path.home()),
             "YAML files (*.yaml *.yml);;All files (*)")
         if not path:
             return
         path = str(Path(path).resolve())
+        if self._file_filter is not None and not self._file_filter(path):
+            QMessageBox.warning(
+                self, self._dialog_title,
+                f"{Path(path).name} does not look like a valid file for "
+                f"this selector (wrong top-level YAML structure).")
+            return
         idx = self._combo.findData(path)
         if idx < 0:
             self._combo.addItem(Path(path).name, userData=path)
@@ -118,6 +153,21 @@ class IterationsSpinBox(QSpinBox):
         self.setRange(1, 1000)
         self.setValue(50)
         self.setSuffix(" trials")
+
+
+class DtSpinBox(QDoubleSpinBox):
+    """Spin box for the simulation time step (0.01-10.0 s, default 0.1).
+
+    Emits the built-in ``valueChanged(float)`` signal.
+    """
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.setRange(0.01, 10.0)
+        self.setDecimals(2)
+        self.setSingleStep(0.05)
+        self.setValue(0.1)
+        self.setSuffix(" s")
 
 
 class VisualizationOptions(QGroupBox):

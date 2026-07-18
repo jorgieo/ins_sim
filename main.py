@@ -62,7 +62,7 @@ def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0):
             run_monte_carlo and percentile_envelope for the shape and
             meaning of each element.
     """
-    pos_runs, euler_runs, lat_runs, lon_runs = run_monte_carlo(
+    pos_runs, euler_runs, lat_runs, lon_runs, _ = run_monte_carlo(
         truth, spec, n_trials=n_trials, seed=seed)
     r95 = percentile_envelope(pos_runs, truth.pos_n, q=95)
     return pos_runs, euler_runs, lat_runs, lon_runs, r95

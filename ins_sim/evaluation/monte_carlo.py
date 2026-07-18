@@ -6,7 +6,8 @@ from ins_sim.navigation.strapdown import strapdown_navgrade
 
 
 def run_monte_carlo(truth, spec: IMUSpec,
-                    n_trials: int, seed: int = 0):
+                    n_trials: int, seed: int = 0,
+                    progress_callback=None):
     """Runs n_trials independent noisy-IMU strapdown realizations.
 
     Args:
@@ -16,9 +17,13 @@ def run_monte_carlo(truth, spec: IMUSpec,
         n_trials: Number of independent Monte Carlo trials.
         seed: Seed for the master random generator, used to derive an
             independent child generator per trial. Defaults to 0.
+        progress_callback: Optional callable invoked as
+            progress_callback(n_done, n_trials) after each trial
+            completes. Defaults to None (no reporting).
 
     Returns:
-        tuple: (pos_runs, euler_runs, lat_runs, lon_runs) where:
+        tuple: (pos_runs, euler_runs, lat_runs, lon_runs, vel_runs)
+            where:
             pos_runs (numpy.ndarray): NED position per trial, shape
                 (n_trials, M, 3) [m].
             euler_runs (numpy.ndarray): Euler angles [φ, θ, ψ] per
@@ -27,12 +32,15 @@ def run_monte_carlo(truth, spec: IMUSpec,
                 shape (n_trials, M) [rad].
             lon_runs (numpy.ndarray): Geodetic longitude per trial,
                 shape (n_trials, M) [rad].
+            vel_runs (numpy.ndarray): NED velocity per trial, shape
+                (n_trials, M, 3) [m/s].
     """
     M = len(truth.t)
     pos_runs   = np.zeros((n_trials, M, 3))
     euler_runs = np.zeros((n_trials, M, 3))
     lat_runs   = np.zeros((n_trials, M))
     lon_runs   = np.zeros((n_trials, M))
+    vel_runs   = np.zeros((n_trials, M, 3))
     rng_master = np.random.default_rng(seed)
 
     init_state = (
@@ -44,15 +52,18 @@ def run_monte_carlo(truth, spec: IMUSpec,
     for i in range(n_trials):
         rng_i = np.random.default_rng(rng_master.integers(0, 2**31))
         omega_m, f_m = generate_imu_samples(truth, spec, rng_i)
-        pos_ned, lat_i, lon_i, _, _, quat_i = strapdown_navgrade(
+        pos_ned, lat_i, lon_i, _, vel_i, quat_i = strapdown_navgrade(
             omega_m, f_m, init_state, truth.dt, alt_truth=truth.alt)
         pos_runs[i]   = pos_ned
         lat_runs[i]   = lat_i
         lon_runs[i]   = lon_i
+        vel_runs[i]   = vel_i
         # as_euler('ZYX') → [psi, theta, phi]; reverse to [phi, theta, psi]
         euler_runs[i] = Rot.from_quat(quat_i).as_euler('ZYX')[:, ::-1]
+        if progress_callback is not None:
+            progress_callback(i + 1, n_trials)
 
-    return pos_runs, euler_runs, lat_runs, lon_runs
+    return pos_runs, euler_runs, lat_runs, lon_runs, vel_runs
 
 
 def percentile_envelope(pos_runs, truth_pos, q=95):
