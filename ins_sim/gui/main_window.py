@@ -8,27 +8,23 @@ SimulationWorker so the UI stays responsive.
 
 import sys
 
-from PySide6.QtCore import Qt, QThread, Signal
+from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QApplication,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
-    QLabel,
     QMainWindow,
     QMessageBox,
     QPlainTextEdit,
     QProgressBar,
     QPushButton,
-    QTabWidget,
     QVBoxLayout,
     QWidget,
 )
-from matplotlib.backends.backend_qt import NavigationToolbar2QT
-from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 
-from ins_sim.gui.plotting import PLOT_BUILDERS
+from ins_sim.gui.canvas import VisualizationPanel
 from ins_sim.gui.widgets import (
     DEFAULT_IMU_SPEC_NAME,
     DEFAULT_TRAJECTORY_NAME,
@@ -107,13 +103,12 @@ class MainWindow(QMainWindow):
         control_layout.addStretch()
 
         # ---- Right plot area ----------------------------------------------
-        self.plot_tabs = QTabWidget()
-        self._add_plot_placeholder()
+        self.visualization_panel = VisualizationPanel()
 
         central = QWidget()
         central_layout = QHBoxLayout(central)
         central_layout.addWidget(control_panel)
-        central_layout.addWidget(self.plot_tabs, stretch=1)
+        central_layout.addWidget(self.visualization_panel, stretch=1)
         self.setCentralWidget(central)
 
         self.file_selector.fileSelected.connect(self._on_config_changed)
@@ -165,7 +160,7 @@ class MainWindow(QMainWindow):
 
     def _on_finished(self, result: SimulationResult) -> None:
         self.last_result = result
-        self._render_plots(result)
+        self.visualization_panel.render(result)
 
     def _on_error(self, message: str) -> None:
         QMessageBox.critical(self, "Simulation failed", message)
@@ -174,32 +169,6 @@ class MainWindow(QMainWindow):
         self._thread = None
         self._worker = None
         self._set_controls_enabled(True)
-
-    # ---- Plot rendering ----------------------------------------------------
-
-    def _add_plot_placeholder(self) -> None:
-        label = QLabel("Run a simulation to see results")
-        label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        label.setStyleSheet("color: gray; font-size: 14px;")
-        self.plot_tabs.addTab(label, "Results")
-
-    def _render_plots(self, result: SimulationResult) -> None:
-        """Rebuilds the tab area with one canvas per checked visualization."""
-        self.plot_tabs.clear()
-        enabled = result.config.get("visualizations", {})
-        for slug, (title, builder) in PLOT_BUILDERS.items():
-            if not enabled.get(slug, False):
-                continue
-            canvas = FigureCanvasQTAgg(builder(result))
-            toolbar = NavigationToolbar2QT(canvas, self)
-            page = QWidget()
-            layout = QVBoxLayout(page)
-            layout.setContentsMargins(0, 0, 0, 0)
-            layout.addWidget(toolbar)
-            layout.addWidget(canvas)
-            self.plot_tabs.addTab(page, title)
-        if self.plot_tabs.count() == 0:
-            self._add_plot_placeholder()
 
     def _set_controls_enabled(self, enabled: bool) -> None:
         for widget in (self.file_selector, self.imu_spec_selector,
