@@ -15,7 +15,16 @@ from matplotlib.backends.backend_qt import NavigationToolbar2QT
 from matplotlib.backends.backend_qtagg import FigureCanvasQTAgg
 from matplotlib.figure import Figure
 from PySide6.QtCore import Qt
-from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget
+from PySide6.QtWidgets import (
+    QAbstractItemView,
+    QHeaderView,
+    QLabel,
+    QTableWidget,
+    QTableWidgetItem,
+    QTabWidget,
+    QVBoxLayout,
+    QWidget,
+)
 
 GRID_KW = dict(color="#dddddd", linewidth=0.8)
 MAX_PLOT_POINTS = 4000
@@ -29,6 +38,13 @@ def _step(n: int) -> int:
 def _style_axes(ax):
     ax.grid(True, **GRID_KW)
     ax.set_axisbelow(True)
+
+
+def _horiz_err_nm(result):
+    """Per-run horizontal position error in NM, shape (n_trials, M)."""
+    return np.linalg.norm(
+        result.pos_runs[:, :, :2] - result.truth.pos_n[None, :, :2],
+        axis=2) / NM
 
 
 class VisualizationPanel(QTabWidget):
@@ -70,14 +86,23 @@ class VisualizationPanel(QTabWidget):
         ]
         for slug, title, builder in builders:
             if enabled.get(slug, False):
-                self._add_canvas_tab(builder(result), title)
+                extra = self._cep_table(result) if slug == "cep" else None
+                self._add_canvas_tab(builder(result), title, extra=extra)
         if self.count() == 0:
             self.show_placeholder()
 
     # ---- Tab plumbing ------------------------------------------------------
 
-    def _add_canvas_tab(self, fig: Figure, title: str) -> None:
-        """Wraps a figure in a canvas + navigation toolbar and adds a tab."""
+    def _add_canvas_tab(self, fig: Figure, title: str,
+                        extra: QWidget | None = None) -> None:
+        """Wraps a figure in a canvas + navigation toolbar and adds a tab.
+
+        Args:
+            fig: Figure to embed.
+            title: Tab label.
+            extra: Optional widget placed below the canvas (e.g. the CEP
+                percentile table).
+        """
         canvas = FigureCanvasQTAgg(fig)
         toolbar = NavigationToolbar2QT(canvas, self)
         page = QWidget()
@@ -85,6 +110,8 @@ class VisualizationPanel(QTabWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         layout.addWidget(toolbar)
         layout.addWidget(canvas)
+        if extra is not None:
+            layout.addWidget(extra)
         self.addTab(page, title)
 
     # ---- Figure builders ---------------------------------------------------
@@ -172,34 +199,64 @@ class VisualizationPanel(QTabWidget):
         return fig
 
     def _figure_cep(self, result) -> Figure:
-        """Per-run horizontal error and ensemble CEP, in NM vs decimal hours."""
-        truth = result.truth
-        t_hr = truth.t / 3600.0
-        horiz_err_nm = np.linalg.norm(
-            result.pos_runs[:, :, :2] - truth.pos_n[None, :, :2], axis=2) / NM
-        cep = np.percentile(horiz_err_nm, 50, axis=0)
+        """Every run's horizontal error trace, in NM vs decimal hours."""
+        t_hr = result.truth.t / 3600.0
+        horiz_err_nm = _horiz_err_nm(result)
 
         fig = Figure(layout="constrained")
         ax = fig.add_subplot()
-        ax.plot(t_hr, horiz_err_nm.T, color="steelblue", alpha=0.25, lw=0.6)
+        ax.plot(t_hr, horiz_err_nm.T, color="steelblue", alpha=0.3, lw=0.7)
         ax.plot([], [], color="steelblue", lw=1.0, label="Individual runs")
-        ax.plot(t_hr, cep, color="navy", lw=2.0, label="CEP (50th pct)")
-        ax.fill_between(t_hr, 0, cep, color="steelblue", alpha=0.15)
 
-        # Linear drift-rate fit over the first hour, as in the summary
-        # figure's CEP panel -- slope lands directly in NM/hr here.
+        # Drift-rate fit to the ensemble CEP over the first hour; the CEP
+        # curve itself is tabulated below the plot rather than drawn.
+        cep = np.percentile(horiz_err_nm, 50, axis=0)
         mask = t_hr <= 1.0
         if mask.sum() >= 2:
             coeffs = np.polyfit(t_hr[mask], cep[mask], 1)
             ax.plot(t_hr, np.polyval(coeffs, t_hr), "--", color="darkorange",
-                    lw=1.8, label=f"Linear fit  {coeffs[0]:.2f} NM/hr")
+                    lw=1.8, label=f"CEP linear fit  {coeffs[0]:.2f} NM/hr")
             ax.axvline(1.0, color="gray", lw=0.8, linestyle=":")
         ax.set_xlabel("Time (hr)")
         ax.set_ylabel("Horizontal error (NM)")
-        ax.set_title(f"Circular Error Probable — {result.n_trials} runs")
+        ax.set_title(f"Horizontal position error — {result.n_trials} runs")
         ax.legend()
         _style_axes(ax)
         return fig
+
+    def _cep_table(self, result) -> QTableWidget | None:
+        """Ensemble percentiles at whole-hour marks, shown under the CEP plot.
+
+        One column per whole hour of flight; rows are the 50th (CEP) and
+        95th percentile of the runs' horizontal error at that instant.
+        Returns None when the flight is shorter than one hour.
+        """
+        truth = result.truth
+        horiz_err_nm = _horiz_err_nm(result)
+        hours = range(1, int(truth.t[-1] // 3600.0) + 1)
+
+        table = QTableWidget(2, len(hours))
+        if table.columnCount() == 0:
+            return None
+        table.setHorizontalHeaderLabels([str(h) for h in hours])
+        table.setVerticalHeaderLabels(
+            ["50th percentile (NM)", "95th percentile (NM)"])
+        for col, h in enumerate(hours):
+            idx = int(np.argmin(np.abs(truth.t - h * 3600.0)))
+            sample = horiz_err_nm[:, idx]
+            for row, pct in enumerate((50, 95)):
+                item = QTableWidgetItem(f"{np.percentile(sample, pct):.2f}")
+                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+                table.setItem(row, col, item)
+
+        table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
+        table.horizontalHeader().setSectionResizeMode(
+            QHeaderView.ResizeMode.Stretch)
+        table.setFixedHeight(
+            table.horizontalHeader().sizeHint().height()
+            + table.rowHeight(0) + table.rowHeight(1)
+            + 2 * table.frameWidth())
+        return table
 
     def _figure_position_errors(self, result) -> Figure:
         """NED position errors with ±3σ bounds [m]."""

@@ -623,7 +623,12 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
             wp_lat   = float(phase["lat_deg"])
             wp_lon   = float(phase["lon_deg"])
             wp_alt_m = float(phase["alt_ft"]) * FT
-            wp_speed = float(phase["speed_kt"]) * KT
+            # speed_kt is optional: without it the leg is flown at the
+            # current speed (e.g. a sprint speed set by a preceding
+            # speed_ramp), avoiding a nonphysical speed step at the
+            # turn exit.
+            wp_speed = (float(phase["speed_kt"]) * KT
+                        if "speed_kt" in phase else state["speed"])
             wp_alt_ned = -(wp_alt_m - alt0_msl)
 
             curr_lat, curr_lon, _ = _approx_geodetic(

@@ -54,8 +54,7 @@ phases:
     speed_end_mach:  0.8
     duration_s:      40.0
 
-  - type:     waypoint             # sprint leg destination
-    lat_deg:  15.00
-    lon_deg:  -68.00
+  - type:     waypoint             # sprint leg destination; no speed_kt,
+    lat_deg:  15.00                # so the leg is flown at the M0.8
+    lon_deg:  -68.00               # sprint speed from the ramp above
     alt_ft:   15000.0
-    speed_kt: 300.0
