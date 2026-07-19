@@ -78,11 +78,11 @@ class VisualizationPanel(QTabWidget):
         self.clear()
         enabled = result.config.get("visualizations", {})
         builders = [
-            ("trajectory_3d",   "3D Trajectory",   self._figure_trajectory_3d),
+            ("cep",             "CEP",             self._figure_cep),
             ("attitude_errors", "Attitude Errors", self._figure_attitude_errors),
             ("velocity_errors", "Velocity Errors", self._figure_velocity_errors),
             ("position_errors", "Position Errors", self._figure_position_errors),
-            ("cep",             "CEP",             self._figure_cep),
+            ("trajectory_3d",   "3D Trajectory",   self._figure_trajectory_3d),
         ]
         for slug, title, builder in builders:
             if enabled.get(slug, False):
@@ -159,7 +159,7 @@ class VisualizationPanel(QTabWidget):
         mean = err_runs.mean(axis=0)
         sigma = err_runs.std(axis=0)
         axes = fig.subplots(len(panels), 1, sharex=True)
-        for ax, (col, title) in zip(np.atleast_1d(axes), panels):
+        for ax, (col, title) in zip(np.atleast_1d(axes), panels): # type: ignore
             ax.fill_between(t_m, mean[:, col] - 3 * sigma[:, col],
                             mean[:, col] + 3 * sigma[:, col],
                             color="crimson", alpha=0.25, label="±3σ")
@@ -169,7 +169,7 @@ class VisualizationPanel(QTabWidget):
             ax.set_title(title)
             ax.legend(fontsize=8, loc="upper left")
             _style_axes(ax)
-        np.atleast_1d(axes)[-1].set_xlabel("Time (min)")
+        np.atleast_1d(axes)[-1].set_xlabel("Time (min)") # type: ignore
 
     def _figure_attitude_errors(self, result) -> Figure:
         """Pitch/roll/heading Euler-angle errors with ±3σ bounds [deg]."""
