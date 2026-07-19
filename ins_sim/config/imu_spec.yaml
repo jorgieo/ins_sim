@@ -8,9 +8,20 @@ gyro:
   bias_instab_deg_per_hr:  0.01    # Bias instability, Gauss-Markov std [°/hr]
   bias_tau_s:              3600.0  # GM correlation time [s]
   repeatability_deg_per_hr: 0.01   # Turn-on bias repeatability [°/hr]
+  scale_factor_ppm:         5.0    # Scale-factor error 1σ, per axis [ppm]
+  misalignment_urad:       50.0    # Axis misalignment 1σ, per element [µrad]
 
 accel:
   vrw_m_per_s_per_rt_hr:   0.005   # Velocity Random Walk [m/s/√hr]
   bias_instab_ug:           5.0    # Bias instability, Gauss-Markov std [µg]
   bias_tau_s:              3600.0  # GM correlation time [s]
   repeatability_ug:         25.0   # Turn-on bias repeatability [µg]
+  scale_factor_ppm:       100.0    # Scale-factor error 1σ, per axis [ppm]
+  misalignment_urad:       50.0    # Axis misalignment 1σ, per element [µrad]
+
+# Residual error of the stationary gyrocompass alignment, drawn once per
+# Monte Carlo trial. Tilt ≈ accel repeatability / g; heading ≈ east-gyro
+# repeatability / (Ω_ie·cos φ) — 0.04° corresponds to 0.01°/hr at ~18.5°N.
+alignment:
+  tilt_std_deg:    0.0015  # N/E tilt misalignment 1σ [°]
+  heading_std_deg: 0.04    # Azimuth misalignment 1σ [°]

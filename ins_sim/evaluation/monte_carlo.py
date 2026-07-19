@@ -1,7 +1,8 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
-from ins_sim.sensors.imu import IMUSpec, generate_imu_samples
+from ins_sim.sensors.imu import (IMUSpec, draw_initial_misalignment,
+                                 generate_imu_samples)
 from ins_sim.navigation.strapdown import strapdown_navgrade
 
 
@@ -43,14 +44,20 @@ def run_monte_carlo(truth, spec: IMUSpec,
     vel_runs   = np.zeros((n_trials, M, 3))
     rng_master = np.random.default_rng(seed)
 
-    init_state = (
-        truth.lat[0], truth.lon[0], truth.alt[0],
-        truth.vel_n[0].copy(),
-        truth.R_b2n[0].as_quat(), # pyright: ignore[reportCallIssue]
-    )
+    R0_true = truth.R_b2n[0]
 
     for i in range(n_trials):
         rng_i = np.random.default_rng(rng_master.integers(0, 2**31))
+        # Per-trial initial-alignment error: small NED tilts + azimuth
+        # misalignment applied to the truth attitude (zero-mean draws;
+        # exact truth init when the spec's alignment stds are zero).
+        mis_rotvec = draw_initial_misalignment(spec, rng_i)
+        R0_est = Rot.from_rotvec(mis_rotvec) * R0_true
+        init_state = (
+            truth.lat[0], truth.lon[0], truth.alt[0],
+            truth.vel_n[0].copy(),
+            R0_est.as_quat(), # pyright: ignore[reportCallIssue]
+        )
         omega_m, f_m = generate_imu_samples(truth, spec, rng_i)
         pos_ned, lat_i, lon_i, _, vel_i, quat_i = strapdown_navgrade(
             omega_m, f_m, init_state, truth.dt, alt_truth=truth.alt)

@@ -25,6 +25,10 @@ class IMUSpec:
         gyro_bi_tau: Gyro bias-instability Gauss-Markov correlation
             time [s].
         gyro_br_std: Gyro turn-on bias repeatability std dev [rad/s].
+        gyro_sf_std: Gyro scale-factor error std dev, drawn once per
+            run per axis [dimensionless, e.g. 5e-6 = 5 ppm].
+        gyro_ma_std: Gyro axis-misalignment std dev, drawn once per
+            run per off-diagonal element [rad].
         accel_vrw: Accelerometer velocity random walk [(m/s)/√s].
         accel_bi_std: Accelerometer bias-instability steady-state std
             dev of the Gauss-Markov process [m/s²].
@@ -32,17 +36,38 @@ class IMUSpec:
             correlation time [s].
         accel_br_std: Accelerometer turn-on bias repeatability std
             dev [m/s²].
+        accel_sf_std: Accelerometer scale-factor error std dev
+            [dimensionless].
+        accel_ma_std: Accelerometer axis-misalignment std dev [rad].
+        align_tilt_std: Initial-alignment tilt (N/E) misalignment std
+            dev [rad]. Physically ≈ accel repeatability / g.
+        align_heading_std: Initial-alignment heading (azimuth)
+            misalignment std dev [rad]. Physically ≈ gyrocompass
+            limit, gyro repeatability / (Ω_ie·cos φ).
+
+    Note:
+        The multiplicative (scale factor, misalignment) and
+        initial-alignment terms default to zero — they apply only when
+        specified — so zero-noise diagnostic specs and legacy YAMLs
+        keep their exact-passthrough behavior.
     """
     # Gyro
     gyro_arw:    float = 0.002 * np.pi/180 / 60          # rad / √s
     gyro_bi_std: float = 0.01  * np.pi/180 / 3600        # rad / s
     gyro_bi_tau: float = 3600.0                          # GM correlation time [s]
     gyro_br_std: float = 0.01  * np.pi/180 / 3600        # rad / s
+    gyro_sf_std: float = 0.0                             # dimensionless
+    gyro_ma_std: float = 0.0                             # rad
     # Accel
     accel_vrw:    float = 0.005 / 60                     # (m/s) / √s
     accel_bi_std: float =  5e-6 * 9.80665                # 5 µg
     accel_bi_tau: float = 3600.0
     accel_br_std: float = 25e-6 * 9.80665                # 25 µg
+    accel_sf_std: float = 0.0                            # dimensionless
+    accel_ma_std: float = 0.0                            # rad
+    # Initial alignment
+    align_tilt_std:    float = 0.0                       # rad
+    align_heading_std: float = 0.0                       # rad
 
 
 def load_imu_spec(yaml_path: str) -> IMUSpec:
@@ -59,17 +84,69 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
         cfg = yaml.safe_load(fh)
     g = cfg["gyro"]
     a = cfg["accel"]
+    al = cfg.get("alignment", {})
     DEG_HR = np.pi / 180 / 3600
     return IMUSpec(
         gyro_arw     = g["arw_deg_per_rt_hr"]          * np.pi / 180 / 60,
         gyro_bi_std  = g["bias_instab_deg_per_hr"]     * DEG_HR,
         gyro_bi_tau  = g["bias_tau_s"],
         gyro_br_std  = g["repeatability_deg_per_hr"]   * DEG_HR,
+        gyro_sf_std  = g.get("scale_factor_ppm", 0.0)   * 1e-6,
+        gyro_ma_std  = g.get("misalignment_urad", 0.0)  * 1e-6,
         accel_vrw    = a["vrw_m_per_s_per_rt_hr"]      / 60,
         accel_bi_std = a["bias_instab_ug"]              * 1e-6 * 9.80665,
         accel_bi_tau = a["bias_tau_s"],
         accel_br_std = a["repeatability_ug"]            * 1e-6 * 9.80665,
+        accel_sf_std = a.get("scale_factor_ppm", 0.0)   * 1e-6,
+        accel_ma_std = a.get("misalignment_urad", 0.0)  * 1e-6,
+        align_tilt_std    = al.get("tilt_std_deg", 0.0)    * np.pi / 180,
+        align_heading_std = al.get("heading_std_deg", 0.0) * np.pi / 180,
     )
+
+
+def _error_matrix(rng: np.random.Generator, sf_std: float,
+                  ma_std: float) -> np.ndarray:
+    """Draws a per-run multiplicative sensor-error matrix M.
+
+    The sensed vector is (I + M)·truth: the diagonal of M holds
+    per-axis scale-factor errors, the off-diagonal elements hold axis
+    misalignments (6 independent small angles).
+
+    Args:
+        rng: Seeded NumPy random generator.
+        sf_std: Scale-factor error std dev [dimensionless].
+        ma_std: Axis-misalignment std dev [rad].
+
+    Returns:
+        numpy.ndarray: Error matrix M, shape (3, 3).
+    """
+    M = np.diag(rng.normal(0.0, sf_std, size=3))
+    off = rng.normal(0.0, ma_std, size=6)
+    M[0, 1], M[0, 2], M[1, 0], M[1, 2], M[2, 0], M[2, 1] = off
+    return M
+
+
+def draw_initial_misalignment(spec: IMUSpec,
+                              rng: np.random.Generator) -> np.ndarray:
+    """Draws a per-run initial-alignment attitude error rotation vector.
+
+    Models the residual error of a stationary gyrocompass alignment:
+    small tilts about North/East (limited by accelerometer bias over g)
+    and a larger azimuth error about Down (limited by east-gyro bias
+    over Ω_ie·cos φ). Apply as R_init = exp([ψ×])·R_true with ψ in NED.
+
+    Args:
+        spec: IMU error-parameter set (align_tilt_std,
+            align_heading_std).
+        rng: Seeded NumPy random generator.
+
+    Returns:
+        numpy.ndarray: NED rotation vector [δ_N, δ_E, δ_D], shape
+            (3,) [rad].
+    """
+    return rng.normal(0.0, [spec.align_tilt_std,
+                            spec.align_tilt_std,
+                            spec.align_heading_std])
 
 
 def generate_imu_samples(truth, spec: IMUSpec,
@@ -77,8 +154,10 @@ def generate_imu_samples(truth, spec: IMUSpec,
     """Generates noisy IMU samples from a truth trajectory and an error spec.
 
     Per-axis IMU model:
-        measurement = truth + b_repeat + b_drift(t) + η_white(t)
+        measurement = (I + M)·truth + b_repeat + b_drift(t) + η_white(t)
 
+      M          scale factor (diag) + misalignment (off-diag),
+                 drawn once per run — see _error_matrix
       b_repeat   ~ N(0, σ_BR²)               drawn once per run
       b_drift    1st-order Gauss-Markov, steady-state std σ_BI, τ_BI
       η_white    σ = ARW/√dt or VRW/√dt      per-sample white noise
@@ -98,6 +177,14 @@ def generate_imu_samples(truth, spec: IMUSpec,
             noisy gyro and accelerometer outputs, each shape (M, 3).
     """
     M, dt = len(truth.t), truth.dt
+
+    # Per-run multiplicative errors (scale factor + misalignment). With
+    # zero stds these are exact identity transforms, preserving the
+    # zero-noise passthrough property.
+    M_g = _error_matrix(rng, spec.gyro_sf_std,  spec.gyro_ma_std)
+    M_a = _error_matrix(rng, spec.accel_sf_std, spec.accel_ma_std)
+    omega_true = truth.omega_b @ (np.eye(3) + M_g).T
+    f_true     = truth.f_b     @ (np.eye(3) + M_a).T
 
     # Constant turn-on biases (per axis, per run)
     b_g_repeat = rng.normal(0.0, spec.gyro_br_std,  size=3)
@@ -121,6 +208,6 @@ def generate_imu_samples(truth, spec: IMUSpec,
     eta_g = rng.normal(0.0, spec.gyro_arw  / np.sqrt(dt), size=(M, 3))
     eta_a = rng.normal(0.0, spec.accel_vrw / np.sqrt(dt), size=(M, 3))
 
-    omega_meas = truth.omega_b + b_g_repeat + b_g_drift + eta_g
-    f_meas     = truth.f_b     + b_a_repeat + b_a_drift + eta_a
+    omega_meas = omega_true + b_g_repeat + b_g_drift + eta_g
+    f_meas     = f_true     + b_a_repeat + b_a_drift + eta_a
     return omega_meas, f_meas
