@@ -1,0 +1,100 @@
+# Cross-platform release pipeline.
+#
+# - Pushes to release/* branches: build, smoke-test, and upload workflow
+#   artifacts (a dry run of the release without publishing anything).
+# - Pushes of v* tags: additionally create a GitHub Release with the
+#   binaries attached.
+#
+# Compatibility note: Linux binaries built on ubuntu-latest (24.04)
+# require a similarly recent glibc on the target machine. Pin
+# ubuntu-22.04 here if wider compatibility is needed.
+
+name: Release
+
+on:
+  push:
+    branches: ["release/**"]
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install dependencies
+        run: pip install ".[gui]" pyinstaller pytest
+
+      - name: Run test suite
+        run: pytest -q
+
+      - name: Install QtWebEngine runtime libraries (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64
+
+      - name: Build bundle
+        run: pyinstaller ins_sim.spec --noconfirm
+
+      # The exe is GUI-subsystem: the shell won't wait for it (and would
+      # ignore its exit code), so launch it explicitly and propagate.
+      - name: Smoke-test frozen app (Windows)
+        if: runner.os == 'Windows'
+        env:
+          INS_SIM_SMOKE: "1"
+          QT_QPA_PLATFORM: offscreen
+        run: |
+          $p = Start-Process -FilePath "dist/ins_sim/ins_sim.exe" -Wait -PassThru
+          exit $p.ExitCode
+
+      - name: Smoke-test frozen app (Linux)
+        if: runner.os == 'Linux'
+        env:
+          INS_SIM_SMOKE: "1"
+          QT_QPA_PLATFORM: offscreen
+        run: dist/ins_sim/ins_sim
+
+      # Branch refs contain slashes (release/foo) — sanitize for filenames.
+      - name: Compute version label
+        shell: bash
+        run: echo "VERSION=${GITHUB_REF_NAME//\//-}" >> "$GITHUB_ENV"
+
+      - name: Package archive (Windows)
+        if: runner.os == 'Windows'
+        run: Compress-Archive -Path dist/ins_sim -DestinationPath "ins_sim-${{ env.VERSION }}-windows-x86_64.zip"
+
+      - name: Package archive (Linux)
+        if: runner.os == 'Linux'
+        run: tar czf "ins_sim-${{ env.VERSION }}-linux-x86_64.tar.gz" -C dist ins_sim
+
+      - name: Upload workflow artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ins_sim-${{ matrix.os }}
+          path: |
+            ins_sim-*-windows-x86_64.zip
+            ins_sim-*-linux-x86_64.tar.gz
+          if-no-files-found: error
+
+      - name: Create GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          generate_release_notes: true
+          files: |
+            ins_sim-*-windows-x86_64.zip
+            ins_sim-*-linux-x86_64.tar.gz

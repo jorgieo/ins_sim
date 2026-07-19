@@ -6,6 +6,9 @@ build-backend = "setuptools.build_meta"
 name = "ins_sim"
 version = "0.1.0"
 description = "Navigation-grade IMU/strapdown inertial navigation simulation"
+authors = [{name = "J.L. Otero"}]
+license = {text = "MIT"}
+classifiers = ["License :: OSI Approved :: MIT License"]
 requires-python = ">=3.11"
 dependencies = [
     "numpy",
@@ -17,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest"]
+dev = ["pytest", "pyinstaller"]
 gui = ["PySide6"]
 
 [tool.setuptools.packages.find]
