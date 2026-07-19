@@ -38,8 +38,10 @@ jobs:
       - name: Install dependencies
         run: pip install ".[gui]" pyinstaller pytest
 
+      # python -m puts the repo root on sys.path, which
+      # tests/test_integration.py needs to import the root main.py
       - name: Run test suite
-        run: pytest -q
+        run: python -m pytest -q
 
       - name: Install QtWebEngine runtime libraries (Linux)
         if: runner.os == 'Linux'
