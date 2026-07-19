@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
-import folium
 
 NM = 1852.0
 
@@ -181,99 +180,3 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
         ax_att.legend(fontsize=8)
 
     return fig
-
-
-def build_folium_map(truth, pos_runs, lat_runs, lon_runs, n_trials):
-    """Builds an interactive Folium map of the Monte Carlo trial tracks.
-
-    Plots sampled trial tracks, a 95th-percentile horizontal error
-    envelope polygon, and the truth track, with periodic time/error
-    markers along the truth track. Does not call .save() -- the caller
-    decides the output path.
-
-    Args:
-        truth: Truth trajectory object exposing pos_n, lat, lon, and t.
-        pos_runs: NED position per Monte Carlo trial, shape
-            (n_trials, M, 3) [m].
-        lat_runs: Geodetic latitude per trial, shape (n_trials, M)
-            [rad].
-        lon_runs: Geodetic longitude per trial, shape (n_trials, M)
-            [rad].
-        n_trials: Number of Monte Carlo trials represented in
-            pos_runs.
-
-    Returns:
-        folium.Map: The assembled interactive map.
-    """
-    P    = truth.pos_n
-    step = max(1, len(P) // 4000)
-
-    lat_deg = np.rad2deg(truth.lat)
-    lon_deg = np.rad2deg(truth.lon)
-
-    horiz_err = np.linalg.norm(pos_runs[:, :, :2] - P[None, :, :2], axis=2)
-    p95_horiz = np.percentile(horiz_err, 95, axis=0)
-
-    # Perpendicular envelope computed directly in geographic space.
-    # Convert track gradients to approximate metres so the normal direction
-    # is correct, then convert the resulting offset back to degrees.
-    dlat_m = np.gradient(lat_deg) * 111320.0
-    dlon_m = np.gradient(lon_deg) * 111320.0 * np.cos(np.deg2rad(lat_deg))
-    seg_len = np.hypot(dlat_m, dlon_m) + 1e-6
-    perp_lat = -dlon_m / seg_len
-    perp_lon  =  dlat_m / seg_len
-
-    upper_lat = lat_deg + p95_horiz * perp_lat / 111320.0
-    upper_lon = lon_deg + p95_horiz * perp_lon / (111320.0 * np.cos(np.deg2rad(lat_deg)))
-    lower_lat = lat_deg - p95_horiz * perp_lat / 111320.0
-    lower_lon = lon_deg - p95_horiz * perp_lon / (111320.0 * np.cos(np.deg2rad(lat_deg)))
-
-    mid = len(lat_deg) // 2
-    fmap = folium.Map(location=[lat_deg[mid], lon_deg[mid]], zoom_start=9)
-
-    for i in range(min(6, n_trials)):
-        run_lat = np.rad2deg(lat_runs[i, ::step])
-        run_lon = np.rad2deg(lon_runs[i, ::step])
-        folium.PolyLine(
-            list(zip(run_lat.tolist(), run_lon.tolist())),
-            color='steelblue', weight=1, opacity=0.30,
-        ).add_to(fmap)
-
-    env_coords = (
-        list(zip(upper_lat[::step].tolist(), upper_lon[::step].tolist()))
-        + list(zip(lower_lat[::-step].tolist(), lower_lon[::-step].tolist()))
-    )
-    folium.Polygon(
-        locations=env_coords,
-        color='crimson', fill=True, fill_color='crimson', fill_opacity=0.30,
-        tooltip='95th pct envelope',
-    ).add_to(fmap)
-
-    folium.PolyLine(
-        list(zip(lat_deg[::step].tolist(), lon_deg[::step].tolist())),
-        color='navy', weight=2, opacity=1.0, tooltip='Truth track',
-    ).add_to(fmap)
-
-    # Time/error markers along the envelope -- the band's width-vs-distance
-    # shape alone doesn't reveal the underlying time-domain growth (it's
-    # quadratic early, flattens near the Schuler half-period, then resumes),
-    # so call out elapsed time and the current 95th-pct value explicitly.
-    t_min = truth.t / 60.0
-    marker_interval_min = 5.0
-    next_t = 0.0
-    for k in range(len(t_min)):
-        if t_min[k] >= next_t:
-            folium.CircleMarker(
-                location=[lat_deg[k], lon_deg[k]],
-                radius=4, color='black', weight=1,
-                fill=True, fill_color='white', fill_opacity=0.9,
-                popup=folium.Popup(
-                    f"t = {t_min[k]:.1f} min<br>"
-                    f"95th-pct error: {p95_horiz[k]:.0f} m "
-                    f"({p95_horiz[k]/NM:.2f} nm)",
-                    max_width=200,
-                ),
-            ).add_to(fmap)
-            next_t += marker_interval_min
-
-    return fmap

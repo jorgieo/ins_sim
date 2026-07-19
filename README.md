@@ -53,7 +53,7 @@ flowchart LR
 
     subgraph EVAL["evaluation/ — Monte Carlo + plots"]
         MC["monte_carlo.run_monte_carlo()"]
-        VIZ["visualization.build_summary_figure()<br/>build_folium_map()"]
+        VIZ["visualization.build_summary_figure()<br/>gui/figures.py (plotly tabs + map)"]
         OUT --> MC --> VIZ
     end
 

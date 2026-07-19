@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from types import SimpleNamespace
 
 import numpy as np
 import matplotlib.pyplot as plt
@@ -8,7 +9,8 @@ from ins_sim.trajectory.kinematics import build_trajectory
 from ins_sim.sensors.imu import IMUSpec, load_imu_spec
 from ins_sim.navigation.strapdown import strapdown_navgrade
 from ins_sim.evaluation.monte_carlo import run_monte_carlo, percentile_envelope
-from ins_sim.evaluation.visualization import build_summary_figure, build_folium_map
+from ins_sim.evaluation.visualization import build_summary_figure
+from ins_sim.gui.figures import figure_map
 from ins_sim.config import default_trajectory_path, default_imu_spec_path
 
 NM = 1852.0
@@ -141,12 +143,15 @@ def main():
     print(f"Monte Carlo simulation time: {int(hours)}h {int(minutes)}m {int(seconds)}s")
 
     fig  = build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials)
-    fmap = build_folium_map(truth, pos_runs, lat_runs, lon_runs, n_trials)
+    fmap = figure_map(SimpleNamespace(
+        truth=truth, pos_runs=pos_runs, lat_runs=lat_runs,
+        lon_runs=lon_runs, n_trials=n_trials))
 
     maps_dir = os.path.join(os.path.dirname(__file__), "maps")
     os.makedirs(maps_dir, exist_ok=True)
     map_path = os.path.join(maps_dir, "trajectory_map.html")
-    fmap.save(map_path)
+    fmap.write_html(map_path, include_plotlyjs=True,
+                    config={"scrollZoom": True})
     print(f"Interactive map saved: {map_path}")
 
     plt.show()

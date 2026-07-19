@@ -13,7 +13,7 @@ dependencies = [
     "pyyaml",
     "matplotlib",
     "seaborn",
-    "folium",
+    "plotly>=5.24",
 ]
 
 [project.optional-dependencies]
