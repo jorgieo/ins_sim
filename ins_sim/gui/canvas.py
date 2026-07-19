@@ -19,6 +19,7 @@ from PySide6.QtWidgets import QLabel, QTabWidget, QVBoxLayout, QWidget
 
 GRID_KW = dict(color="#dddddd", linewidth=0.8)
 MAX_PLOT_POINTS = 4000
+NM = 1852.0
 
 
 def _step(n: int) -> int:
@@ -65,6 +66,7 @@ class VisualizationPanel(QTabWidget):
             ("attitude_errors", "Attitude Errors", self._figure_attitude_errors),
             ("velocity_errors", "Velocity Errors", self._figure_velocity_errors),
             ("position_errors", "Position Errors", self._figure_position_errors),
+            ("cep",             "CEP",             self._figure_cep),
         ]
         for slug, title, builder in builders:
             if enabled.get(slug, False):
@@ -167,6 +169,36 @@ class VisualizationPanel(QTabWidget):
             [(0, "North velocity error"), (1, "East velocity error"),
              (2, "Down velocity error")],
             "m/s")
+        return fig
+
+    def _figure_cep(self, result) -> Figure:
+        """Per-run horizontal error and ensemble CEP, in NM vs decimal hours."""
+        truth = result.truth
+        t_hr = truth.t / 3600.0
+        horiz_err_nm = np.linalg.norm(
+            result.pos_runs[:, :, :2] - truth.pos_n[None, :, :2], axis=2) / NM
+        cep = np.percentile(horiz_err_nm, 50, axis=0)
+
+        fig = Figure(layout="constrained")
+        ax = fig.add_subplot()
+        ax.plot(t_hr, horiz_err_nm.T, color="steelblue", alpha=0.25, lw=0.6)
+        ax.plot([], [], color="steelblue", lw=1.0, label="Individual runs")
+        ax.plot(t_hr, cep, color="navy", lw=2.0, label="CEP (50th pct)")
+        ax.fill_between(t_hr, 0, cep, color="steelblue", alpha=0.15)
+
+        # Linear drift-rate fit over the first hour, as in the summary
+        # figure's CEP panel -- slope lands directly in NM/hr here.
+        mask = t_hr <= 1.0
+        if mask.sum() >= 2:
+            coeffs = np.polyfit(t_hr[mask], cep[mask], 1)
+            ax.plot(t_hr, np.polyval(coeffs, t_hr), "--", color="darkorange",
+                    lw=1.8, label=f"Linear fit  {coeffs[0]:.2f} NM/hr")
+            ax.axvline(1.0, color="gray", lw=0.8, linestyle=":")
+        ax.set_xlabel("Time (hr)")
+        ax.set_ylabel("Horizontal error (NM)")
+        ax.set_title(f"Circular Error Probable — {result.n_trials} runs")
+        ax.legend()
+        _style_axes(ax)
         return fig
 
     def _figure_position_errors(self, result) -> Figure:

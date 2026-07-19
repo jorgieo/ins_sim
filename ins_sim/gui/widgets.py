@@ -34,6 +34,7 @@ VISUALIZATION_CHOICES = {
     "attitude_errors":  "Attitude/Euler Angle Errors",
     "velocity_errors":  "Velocity Errors",
     "position_errors":  "Position Errors",
+    "cep":              "Circular Error Probable",
 }
 
 
