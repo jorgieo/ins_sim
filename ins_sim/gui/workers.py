@@ -93,10 +93,13 @@ class SimulationWorker(QObject):
         self.log_message.emit(f"Loading IMU spec: {Path(imu_spec_path).name}")
         spec = load_imu_spec(str(imu_spec_path))
 
-        self.log_message.emit(f"Running {n_trials} Monte Carlo trials...")
+        baro_aiding = self._config.get("baro_aiding", True)
+        vertical = "baro-damped" if baro_aiding else "free-inertial"
+        self.log_message.emit(f"Running {n_trials} Monte Carlo trials "
+                              f"({vertical} vertical channel)...")
         pos_runs, euler_runs, lat_runs, lon_runs, vel_runs = run_monte_carlo(
             truth, spec, n_trials=n_trials, seed=self._seed,
-            progress_callback=self._on_progress)
+            progress_callback=self._on_progress, baro_aiding=baro_aiding)
         r95 = percentile_envelope(pos_runs, truth.pos_n, q=95)
 
         elapsed = time.monotonic() - start

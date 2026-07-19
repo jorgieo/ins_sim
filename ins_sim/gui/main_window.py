@@ -12,6 +12,7 @@ from PySide6.QtCore import QThread, Signal
 from PySide6.QtGui import QFontDatabase
 from PySide6.QtWidgets import (
     QApplication,
+    QCheckBox,
     QFormLayout,
     QGroupBox,
     QHBoxLayout,
@@ -68,6 +69,12 @@ class MainWindow(QMainWindow):
             file_filter=is_imu_spec_yaml)
         self.iterations_spinbox = IterationsSpinBox()
         self.dt_spinbox = DtSpinBox()
+        self.baro_aiding_checkbox = QCheckBox("Baro altitude aiding")
+        self.baro_aiding_checkbox.setChecked(True)
+        self.baro_aiding_checkbox.setToolTip(
+            "Checked: baro-damped vertical channel (third-order loop on "
+            "truth altitude).\nUnchecked: free-inertial vertical channel — "
+            "inherently unstable, altitude error diverges.")
         self.visualization_options = VisualizationOptions()
 
         trajectory_group = QGroupBox("Trajectory")
@@ -79,6 +86,7 @@ class MainWindow(QMainWindow):
         simulation_layout.addRow("IMU spec:", self.imu_spec_selector)
         simulation_layout.addRow("Monte Carlo iterations:", self.iterations_spinbox)
         simulation_layout.addRow("Time step (dt):", self.dt_spinbox)
+        simulation_layout.addRow("", self.baro_aiding_checkbox)
 
         self.run_button = QPushButton("Run Simulation")
         self.progress_bar = QProgressBar()
@@ -115,6 +123,7 @@ class MainWindow(QMainWindow):
         self.imu_spec_selector.fileSelected.connect(self._on_config_changed)
         self.iterations_spinbox.valueChanged.connect(self._on_config_changed)
         self.dt_spinbox.valueChanged.connect(self._on_config_changed)
+        self.baro_aiding_checkbox.toggled.connect(self._on_config_changed)
         self.visualization_options.optionsChanged.connect(self._on_config_changed)
         self.run_button.clicked.connect(self._on_run_clicked)
 
@@ -124,13 +133,15 @@ class MainWindow(QMainWindow):
         Returns:
             dict: ``trajectory_path`` (str | None), ``imu_spec_path``
                 (str | None), ``n_iterations`` (int), ``dt_s`` (float),
-                and ``visualizations`` ({key: bool}).
+                ``baro_aiding`` (bool), and ``visualizations``
+                ({key: bool}).
         """
         return {
             "trajectory_path": self.file_selector.current_path(),
             "imu_spec_path": self.imu_spec_selector.current_path(),
             "n_iterations": self.iterations_spinbox.value(),
             "dt_s": self.dt_spinbox.value(),
+            "baro_aiding": self.baro_aiding_checkbox.isChecked(),
             "visualizations": self.visualization_options.selected_options(),
         }
 
@@ -173,6 +184,7 @@ class MainWindow(QMainWindow):
     def _set_controls_enabled(self, enabled: bool) -> None:
         for widget in (self.file_selector, self.imu_spec_selector,
                        self.iterations_spinbox, self.dt_spinbox,
+                       self.baro_aiding_checkbox,
                        self.visualization_options, self.run_button):
             widget.setEnabled(enabled)
 

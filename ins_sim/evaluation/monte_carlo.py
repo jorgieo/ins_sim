@@ -8,7 +8,7 @@ from ins_sim.navigation.strapdown import strapdown_navgrade
 
 def run_monte_carlo(truth, spec: IMUSpec,
                     n_trials: int, seed: int = 0,
-                    progress_callback=None):
+                    progress_callback=None, baro_aiding: bool = True):
     """Runs n_trials independent noisy-IMU strapdown realizations.
 
     Args:
@@ -21,6 +21,10 @@ def run_monte_carlo(truth, spec: IMUSpec,
         progress_callback: Optional callable invoked as
             progress_callback(n_done, n_trials) after each trial
             completes. Defaults to None (no reporting).
+        baro_aiding: When True the strapdown runs with the baro-damped
+            vertical channel (truth altitude as the baro reference);
+            when False the vertical channel is free-inertial and
+            diverges. Defaults to True.
 
     Returns:
         tuple: (pos_runs, euler_runs, lat_runs, lon_runs, vel_runs)
@@ -60,7 +64,8 @@ def run_monte_carlo(truth, spec: IMUSpec,
         )
         omega_m, f_m = generate_imu_samples(truth, spec, rng_i)
         pos_ned, lat_i, lon_i, _, vel_i, quat_i = strapdown_navgrade(
-            omega_m, f_m, init_state, truth.dt, alt_truth=truth.alt)
+            omega_m, f_m, init_state, truth.dt,
+            alt_truth=truth.alt if baro_aiding else None)
         pos_runs[i]   = pos_ned
         lat_runs[i]   = lat_i
         lon_runs[i]   = lon_i

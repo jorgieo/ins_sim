@@ -4,7 +4,8 @@ from scipy.spatial.transform import Rotation as Rot
 from ins_sim.core.earth_model import earth_rate_n, transport_rate_n, normal_gravity, wgs84_radii
 
 
-def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
+def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None,
+                       baro_tau=100.0):
     """Runs local-level (NED) strapdown integration with rotating-Earth corrections.
 
     Per step:
@@ -27,11 +28,20 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
             and q_b2n_0 is the initial body-to-NED quaternion in
             scalar-last form (shape (4,)).
         dt: Sample interval [s].
-        alt_truth: Optional truth altitude array, shape (M,) [m MSL].
-            When provided it is used as barometric altitude aiding,
-            which stabilises the inherently unstable vertical channel
-            of a free-inertial navigator (eigenvalue +ωs without
-            aiding). Defaults to None.
+        alt_truth: Optional barometric altitude array, shape (M,)
+            [m MSL]. When provided it drives a third-order baro-damped
+            vertical channel: the INS-minus-baro altitude residual
+            feeds proportional corrections into the altitude and
+            vertical-velocity updates plus an integral state that
+            absorbs steady vertical accelerometer error. This
+            stabilises the inherently unstable vertical channel of a
+            free-inertial navigator (the +√(2g/R) eigenvalue from the
+            free-air gravity gradient). When None the vertical channel
+            runs free-inertial and diverges accordingly. Defaults to
+            None.
+        baro_tau: Time constant of the baro-damping loop [s]; the
+            three gains place a triple pole at −1/baro_tau. Only used
+            when alt_truth is given. Defaults to 100.0.
 
     Returns:
         tuple: (pos_ned, lat, lon, alt, vel, quat) where:
@@ -55,6 +65,14 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
     alt0 = alt[0]
     R_M0, R_N0 = wgs84_radii(lat0)      # loop-invariant: lat0 never changes
     g_n = np.zeros(3)                  # reused each iteration
+
+    # Third-order baro-damping gains: triple pole at -1/baro_tau for the
+    # (alt error, vertical-velocity error, accel-error integrator) loop.
+    if alt_truth is not None:
+        K1 = 3.0 / baro_tau
+        K2 = 3.0 / baro_tau ** 2
+        K3 = 1.0 / baro_tau ** 3
+        acc_corr = 0.0                 # integral state [m/s²], → -δa_D
 
     for k in range(M - 1):
         # --- 1. Local rotating-Earth quantities at step k --------------
@@ -81,6 +99,13 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
         # --- 5. Rotating-frame velocity update ------------------------
         coriolis = np.cross(2.0 * w_ie + w_en, vel[k])
         a_n      = f_n_k - coriolis + g_n
+        # Baro damping: the altitude residual corrects vertical velocity
+        # (K2) and updates the accel-error integrator (K3); positive
+        # residual (INS high) commands positive Down velocity.
+        if alt_truth is not None:
+            baro_err = alt[k] - alt_truth[k]
+            a_n[2]  += K2 * baro_err + acc_corr
+            acc_corr += K3 * baro_err * dt
         vel[k+1] = vel[k] + a_n * dt
 
         # --- 6. Geodetic position (forward Euler — matches truth) -----
@@ -89,9 +114,8 @@ def strapdown_navgrade(omega_meas, f_meas, init_state, dt, alt_truth=None):
         lon[k+1] = lon[k] + (vel[k][1] /
                              ((R_N + alt[k]) * np.cos(lat[k]))) * dt
         alt[k+1] = alt[k] - vel[k][2] * dt
-        # Barometric altitude aiding: stabilises the vertical channel
         if alt_truth is not None:
-            alt[k+1] = alt_truth[k+1]
+            alt[k+1] -= K1 * baro_err * dt
 
         # Local NED position relative to start (for plotting against truth)
         # Linearized lat/lon-to-meters using current latitude radii.
