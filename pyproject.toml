@@ -22,6 +22,7 @@ dependencies = [
 [project.optional-dependencies]
 dev = ["pytest", "pyinstaller"]
 gui = ["PySide6"]
+docs = ["mkdocs", "mkdocs-material"]
 
 [tool.setuptools.packages.find]
 include = ["ins_sim*"]

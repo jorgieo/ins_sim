@@ -1,21 +1,93 @@
 # ins_sim
 
+**Inertial Navigation Simulation & GUI** — an open-source 6-DOF, WGS-84
+strapdown INS Monte Carlo simulator with a PySide6 desktop front end.
+
+[Documentation](https://jorgieo.github.io/ins_sim/) ·
+[Latest release](https://github.com/jorgieo/ins_sim/releases/latest) ·
+[MIT License](LICENSE)
+
 ## Overview
 
-`ins_sim` is a **6-DOF, WGS-84 inertial navigation simulation**. It generates a
-truth flight trajectory, derives the gyro and accelerometer outputs a perfect
-IMU would produce along that trajectory (`ω_ib_b`, `f_b`), corrupts them with
-a navigation-grade IMU error model (angular/velocity random walk, Gauss-Markov
-bias drift, turn-on bias repeatability), and runs a strapdown mechanization to
-recover position, velocity, and attitude. A Monte Carlo ensemble over
-independent noise realizations characterizes how navigation error grows over
-time for a given IMU grade.
+`ins_sim` generates a truth flight trajectory, derives the gyro and
+accelerometer outputs a perfect IMU would produce along that trajectory
+(`ω_ib_b`, `f_b`), corrupts them with a navigation-grade IMU error model
+(angular/velocity random walk, Gauss-Markov bias drift, turn-on bias
+repeatability), and runs a strapdown mechanization to recover position,
+velocity, and attitude. A Monte Carlo ensemble over independent noise
+realizations characterizes how navigation error grows over time for a given
+IMU grade.
 
 The simulation models rotating-Earth effects explicitly: Earth rate, transport
 (craft) rate, WGS-84 radii of curvature, and Somigliana normal gravity are all
 evaluated at the current latitude/altitude at every step, so the strapdown
-mechanization is consistent with true inertial navigation rather than a
-flat, non-rotating Earth approximation.
+mechanization is consistent with true inertial navigation rather than a flat,
+non-rotating Earth approximation. The vertical channel runs either baro-damped
+(third-order fixed-gain loop) or free-inertial, where it exhibits the expected
+instability.
+
+Results are explored in a desktop GUI whose visualizations are fully
+interactive plotly pages rendered in-app.
+
+## Download
+
+Prebuilt portable bundles for **Windows** and **Linux** are attached to every
+[GitHub Release](https://github.com/jorgieo/ins_sim/releases/latest) — no
+Python installation required:
+
+- `ins_sim-vX.Y.Z-windows-x86_64.zip` — extract, then run `ins_sim.exe`
+  inside the extracted folder.
+- `ins_sim-vX.Y.Z-linux-x86_64.tar.gz` — `tar xzf`, then run
+  `./ins_sim/ins_sim`.
+
+See the [Download & Install](https://jorgieo.github.io/ins_sim/download/)
+page for platform notes (Windows SmartScreen, Linux runtime libraries).
+
+## The GUI
+
+Launch from source with:
+
+```bash
+pip install ".[gui]"
+python -m ins_sim.gui
+```
+
+- Select a mission trajectory and IMU error specification (packaged YAMLs or
+  your own files with the same schema).
+- Set the trial count, integration time step, and baro altitude aiding
+  (uncheck it to run the vertical channel free-inertial).
+- Run the Monte Carlo ensemble in the background with live log output.
+- Explore the results in interactive plotly tabs:
+  - **CEP** — horizontal error growth for every trial, ensemble CEP, linear
+    fit, and a percentile table by hour.
+  - **Attitude / Velocity / Position errors** — ensemble mean and 3σ bands
+    per axis.
+  - **3D Trajectory** — all trial tracks, the truth track, and a 95th
+    percentile error tube.
+  - **Map** — ground track over OpenStreetMap tiles with a horizontal error
+    envelope (map tiles are the only feature that needs an internet
+    connection).
+
+## CLI
+
+A scripted run of the same engine (20-trial ensemble, matplotlib summary
+figure, standalone ground-track map HTML):
+
+```bash
+pip install -e ".[dev]"
+python main.py
+```
+
+To use a different mission profile or IMU grade, point `build_trajectory` /
+`load_imu_spec` at your own YAML files (same schema as the defaults):
+
+```python
+from ins_sim.trajectory.kinematics import build_trajectory
+from ins_sim.sensors.imu import load_imu_spec
+
+truth, v_sprint, R_turn = build_trajectory("path/to/your_mission.yaml", dt=0.1)
+spec = load_imu_spec("path/to/your_imu_spec.yaml")
+```
 
 ## Architecture
 
@@ -87,41 +159,31 @@ flowchart LR
   time (`build_trajectory`, `load_imu_spec`) — no non-SI unit crosses into the
   simulation core.
 
-## Quick Start
+## Development
 
 ```bash
-# Install in editable mode with dev dependencies
-pip install -e ".[dev]"
+# Editable install with dev dependencies
+pip install -e ".[dev,gui]"
 
-# Run the default simulation: BQN departure trajectory + navigation-grade IMU
-python main.py
+# Test suite
+python -m pytest
+
+# Local desktop bundle (onedir, at dist/ins_sim/)
+pyinstaller ins_sim.spec --noconfirm
+
+# Documentation site (http://127.0.0.1:8000)
+pip install ".[docs]"
+mkdocs serve
 ```
 
-`main.py` builds the truth trajectory from
-[`ins_sim/config/bqn_departure.yaml`](ins_sim/config/bqn_departure.yaml), loads
-IMU error parameters from
-[`ins_sim/config/imu_spec.yaml`](ins_sim/config/imu_spec.yaml), runs a 20-trial
-Monte Carlo ensemble, then displays a summary figure and saves an interactive
-ground-track map to `maps/trajectory_map.html`.
-
-To use a different mission profile or IMU grade, point `build_trajectory` /
-`load_imu_spec` at your own YAML files (same schema as the defaults):
-
-```python
-from ins_sim.trajectory.kinematics import build_trajectory
-from ins_sim.sensors.imu import load_imu_spec
-
-truth, v_sprint, R_turn = build_trajectory("path/to/your_mission.yaml", dt=0.1)
-spec = load_imu_spec("path/to/your_imu_spec.yaml")
-```
-
-Run the test suite with:
-
-```bash
-pytest
-```
+Releases are automated: pushing a `v*` tag triggers the
+[release pipeline](.github/workflows/release.yml), which builds the Windows
+and Linux bundles, smoke-tests each frozen app with a real simulation run,
+and publishes them to a GitHub Release. Pushing a `release/*` branch performs
+the same build as a dry run (workflow artifacts, no release). The
+[docs workflow](.github/workflows/docs.yml) deploys the documentation site to
+GitHub Pages on every push to `main`.
 
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
-

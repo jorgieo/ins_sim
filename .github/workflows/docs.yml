@@ -1,0 +1,43 @@
+# Documentation site deployment.
+#
+# Every push to main rebuilds the MkDocs site and publishes it to the
+# gh-pages branch, which GitHub Pages serves at
+# https://jorgieo.github.io/ins_sim/
+
+name: Docs
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: docs-deploy
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install documentation dependencies
+        run: pip install mkdocs mkdocs-material
+
+      # Strict build first: broken nav or links fail the run before
+      # anything is published.
+      - name: Validate site
+        run: mkdocs build --strict
+
+      - name: Deploy to GitHub Pages
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          mkdocs gh-deploy --force
