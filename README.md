@@ -3,9 +3,17 @@
 **Inertial Navigation Simulation & GUI** — an open-source 6-DOF, WGS-84
 strapdown INS Monte Carlo simulator with a PySide6 desktop front end.
 
+[![Release](https://github.com/jorgieo/ins_sim/actions/workflows/release.yml/badge.svg)](https://github.com/jorgieo/ins_sim/actions/workflows/release.yml)
+[![Docs](https://github.com/jorgieo/ins_sim/actions/workflows/docs.yml/badge.svg)](https://github.com/jorgieo/ins_sim/actions/workflows/docs.yml)
+[![Latest release](https://img.shields.io/github/v/release/jorgieo/ins_sim)](https://github.com/jorgieo/ins_sim/releases/latest)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 [Documentation](https://jorgieo.github.io/ins_sim/) ·
-[Latest release](https://github.com/jorgieo/ins_sim/releases/latest) ·
-[MIT License](LICENSE)
+[Download](https://github.com/jorgieo/ins_sim/releases/latest)
+
+| Desktop GUI | Monte Carlo output |
+| :---------: | :----------------: |
+| ![Main window](docs/assets/gui/main_window.png) | ![3D trajectory with error tube](docs/assets/plots/3d_trajectory.png) |
 
 ## Overview
 
@@ -70,12 +78,18 @@ python -m ins_sim.gui
 
 ## CLI
 
-A scripted run of the same engine (20-trial ensemble, matplotlib summary
-figure, standalone ground-track map HTML):
+A scripted run of the same engine (matplotlib summary figure plus a
+standalone ground-track map HTML):
 
 ```bash
 pip install -e ".[dev]"
+
+# Default run: packaged BQN departure mission, nav-grade IMU, 20 trials
 python main.py
+
+# Custom mission, IMU spec, and ensemble size
+python main.py --config path/to/mission.yaml --imu-spec path/to/imu.yaml \
+               --trials 100 --dt 0.1 --seed 7
 ```
 
 To use a different mission profile or IMU grade, point `build_trajectory` /
@@ -90,6 +104,15 @@ spec = load_imu_spec("path/to/your_imu_spec.yaml")
 ```
 
 ## Architecture
+
+| Module | Role | Key implementations |
+| ------ | ---- | ------------------- |
+| `ins_sim/core` | Earth & gravity model | WGS-84 ellipsoid, radii of curvature, Earth/transport rates, Somigliana gravity + free-air correction |
+| `ins_sim/trajectory` | Truth generation | Phase-based mission builder (ground roll, takeoff, climb, waypoints, loiters, speed ramps), ISA Mach conversion |
+| `ins_sim/sensors` | IMU error model | ARW/VRW white noise, Gauss-Markov bias instability, turn-on repeatability, scale factor & misalignment |
+| `ins_sim/navigation` | Strapdown mechanization | Quaternion attitude propagation, Coriolis/transport-rate compensation, baro-damped or free-inertial vertical channel |
+| `ins_sim/evaluation` | Monte Carlo statistics | Empirical ensemble runs, percentile envelopes, CEP |
+| `ins_sim/gui` | Desktop interface | PySide6 + QThread background workers, interactive plotly views in QtWebEngine |
 
 Data flows from truth generation, through noise injection, into the strapdown
 navigator, and is summarized by the Monte Carlo / evaluation layer:

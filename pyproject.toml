@@ -20,7 +20,7 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest", "pyinstaller"]
+dev = ["pytest", "pyinstaller", "kaleido"]
 gui = ["PySide6"]
 docs = ["mkdocs", "mkdocs-material"]
 

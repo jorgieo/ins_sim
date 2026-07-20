@@ -1,3 +1,4 @@
+import argparse
 import os
 from datetime import datetime
 from types import SimpleNamespace
@@ -109,32 +110,61 @@ def print_self_consistency_summary(truth, zero_err):
           f"Max |f_b|: {np.linalg.norm(truth.f_b, axis=1).max():.2f} m/s²")
 
 
-def main():
+def parse_args(argv=None):
+    """Parses the headless CLI arguments (defaults preserve legacy behavior).
+
+    Args:
+        argv: Argument list, or None for sys.argv.
+
+    Returns:
+        argparse.Namespace: config, imu_spec, trials, dt, seed.
+    """
+    parser = argparse.ArgumentParser(
+        description="Headless INS Monte Carlo run: summary figure + "
+                    "interactive ground-track map.")
+    parser.add_argument("--config", default=str(default_trajectory_path()),
+                        help="Trajectory mission YAML "
+                             "(default: packaged BQN departure)")
+    parser.add_argument("--imu-spec", default=str(default_imu_spec_path()),
+                        help="IMU error spec YAML "
+                             "(default: packaged navigation-grade spec)")
+    parser.add_argument("--trials", type=int, default=20,
+                        help="Monte Carlo trial count (default 20)")
+    parser.add_argument("--dt", type=float, default=0.1,
+                        help="Integration time step [s] (default 0.1)")
+    parser.add_argument("--seed", type=int, default=42,
+                        help="Master RNG seed (default 42)")
+    return parser.parse_args(argv)
+
+
+def main(argv=None):
     """Runs the end-to-end INS Monte Carlo simulation and renders its outputs.
 
-    Builds the truth trajectory from the default mission YAML, verifies
-    truth IMU self-consistency, runs the noisy-IMU Monte Carlo ensemble
-    using the default IMU spec, then renders and saves the summary
-    figure and an interactive Folium map.
+    Builds the truth trajectory from the mission YAML, verifies truth
+    IMU self-consistency, runs the noisy-IMU Monte Carlo ensemble, then
+    renders the summary figure and saves an interactive ground-track
+    map.
+
+    Args:
+        argv: CLI argument list, or None for sys.argv.
 
     Returns:
         None.
     """
+    args = parse_args(argv)
     simulation_start = datetime.now()
 
-    dt       = 0.1      # 10 Hz — adequate for long-range INS simulation
-    n_trials = 20
-
-    truth, v_sprint, R_turn = build_trajectory(str(default_trajectory_path()), dt=dt)
+    truth, v_sprint, R_turn = build_trajectory(args.config, dt=args.dt)
     print_trajectory_summary(truth)
 
     # Diagnostic: zero-noise strapdown verifies truth IMU self-consistency
     zero_err, _ = run_self_consistency_check(truth, truth.dt)
     print_self_consistency_summary(truth, zero_err)
 
-    spec = load_imu_spec(str(default_imu_spec_path()))
+    n_trials = args.trials
+    spec = load_imu_spec(args.imu_spec)
     pos_runs, euler_runs, lat_runs, lon_runs, r95 = simulate(
-        truth, spec, n_trials=n_trials, seed=42)
+        truth, spec, n_trials=n_trials, seed=args.seed)
     print(f"95th-pct error  start: {r95[0]:6.3f} m   end: {r95[-1]:6.1f} m")
 
     elapsed = datetime.now() - simulation_start
