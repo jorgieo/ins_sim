@@ -185,14 +185,6 @@ pip install ".[docs]"
 mkdocs serve
 ```
 
-Releases are automated: pushing a `v*` tag triggers the
-[release pipeline](.github/workflows/release.yml), which builds the Windows
-and Linux bundles, smoke-tests each frozen app with a real simulation run,
-and publishes them to a GitHub Release. Pushing a `release/*` branch performs
-the same build as a dry run (workflow artifacts, no release). The
-[docs workflow](.github/workflows/docs.yml) deploys the documentation site to
-GitHub Pages on every push to `main`.
-
 ## License
 
 This project is licensed under the [MIT License](LICENSE).
