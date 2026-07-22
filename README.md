@@ -13,7 +13,7 @@ strapdown INS Monte Carlo simulator with a PySide6 desktop front end.
 
 | Desktop GUI | Monte Carlo output |
 | :---------: | :----------------: |
-| ![Main window](docs/assets/gui/main_window.png) | ![3D trajectory with error tube](docs/assets/plots/3d_trajectory.png) |
+| ![Main window](docs/assets/gui/main_window.png) | ![Circular Error Probable Results](docs/assets/plots/cep.png) |
 
 ## Overview
 
