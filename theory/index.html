@@ -1,0 +1,1046 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source desktop simulation engine for IMU trajectory generation and Monte Carlo navigation error evaluation">
+      
+      
+      
+        <link rel="canonical" href="https://jorgieo.github.io/ins_sim/theory/">
+      
+      
+        <link rel="prev" href="../guide/">
+      
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Theory & Math - Inertial Navigation Simulation & GUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#theory-math" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="Inertial Navigation Simulation &amp; GUI" class="md-header__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Inertial Navigation Simulation & GUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Theory & Math
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href=".." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../download/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Download & Install
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../guide/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  User Guide
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    <li class="md-tabs__item md-tabs__item--active">
+      <a href="./" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Theory & Math
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="Inertial Navigation Simulation &amp; GUI" class="md-nav__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Inertial Navigation Simulation & GUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & Install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../guide/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User Guide
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wgs-84-earth-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WGS-84 Earth model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gravity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gravity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strapdown-mechanization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strapdown mechanization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imu-stochastic-error-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMU stochastic error model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ins-error-dynamics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INS error dynamics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INS error dynamics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schuler-oscillation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schuler oscillation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vertical-channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vertical channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monte-carlo-error-characterization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monte Carlo error characterization
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#wgs-84-earth-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        WGS-84 Earth model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#gravity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gravity
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#strapdown-mechanization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Strapdown mechanization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#imu-stochastic-error-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IMU stochastic error model
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ins-error-dynamics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        INS error dynamics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="INS error dynamics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#schuler-oscillation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Schuler oscillation
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#vertical-channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Vertical channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#monte-carlo-error-characterization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Monte Carlo error characterization
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="theory-math">Theory &amp; Math</h1>
+<p>This page documents the physics and mathematics <strong>as implemented</strong> in the
+simulator, with pointers to the modules that carry each formulation. Symbols:
+geodetic latitude <span class="arithmatex">\(\phi\)</span>, longitude <span class="arithmatex">\(\lambda\)</span>, altitude <span class="arithmatex">\(h\)</span>; NED
+navigation frame <span class="arithmatex">\(n\)</span>; body frame <span class="arithmatex">\(b\)</span>; body-to-NED rotation
+<span class="arithmatex">\(\mathbf{C}_b^n\)</span>.</p>
+<h2 id="wgs-84-earth-model">WGS-84 Earth model</h2>
+<p><em>Module: <code>ins_sim/core/earth_model.py</code></em></p>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Symbol</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Semi-major axis</td>
+<td><span class="arithmatex">\(a\)</span></td>
+<td>6 378 137.0 m</td>
+</tr>
+<tr>
+<td>Flattening</td>
+<td><span class="arithmatex">\(f\)</span></td>
+<td>1 / 298.257223563</td>
+</tr>
+<tr>
+<td>First eccentricity²</td>
+<td><span class="arithmatex">\(e^2 = f(2-f)\)</span></td>
+<td>6.694379990e−3</td>
+</tr>
+<tr>
+<td>Earth rotation rate</td>
+<td><span class="arithmatex">\(\omega_{ie}\)</span></td>
+<td>7.2921151467e−5 rad/s</td>
+</tr>
+</tbody>
+</table>
+<p>The radii of curvature at latitude <span class="arithmatex">\(\phi\)</span>:</p>
+<div class="arithmatex">\[
+R_N = \frac{a}{\sqrt{1 - e^2\sin^2\phi}},
+\qquad
+R_M = \frac{a\,(1 - e^2)}{\left(1 - e^2\sin^2\phi\right)^{3/2}}
+\]</div>
+<p>where <span class="arithmatex">\(R_N\)</span> (prime-vertical) governs east-west motion and <span class="arithmatex">\(R_M\)</span>
+(meridian) governs north-south motion.</p>
+<p>Earth rate and transport (craft) rate resolved in NED, both evaluated at the
+current state on every integration step:</p>
+<div class="arithmatex">\[
+\boldsymbol{\omega}_{ie}^n =
+\begin{bmatrix} \omega_{ie}\cos\phi \\ 0 \\ -\omega_{ie}\sin\phi \end{bmatrix},
+\qquad
+\boldsymbol{\omega}_{en}^n =
+\begin{bmatrix}
+  \dfrac{v_E}{R_N + h} \\[2ex]
+  \dfrac{-v_N}{R_M + h} \\[2ex]
+  \dfrac{-v_E\tan\phi}{R_N + h}
+\end{bmatrix}
+\]</div>
+<h2 id="gravity">Gravity</h2>
+<p>Normal gravity on the ellipsoid follows the Somigliana formula,</p>
+<div class="arithmatex">\[
+g_0(\phi) = g_e\,\frac{1 + k\sin^2\phi}{\sqrt{1 - e^2\sin^2\phi}},
+\qquad
+g_e = 9.7803253359~\text{m/s}^2,\quad k = 1.93185265241\times10^{-3},
+\]</div>
+<p>with a <strong>linear free-air altitude correction</strong> as implemented:</p>
+<div class="arithmatex">\[
+g(\phi, h) = g_0(\phi)\left(1 - \frac{2h}{a}\right)
+\]</div>
+<p>This first-order correction (<span class="arithmatex">\(\partial g/\partial h \approx -2g/a\)</span>) is
+accurate to about 1 µg below 10 km — well under the navigation-grade
+accelerometer bias — so the higher-order <span class="arithmatex">\(f\)</span>, <span class="arithmatex">\(m\)</span>, and <span class="arithmatex">\(h^2\)</span> terms of
+the full formula are deliberately omitted. The local gravity vector is
+<span class="arithmatex">\(\mathbf{g}^n = [0,\, 0,\, +g(\phi,h)]^T\)</span> (Down positive).</p>
+<h2 id="strapdown-mechanization">Strapdown mechanization</h2>
+<p><em>Module: <code>ins_sim/navigation/strapdown.py</code> (<code>strapdown_navgrade</code>)</em></p>
+<p>The mechanization integrates the classic NED navigation equations. In
+continuous form:</p>
+<div class="arithmatex">\[
+\dot{\mathbf{C}}_b^n = \mathbf{C}_b^n\,\boldsymbol{\Omega}_{ib}^b
+                     - \boldsymbol{\Omega}_{in}^n\,\mathbf{C}_b^n,
+\qquad
+\boldsymbol{\Omega} = [\boldsymbol{\omega}\times]
+\]</div>
+<div class="arithmatex">\[
+\dot{\mathbf{v}}^n = \mathbf{C}_b^n\,\mathbf{f}^b
+  - \left(2\boldsymbol{\omega}_{ie}^n + \boldsymbol{\omega}_{en}^n\right)
+    \times \mathbf{v}^n + \mathbf{g}^n
+\]</div>
+<div class="arithmatex">\[
+\dot{\phi} = \frac{v_N}{R_M + h}, \qquad
+\dot{\lambda} = \frac{v_E}{(R_N + h)\cos\phi}, \qquad
+\dot{h} = -v_D
+\]</div>
+<p>Discretely, each step <span class="arithmatex">\(k \to k+1\)</span> performs:</p>
+<ol>
+<li>Evaluate <span class="arithmatex">\(\boldsymbol{\omega}_{ie}^n\)</span>, <span class="arithmatex">\(\boldsymbol{\omega}_{en}^n\)</span>,
+   and <span class="arithmatex">\(g(\phi,h)\)</span> at the current state.</li>
+<li>Form the body rate relative to the navigation frame:
+   <span class="arithmatex">\(\boldsymbol{\omega}_{nb}^b =
+   \boldsymbol{\omega}_{ib}^b -
+   \mathbf{C}_n^b\left(\boldsymbol{\omega}_{ie}^n +
+   \boldsymbol{\omega}_{en}^n\right)\)</span>.</li>
+<li><strong>Attitude</strong> — advance by the <em>exact</em> rotation-vector exponential rather
+   than a first-order DCM update: the implementation stores attitude as a
+   scalar-last quaternion and right-multiplies by
+   <span class="arithmatex">\(\exp\!\left([\boldsymbol{\omega}_{nb}^b\,\Delta t\,\times]\right)\)</span>, which
+   is exactly the solution of the DCM differential equation above for a
+   constant rate over the step.</li>
+<li>Resolve specific force into NED: <span class="arithmatex">\(\mathbf{f}^n = \mathbf{C}_b^n\mathbf{f}^b\)</span>.</li>
+<li><strong>Velocity</strong> — forward-Euler step of the velocity equation, including the
+   Coriolis term <span class="arithmatex">\(\left(2\boldsymbol{\omega}_{ie}^n +
+   \boldsymbol{\omega}_{en}^n\right)\times\mathbf{v}^n\)</span>.</li>
+<li><strong>Position</strong> — forward-Euler step of the geodetic rates.</li>
+</ol>
+<p>The forward-Euler scheme is chosen deliberately to match the truth-side IMU
+derivation: feeding the truth <span class="arithmatex">\(\boldsymbol{\omega}_{ib}^b, \mathbf{f}^b\)</span>
+back through the mechanization reproduces the truth trajectory (the
+zero-noise self-consistency check in <code>main.py</code>).</p>
+<h2 id="imu-stochastic-error-model">IMU stochastic error model</h2>
+<p><em>Module: <code>ins_sim/sensors/imu.py</code> (<code>generate_imu_samples</code>)</em></p>
+<p>Each sensor triad's measurement is, per axis:</p>
+<div class="arithmatex">\[
+\tilde{\mathbf{y}}_k = (\mathbf{I} + \mathbf{M})\,\mathbf{y}_k
+  + \mathbf{b}_{r} + \mathbf{b}_{d,k} + \boldsymbol{\eta}_k
+\]</div>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Model</th>
+<th>Drawn</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(\mathbf{M}\)</span></td>
+<td>Scale factor on the diagonal, six independent misalignment angles off-diagonal</td>
+<td>once per trial</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathbf{b}_r\)</span></td>
+<td>Turn-on bias repeatability, <span class="arithmatex">\(\mathcal{N}(0, \sigma_{BR}^2)\)</span></td>
+<td>once per trial</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\mathbf{b}_{d,k}\)</span></td>
+<td>Bias instability: first-order Gauss-Markov</td>
+<td>every sample</td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\boldsymbol{\eta}_k\)</span></td>
+<td>ARW/VRW white noise</td>
+<td>every sample</td>
+</tr>
+</tbody>
+</table>
+<p>The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
+steady-state variance <span class="arithmatex">\(\sigma_{BI}^2\)</span> independent of the sample rate:</p>
+<div class="arithmatex">\[
+b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,
+\qquad a = e^{-\Delta t/\tau}
+\]</div>
+<p>The white-noise standard deviation per sample is <span class="arithmatex">\(\sigma_\eta =
+\mathrm{ARW}/\sqrt{\Delta t}\)</span> (VRW for the accelerometer), which makes the
+integrated angle (velocity) uncertainty grow as <span class="arithmatex">\(\mathrm{ARW}\cdot\sqrt{t}\)</span>
+independent of the sample rate.</p>
+<p>Each trial also draws an <strong>initial-alignment error</strong>: NED tilt and azimuth
+misalignments applied to the truth attitude,
+<span class="arithmatex">\(\mathbf{R}_0 = \exp([\boldsymbol{\delta}\times])\,\mathbf{R}_{0,\text{true}}\)</span>
+with <span class="arithmatex">\(\boldsymbol{\delta} = [\delta_N, \delta_E, \delta_D]\)</span>. Physically the
+tilts are limited by accelerometer bias over <span class="arithmatex">\(g\)</span> and the azimuth by the
+gyrocompass limit, east-gyro bias over <span class="arithmatex">\(\omega_{ie}\cos\phi\)</span>.</p>
+<h2 id="ins-error-dynamics">INS error dynamics</h2>
+<h3 id="schuler-oscillation">Schuler oscillation</h3>
+<p>Horizontal position/velocity/tilt errors are coupled through gravity and the
+Earth's curvature into the Schuler loop: a tilt error <span class="arithmatex">\(\delta\theta\)</span>
+misresolves gravity into horizontal acceleration <span class="arithmatex">\(g\,\delta\theta\)</span>, while
+the resulting position error re-tilts the computed local level by
+<span class="arithmatex">\(\delta p / R\)</span>. The result is a bounded oscillation with</p>
+<div class="arithmatex">\[
+\omega_s = \sqrt{\frac{g}{R}},
+\qquad
+T_s = 2\pi\sqrt{\frac{R}{g}} \approx 84.4~\text{min}
+\]</div>
+<p>visible as the dominant period in the North/East error channels:</p>
+<p><img alt="Position errors with 3-sigma bands" src="../assets/plots/position_error.png" /></p>
+<h3 id="vertical-channel">Vertical channel</h3>
+<p>The vertical channel is <strong>unstable</strong> in a free-inertial mechanization.
+Perturbing the altitude equation through the free-air gravity gradient gives</p>
+<div class="arithmatex">\[
+\delta\ddot{h} \approx \frac{2g}{R}\,\delta h + \delta a_D
+\quad\Longrightarrow\quad
+\lambda = \pm\sqrt{\frac{2g}{R}},
+\]</div>
+<p>an exponential divergence with e-folding time <span class="arithmatex">\(\sqrt{R/2g} \approx 570\)</span> s
+(≈9.5 min). Uncheck <em>Baro altitude aiding</em> in the GUI to observe it.</p>
+<p>With aiding enabled, the INS-minus-baro altitude residual drives a
+<strong>third-order damping loop</strong> acting on altitude, vertical velocity, and an
+integral state that absorbs steady vertical accelerometer error:</p>
+<div class="arithmatex">\[
+K_1 = \frac{3}{\tau}, \qquad
+K_2 = \frac{3}{\tau^2}, \qquad
+K_3 = \frac{1}{\tau^3}
+\]</div>
+<p>which places a triple pole at <span class="arithmatex">\(s = -1/\tau\)</span> — characteristic polynomial
+<span class="arithmatex">\((s + 1/\tau)^3\)</span> — with <span class="arithmatex">\(\tau = 100\)</span> s by default: well-damped, no
+residual oscillation, and steady accelerometer bias rejected by the
+integrator.</p>
+<h2 id="monte-carlo-error-characterization">Monte Carlo error characterization</h2>
+<p><em>Module: <code>ins_sim/evaluation/monte_carlo.py</code></em></p>
+<p>The simulator characterizes navigation error <strong>empirically</strong>: <span class="arithmatex">\(N\)</span>
+independent trials each draw their own turn-on biases, scale
+factor/misalignment matrices, Gauss-Markov histories, white-noise streams,
+and initial-alignment error, run the full nonlinear mechanization, and the
+ensemble is summarized statistically:</p>
+<ul>
+<li><strong>±3σ bands</strong> (attitude/velocity/position tabs): the pointwise ensemble
+  mean and standard deviation of each error component — the diagonal of the
+  empirical covariance</li>
+</ul>
+<div class="arithmatex">\[
+\mathbf{P}_{\text{emp}}(t) = \frac{1}{N-1}\sum_{i=1}^{N}
+  \left[\mathbf{x}_i(t) - \bar{\mathbf{x}}(t)\right]
+  \left[\mathbf{x}_i(t) - \bar{\mathbf{x}}(t)\right]^T
+\]</div>
+<ul>
+<li><strong>Percentile envelopes</strong>: the pointwise <span class="arithmatex">\(q\)</span>-th percentile of radial error
+  across trials — the 95th percentile drives the 3D error tube and the map
+  envelope.</li>
+<li><strong>CEP</strong> (Circular Error Probable): the pointwise 50th percentile of
+  <em>horizontal</em> radial error, with a linear drift-rate fit over the first
+  hour.</li>
+</ul>
+<p>Ensemble statistics converge as <span class="arithmatex">\(1/\sqrt{N}\)</span>; the tails (95th percentile)
+converge more slowly than the median, so CEP stabilizes at lower trial
+counts than the error tube.</p>
+<p><img alt="Attitude errors with 3-sigma bands" src="../assets/plots/attitude_error.png" /></p>
+<div class="admonition note">
+<p class="admonition-title">Not a linearized covariance analysis</p>
+<p>The simulator propagates <strong>no</strong> linearized error-state model — there is
+no 15-state <span class="arithmatex">\(\dot{\delta\mathbf{x}} = \mathbf{F}\delta\mathbf{x} +
+\mathbf{G}\mathbf{w}\)</span> system or analytic covariance in the codebase.
+Every statistic above comes from full nonlinear Monte Carlo trials.
+Implementing the linearized model (and eventually Kalman-filter-based
+aiding, e.g. GNSS/INS) and validating it against these empirical bounds
+is natural future work.</p>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.tabs", "navigation.top", "search.suggest", "search.highlight", "content.code.copy"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
