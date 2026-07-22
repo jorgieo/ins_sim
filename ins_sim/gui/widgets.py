@@ -74,13 +74,32 @@ def is_imu_spec_yaml(path) -> bool:
     return {"gyro", "accel"} <= _yaml_top_keys(path)
 
 
-class YamlFileSelector(QWidget):
-    """Combo box of packaged config YAMLs plus a Browse... button.
+class _RefreshingComboBox(QComboBox):
+    """QComboBox that emits ``aboutToShowPopup`` just before its list opens.
 
-    The combo auto-populates with the ``.yaml`` files in
-    ``ins_sim/config/`` that pass ``file_filter``; the Browse button
-    lets the user add an arbitrary external file (also validated
-    against the filter), which is appended to the combo and selected.
+    Lets the enclosing selector re-scan the user folder each time the
+    dropdown is opened, so files created while the app is running appear
+    without a restart.
+    """
+
+    aboutToShowPopup = Signal()
+
+    def showPopup(self) -> None:
+        self.aboutToShowPopup.emit()
+        super().showPopup()
+
+
+class YamlFileSelector(QWidget):
+    """Combo box of YAML configs plus a Browse... button.
+
+    When ``user_dir`` is given, the combo lists the ``.yaml``/``.yml``
+    files in that folder that pass ``file_filter`` (the folder is seeded
+    with the packaged default elsewhere), it is re-scanned each time the
+    dropdown opens, and the Browse dialog opens there. With no
+    ``user_dir`` the combo falls back to the packaged config files so the
+    widget still works standalone. Browse lets the user add an arbitrary
+    external file (also validated against the filter), which is appended
+    to the combo and selected.
 
     Signals:
         fileSelected (str): Absolute path of the newly selected file.
@@ -89,15 +108,14 @@ class YamlFileSelector(QWidget):
     fileSelected = Signal(str)
 
     def __init__(self, default_name: str, dialog_title: str = "Select YAML file",
-                 file_filter=None, parent=None):
+                 file_filter=None, user_dir=None, parent=None):
         super().__init__(parent)
         self._dialog_title = dialog_title
         self._file_filter = file_filter
+        self._user_dir = Path(user_dir) if user_dir is not None else None
 
-        self._combo = QComboBox(self)
-        for path in packaged_config_files():
-            if file_filter is None or file_filter(path):
-                self._combo.addItem(path.name, userData=str(path))
+        self._combo = _RefreshingComboBox(self)
+        self._populate()
         default_idx = self._combo.findText(default_name)
         if default_idx >= 0:
             self._combo.setCurrentIndex(default_idx)
@@ -110,11 +128,31 @@ class YamlFileSelector(QWidget):
         layout.addWidget(self._browse_btn)
 
         self._combo.currentIndexChanged.connect(self._on_index_changed)
+        self._combo.aboutToShowPopup.connect(self._populate)
         self._browse_btn.clicked.connect(self._on_browse)
 
     def current_path(self) -> str | None:
         """Returns the absolute path of the selected file, or None if empty."""
         return self._combo.currentData()
+
+    def _populate(self) -> None:
+        """Adds any not-yet-listed config files, preserving the selection.
+
+        Scans ``user_dir`` (or the packaged configs when it is unset),
+        keeping existing items and the current selection untouched so a
+        refresh on dropdown-open never disturbs the user's choice.
+        """
+        existing = {self._combo.itemData(i) for i in range(self._combo.count())}
+        if self._user_dir is not None:
+            candidates = sorted(self._user_dir.glob("*.y*ml"))
+        else:
+            candidates = packaged_config_files()
+        for path in candidates:
+            resolved = str(Path(path).resolve())
+            if resolved in existing:
+                continue
+            if self._file_filter is None or self._file_filter(resolved):
+                self._combo.addItem(Path(path).name, userData=resolved)
 
     def _on_index_changed(self, index: int) -> None:
         path = self._combo.itemData(index)
@@ -122,8 +160,9 @@ class YamlFileSelector(QWidget):
             self.fileSelected.emit(path)
 
     def _on_browse(self) -> None:
+        start_dir = str(self._user_dir) if self._user_dir is not None else str(Path.home())
         path, _ = QFileDialog.getOpenFileName(
-            self, self._dialog_title, str(Path.home()),
+            self, self._dialog_title, start_dir,
             "YAML files (*.yaml *.yml);;All files (*)")
         if not path:
             return

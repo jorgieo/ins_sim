@@ -6,3 +6,6 @@ maps/
 build/
 dist/
 site/
+# Writable user config folders created next to the app at runtime
+/trajectories/
+/imu_specs/

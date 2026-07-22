@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from ins_sim.gui.canvas import VisualizationPanel
+from ins_sim.gui.paths import imu_specs_dir, trajectories_dir
 from ins_sim.gui.widgets import (
     DEFAULT_IMU_SPEC_NAME,
     DEFAULT_TRAJECTORY_NAME,
@@ -63,10 +64,10 @@ class MainWindow(QMainWindow):
         # ---- Left control panel -------------------------------------------
         self.file_selector = YamlFileSelector(
             DEFAULT_TRAJECTORY_NAME, "Select trajectory file",
-            file_filter=is_trajectory_yaml)
+            file_filter=is_trajectory_yaml, user_dir=trajectories_dir())
         self.imu_spec_selector = YamlFileSelector(
             DEFAULT_IMU_SPEC_NAME, "Select IMU spec file",
-            file_filter=is_imu_spec_yaml)
+            file_filter=is_imu_spec_yaml, user_dir=imu_specs_dir())
         self.iterations_spinbox = IterationsSpinBox()
         self.dt_spinbox = DtSpinBox()
         self.baro_aiding_checkbox = QCheckBox("Baro altitude aiding")
