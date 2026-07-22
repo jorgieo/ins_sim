@@ -86,6 +86,7 @@ flowchart LR
 
 ## Where next
 
-- [Download & Install](download.md) — grab the prebuilt Windows or Linux app.
+- [Download & Install](download.md) — grab the prebuilt app for Windows
+  (x86-64) or Linux (x86-64 / ARM64, including Raspberry Pi 4/5 on 64-bit OS).
 - [User Guide](guide.md) — configuring missions and reading the results.
 - [Theory & Math](theory.md) — the formulations behind the simulator.

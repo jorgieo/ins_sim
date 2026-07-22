@@ -39,7 +39,8 @@ interactive plotly pages rendered in-app.
 
 ## Download
 
-Prebuilt portable bundles for **Windows** and **Linux** are attached to every
+Prebuilt portable bundles for **Windows** and **Linux** (x86-64 and ARM64) are
+attached to every
 [GitHub Release](https://github.com/jorgieo/ins_sim/releases/latest) — no
 Python installation required:
 
@@ -47,9 +48,13 @@ Python installation required:
   inside the extracted folder.
 - `ins_sim-vX.Y.Z-linux-x86_64.tar.gz` — `tar xzf`, then run
   `./ins_sim/ins_sim`.
+- `ins_sim-vX.Y.Z-linux-aarch64.tar.gz` — ARM64 / aarch64 build (e.g.
+  **Raspberry Pi 4/5 on the 64-bit Raspberry Pi OS**); `tar xzf`, then run
+  `./ins_sim/ins_sim`. Check your CPU with `uname -m` (`aarch64`).
 
 See the [Download & Install](https://jorgieo.github.io/ins_sim/download/)
-page for platform notes (Windows SmartScreen, Linux runtime libraries).
+page for platform notes (Windows SmartScreen, Linux runtime libraries,
+Raspberry Pi).
 
 ## The GUI
 
