@@ -123,47 +123,26 @@ Data flows from truth generation, through noise injection, into the strapdown
 navigator, and is summarized by the Monte Carlo / evaluation layer:
 
 ```mermaid
-flowchart LR
-    subgraph CFG["Config (YAML)"]
-        TRAJ_YAML["bqn_departure.yaml<br/>phases, departure point"]
-        IMU_YAML["imu_spec.yaml<br/>ARW, VRW, bias, repeatability"]
-    end
+flowchart TD
+    CFG["Config (YAML)<br/>trajectory + IMU spec"]
+    TRUTH["Truth generation<br/>trajectory/kinematics.py"]
+    SENSOR["Noise addition<br/>sensors/imu.py"]
+    NAV["Strapdown mechanization<br/>navigation/strapdown.py"]
+    EVAL["Monte Carlo + plots<br/>evaluation/"]
+    EARTH(["Earth model<br/>core/earth_model.py"])
 
-    subgraph TRUTH["trajectory/kinematics.py — Truth generation"]
-        BUILD["build_trajectory() / TruthTrajectory"]
-        EARTH["core/earth_model.py<br/>omega_ie, omega_en, g(phi,h), R_M / R_N"]
-        BUILD -- uses --> EARTH
-        BUILD --> OMEGA_B["truth.omega_b = omega_ib_b<br/>truth.f_b = f_b"]
-    end
-
-    subgraph SENSOR["sensors/imu.py — Noise addition"]
-        SPEC["IMUSpec"]
-        GEN["generate_imu_samples()"]
-        SPEC --> GEN
-        OMEGA_B --> GEN
-        GEN --> MEAS["omega_meas, f_meas<br/>(+ turn-on bias, GM drift, white noise)"]
-    end
-
-    subgraph NAV["navigation/strapdown.py — Mechanization"]
-        STRAP["strapdown_navgrade()"]
-        MEAS --> STRAP
-        STRAP -- uses --> EARTH
-        STRAP --> OUT["pos_ned, lat, lon, alt, vel_n, quat"]
-    end
-
-    subgraph EVAL["evaluation/ — Monte Carlo + plots"]
-        MC["monte_carlo.run_monte_carlo()"]
-        VIZ["visualization.build_summary_figure()<br/>gui/figures.py (plotly tabs + map)"]
-        OUT --> MC --> VIZ
-    end
-
-    TRAJ_YAML --> BUILD
-    IMU_YAML --> SPEC
+    CFG --> TRUTH
+    TRUTH -->|"true ω, specific force"| SENSOR
+    SENSOR -->|"measured ω, f (+ noise)"| NAV
+    NAV -->|"pos, vel, attitude"| EVAL
+    EARTH -.->|"ω_ie, ω_en, g, R_M/R_N"| TRUTH
+    EARTH -.-> NAV
 ```
 
 ## Conventions
 
-**Frames**
+### Frames
+
 - **NED (n-frame)** — local-level North-East-Down navigation frame, origin at
   the current position. Position is reported relative to the trajectory start
   unless otherwise integrated as geodetic (lat, lon, alt).
@@ -171,14 +150,16 @@ flowchart LR
 - Rotating-Earth quantities (Earth rate `ω_ie`, transport rate `ω_en`) are
   evaluated in NED and resolved into body via `C_n^b` where needed.
 
-**Attitude**
+### Attitude
+
 - Attitude is propagated and stored as a **scalar-last quaternion**
   `[x, y, z, w]` (`scipy.spatial.transform.Rotation` convention), representing
   the body-to-NED rotation `C_b^n`.
 - Euler angles, when used (e.g. for plotting), are `[roll φ, pitch θ, heading ψ]`
   applied in body axis order `Z-Y-X` (heading, then pitch, then roll).
 
-**Units — strict SI**
+### Units — strict SI
+
 - Angles: radians (`rad`), angular rates: `rad/s`.
 - Length: meters (`m`), velocity: `m/s`, acceleration/specific force: `m/s²`.
 - Time: seconds (`s`).

@@ -52,9 +52,9 @@ tar xzf ins_sim-vX.Y.Z-linux-aarch64.tar.gz
     required. Minimal installations may also need the Qt WebEngine system
     libraries:
 
-    ```bash
-    sudo apt-get install libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64
-    ```
+```bash
+sudo apt-get install libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64
+```
 
 ### Raspberry Pi
 
