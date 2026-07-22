@@ -1,0 +1,117 @@
+THIRD-PARTY SOFTWARE NOTICES AND ATTRIBUTIONS
+=============================================
+
+The ins_sim application is Copyright (c) 2026 J.L. Otero and is licensed
+under the MIT License (see the top-level LICENSE file).
+
+The distributed application bundles the third-party components listed
+below. Their license texts are included in the accompanying `licenses/`
+directory (in a source checkout) and under `_internal/licenses/` in the
+frozen release bundle. Each component remains the property of its
+respective copyright holders and is used under the terms stated here.
+
+The full text of every referenced license accompanies this notice.
+
+
+-------------------------------------------------------------------------
+1. Qt for Python (PySide6, shiboken6) and the Qt 6 libraries
+-------------------------------------------------------------------------
+
+Components : PySide6 6.11.1, shiboken6 6.11.1, and the Qt 6 dynamic
+             libraries they load, INCLUDING Qt WebEngine (which embeds a
+             copy of the Chromium project).
+Copyright  : (c) The Qt Company Ltd. and other contributors.
+License    : GNU Lesser General Public License, version 3 (LGPL-3.0-only).
+             The upstream packages are offered under
+             "LGPL-3.0-only OR GPL-2.0-only OR GPL-3.0-only OR commercial";
+             ins_sim uses and redistributes them under LGPL-3.0-only.
+             See licenses/LGPL-3.0.txt, which incorporates the GNU General
+             Public License version 3 (licenses/GPL-3.0.txt) by reference.
+             A pointer to the alternative commercial terms is retained in
+             licenses/Qt-Commercial-reference.txt for completeness; ins_sim
+             does NOT rely on the commercial license.
+
+LGPL v3 compliance notes for this distribution:
+
+  a. NOTICE. This file, distributed with every release, is the required
+     prominent notice that the application uses the Qt libraries and that
+     they are covered by the LGPL v3.
+
+  b. RE-LINKING / REPLACEMENT. The Qt libraries are dynamically linked and
+     shipped as separate, unmodified shared-library files inside the
+     release bundle (the `_internal/` folder of the PyInstaller one-folder
+     distribution: PySide6/*.dll or *.so, Qt6*.dll or libQt6*.so, and the
+     shiboken6 runtime). A recipient may replace them with a modified
+     version of the corresponding Qt library of the same major/minor
+     version and re-run the application. No relinking of the application
+     itself is required because linkage is dynamic.
+
+  c. CORRESPONDING SOURCE. The Qt libraries are redistributed UNMODIFIED.
+     The complete corresponding source for Qt 6.11.1 and for the PySide6 /
+     shiboken6 6.11.1 wheels is available from The Qt Company:
+        - Qt source:        https://download.qt.io/official_releases/qt/
+        - Qt source (git):  https://code.qt.io/
+        - PySide6 wheels:   https://pypi.org/project/PySide6/6.11.1/
+                            https://pypi.org/project/shiboken6/6.11.1/
+     The versions redistributed here correspond to those upstream releases.
+
+  d. QT WEBENGINE / CHROMIUM. Qt WebEngine incorporates the Chromium
+     project (primarily BSD-3-Clause) together with a large number of
+     additional third-party components under their own permissive
+     licenses. The authoritative, exhaustive attribution list for the
+     bundled Chromium version is published by The Qt Company at:
+        - https://doc.qt.io/qt-6/qtwebengine-licensing.html
+        - https://doc.qt.io/qt-6/licenses-used-in-qt.html
+     These attributions apply to the Qt WebEngine binaries shipped in this
+     bundle and are incorporated here by reference.
+
+
+-------------------------------------------------------------------------
+2. Permissively licensed Python libraries (bundled in releases)
+-------------------------------------------------------------------------
+
+The following are redistributed in the frozen release bundle. Each is a
+permissive, non-copyleft license fully compatible with the MIT-licensed
+application. Full texts are in the `licenses/` directory.
+
+  NumPy 1.26.3           BSD 3-Clause      licenses/numpy-1.26.3.LICENSE.txt
+  SciPy 1.12.0           BSD 3-Clause      licenses/scipy-1.12.0.LICENSE.txt
+  PyYAML 6.0.2           MIT               licenses/PyYAML-6.0.2.LICENSE.txt
+  Plotly 6.3.0           MIT               licenses/plotly-6.3.0.LICENSE.txt
+  MarkupSafe 3.0.2       BSD 3-Clause      licenses/MarkupSafe-3.0.2.LICENSE.txt
+  typing_extensions 4.9.0  PSF-2.0         licenses/typing_extensions-4.9.0.LICENSE.txt
+
+(MarkupSafe is pulled in transitively by Plotly.)
+
+
+-------------------------------------------------------------------------
+3. Components used at build time only (NOT redistributed)
+-------------------------------------------------------------------------
+
+These are development / packaging tools. They are not part of the shipped
+application and impose no obligations on the distributed binaries.
+
+  PyInstaller    GPL-2.0-or-later WITH a Bootloader Exception. The
+                 exception explicitly permits the resulting frozen
+                 application to be distributed under any license,
+                 including MIT; PyInstaller does not impose GPL terms on
+                 ins_sim. https://pyinstaller.org/en/stable/license.html
+
+  Matplotlib     Matplotlib License (BSD-style / PSF-based). Used by the
+  Seaborn        CLI summary figure only; both are EXCLUDED from the
+                 frozen GUI bundle and are not redistributed in releases.
+                 (Seaborn: BSD 3-Clause.)
+
+  pytest, kaleido, MkDocs, mkdocs-material — test / export / documentation
+  tooling (MIT / MIT / BSD-2-Clause / MIT respectively); not redistributed.
+
+
+-------------------------------------------------------------------------
+Summary
+-------------------------------------------------------------------------
+
+ins_sim's own source code is licensed MIT. The only copyleft obligation in
+the distributed product arises from the LGPL-3.0 Qt / PySide6 stack, and
+those obligations are satisfied by (i) this notice, (ii) dynamic linking
+with replaceable shared libraries, (iii) the source pointers above, and
+(iv) the bundled license texts. All other bundled libraries are permissive.

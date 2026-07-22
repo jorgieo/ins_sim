@@ -187,4 +187,12 @@ mkdocs serve
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project's own source code is licensed under the [MIT License](LICENSE).
+
+The downloadable release binaries additionally bundle third-party
+components, most notably **Qt / PySide6**, which are redistributed under the
+**GNU LGPL v3**. Attribution and the full license texts for all bundled
+components are provided in [THIRD-PARTY-NOTICES.txt](THIRD-PARTY-NOTICES.txt)
+and the [`licenses/`](licenses/) directory, both of which ship inside every
+release bundle. Installing the library from source without the `gui` extra
+pulls no LGPL-licensed dependencies.

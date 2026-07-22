@@ -38,11 +38,26 @@ if not config_files:
     raise SystemExit("ins_sim.spec: no YAML configs found in ins_sim/config/")
 config_datas = [(str(p), "ins_sim/config") for p in config_files]
 
+# LGPL v3 compliance: the bundle redistributes PySide6/Qt (LGPL-3.0), so the
+# THIRD-PARTY-NOTICES and the full third-party license texts must travel with
+# every release. Ship the notice at the bundle root and the texts under
+# _internal/licenses/. Fail the build if either is missing rather than emit a
+# non-compliant binary.
+notice_file = spec_dir / "THIRD-PARTY-NOTICES.txt"
+license_files = sorted((spec_dir / "licenses").glob("*.txt"))
+if not notice_file.exists() or not license_files:
+    raise SystemExit(
+        "ins_sim.spec: THIRD-PARTY-NOTICES.txt and licenses/*.txt are required "
+        "for LGPL compliance but were not found"
+    )
+license_datas = [(str(notice_file), ".")]
+license_datas += [(str(p), "licenses") for p in license_files]
+
 a = Analysis(
     [str(spec_dir / "launcher.py")],
     pathex=[],
     binaries=[],
-    datas=config_datas,
+    datas=config_datas + license_datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
