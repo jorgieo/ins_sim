@@ -311,6 +311,25 @@
   
   
   
+    <li class="md-tabs__item">
+      <a href="../validation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Validation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
     
     
       
@@ -577,6 +596,33 @@
   
   
   
+    <li class="md-nav__item">
+      <a href="../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
     
     
       
@@ -597,10 +643,10 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
         
           
-          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
             
   
   
@@ -618,8 +664,8 @@
             <span class="md-nav__icon md-icon"></span>
           </label>
         
-        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5">
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -665,7 +711,7 @@
       
         
         
-        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5_1" >
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
         
           
           <div class="md-nav__link md-nav__container">
@@ -687,14 +733,14 @@
             </a>
             
               
-              <label class="md-nav__link " for="__nav_5_1" id="__nav_5_1_label" tabindex="0">
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
                 <span class="md-nav__icon md-icon"></span>
               </label>
             
           </div>
         
-        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_5_1_label" aria-expanded="false">
-          <label class="md-nav__title" for="__nav_5_1">
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
             <span class="md-nav__icon md-icon"></span>
             
   
@@ -1259,7 +1305,10 @@ zero-noise self-consistency check in <code>main.py</code>).</p>
 <p>The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
 steady-state variance <span class="arithmatex">\(\sigma_{BI}^2\)</span> independent of the sample rate. It
 starts from its stationary distribution, <span class="arithmatex">\(b_0 \sim \mathcal{N}(0,
-\sigma_{BI}^2)\)</span>, so its variance is <span class="arithmatex">\(\sigma_{BI}^2\)</span> from the first sample:</p>
+\sigma_{BI}^2)\)</span>, so its variance is <span class="arithmatex">\(\sigma_{BI}^2\)</span> from the first sample.
+The spread is derived from the datasheet bias instability <span class="arithmatex">\(B\)</span> as
+<span class="arithmatex">\(\sigma_{BI} = B/0.617\)</span>, so that the Allan deviation of the simulated bias
+peaks at <span class="arithmatex">\(B\)</span> (see <a href="../validation/#allan-deviation">Validation</a>):</p>
 <div class="arithmatex">\[
 b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,
 \qquad a = e^{-\Delta t/\tau}
