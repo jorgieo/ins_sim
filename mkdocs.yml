@@ -41,6 +41,7 @@ nav:
   - Theory & Math:
       - theory/index.md
       - Notation & conventions: theory/notation.md
+  - Validation: validation/index.md
   - Reference:
       - Python API:
           - reference/api/index.md
@@ -99,6 +100,7 @@ markdown_extensions:
   - pymdownx.snippets:
       base_path: [".", "docs"]
       check_paths: true
+      dedent_subsections: true
       auto_append:
         - includes/abbreviations.md
   - pymdownx.superfences:

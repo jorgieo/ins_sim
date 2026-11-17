@@ -128,7 +128,7 @@ name: Navigation-Grade RLG INS
 
 gyro:
   arw_deg_per_rt_hr:        0.002   # Angular Random Walk [°/√hr]
-  bias_instab_deg_per_hr:   0.01    # Bias instability (GM 1σ) [°/hr]
+  bias_instab_deg_per_hr:   0.01    # Bias instability, datasheet value [°/hr]
   bias_tau_s:               3600.0  # GM correlation time [s]
   repeatability_deg_per_hr: 0.01    # Turn-on bias repeatability 1σ [°/hr]
   scale_factor_ppm:         5.0     # Scale-factor error 1σ per axis [ppm]
@@ -136,7 +136,7 @@ gyro:
 
 accel:
   vrw_m_per_s_per_rt_hr:    0.005   # Velocity Random Walk [m/s/√hr]
-  bias_instab_ug:           5.0     # Bias instability (GM 1σ) [µg]
+  bias_instab_ug:           5.0     # Bias instability, datasheet value [µg]
   bias_tau_s:               3600.0  # GM correlation time [s]
   repeatability_ug:         25.0    # Turn-on bias repeatability 1σ [µg]
   scale_factor_ppm:         100.0   # Scale-factor error 1σ per axis [ppm]
@@ -150,7 +150,7 @@ alignment:
 | Key | Physical meaning |
 | --- | ---------------- |
 | `arw_deg_per_rt_hr` / `vrw_m_per_s_per_rt_hr` | White-noise density. Integrated angle (velocity) uncertainty grows as ARW·√t (VRW·√t). |
-| `bias_instab_*` + `bias_tau_s` | In-run bias drift, modeled as a first-order Gauss-Markov process with the given steady-state 1σ and correlation time. |
+| `bias_instab_*` + `bias_tau_s` | Bias instability as quoted on the datasheet (the floor of the Allan deviation), and the correlation time of the first-order Gauss-Markov process that models it. ins_sim sets the process spread so that its Allan deviation peaks at the datasheet value; see [Validation](validation/index.md#allan-deviation). |
 | `repeatability_*` | Turn-on bias: a constant offset drawn once per trial. |
 | `scale_factor_ppm` | Per-axis multiplicative error, drawn once per trial. |
 | `misalignment_urad` | Sensor-triad axis misalignment, six independent small angles drawn once per trial. |

@@ -149,7 +149,10 @@ $$
 The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
 steady-state variance \(\sigma_{BI}^2\) independent of the sample rate. It
 starts from its stationary distribution, \(b_0 \sim \mathcal{N}(0,
-\sigma_{BI}^2)\), so its variance is \(\sigma_{BI}^2\) from the first sample:
+\sigma_{BI}^2)\), so its variance is \(\sigma_{BI}^2\) from the first sample.
+The spread is derived from the datasheet bias instability \(B\) as
+\(\sigma_{BI} = B/0.617\), so that the Allan deviation of the simulated bias
+peaks at \(B\) (see [Validation](../validation/index.md#allan-deviation)):
 
 $$
 b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,

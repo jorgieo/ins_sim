@@ -8,6 +8,11 @@ figure or model changes so docs never drift:
 
     python tools/generate_doc_plots.py                      # full baseline
     python tools/generate_doc_plots.py --trials 5 --dt 1.0  # quick pass
+    python tools/generate_doc_plots.py --validation         # Validation page
+
+With --validation it instead runs the scenarios in validation_scenarios.py,
+writes their figures to docs/assets/validation/, and writes the results
+table (includes/validation_results.md) that the Validation page includes.
 
 Requires kaleido (dev extra) for plotly PNG export.
 """
@@ -29,6 +34,8 @@ from ins_sim.sensors.imu import load_imu_spec  # noqa: E402
 from ins_sim.trajectory.kinematics import build_trajectory  # noqa: E402
 
 PLOTS_DIR = REPO_ROOT / "docs" / "assets" / "plots"
+VALIDATION_DIR = REPO_ROOT / "docs" / "assets" / "validation"
+VALIDATION_TABLE = REPO_ROOT / "includes" / "validation_results.md"
 
 # 1400x900 logical px at scale 3 ≈ 300 DPI for a 14-inch-wide figure.
 EXPORT_KW = dict(width=1400, height=900, scale=3)
@@ -67,7 +74,14 @@ def main() -> int:
                         help="Integration time step [s] (default 0.1)")
     parser.add_argument("--seed", type=int, default=42,
                         help="Master RNG seed (default 42)")
+    parser.add_argument("--validation", action="store_true",
+                        help="Generate the Validation page figures and results table instead")
     args = parser.parse_args()
+
+    if args.validation:
+        import validation_figures  # noqa: E402 (tools/ is on sys.path as the script's folder)
+        validation_figures.build_all(VALIDATION_DIR, VALIDATION_TABLE)
+        return 0
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)
 

@@ -162,7 +162,10 @@ The build fails if the file or the section does not exist.
 
 Figures that show simulator output are produced by
 `tools/generate_doc_plots.py`, never edited by hand, so they can be
-regenerated after a model change.
+regenerated after a model change. `python tools/generate_doc_plots.py
+--validation` regenerates the Validation page: its figures and the results
+table in `includes/validation_results.md`, from the scenarios in
+`tools/validation_scenarios.py`, which `tests/validation/` also asserts.
 
 ### Examples
 

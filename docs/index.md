@@ -69,3 +69,6 @@ flowchart TD
   (x86-64) or Linux (x86-64 / ARM64, including Raspberry Pi 4/5 on 64-bit OS).
 - [User Guide](guide.md) — configuring missions and reading the results.
 - [Theory & Math](theory/index.md) — the formulations behind the simulator.
+- [Validation](validation/index.md) — the simulator checked against textbook
+  results: the Schuler period, bias responses, the vertical channel and the
+  sensor noise statistics.
