@@ -868,8 +868,9 @@ navigation error grows over time for a given <abbr title="Inertial measurement u
   speed ramps, climbs, and turns, specified in conventional aviation units and
   converted to strict SI internally.</li>
 <li><strong>Navigation-grade <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</strong>: angular/velocity random walk,
-  Gauss-Markov bias drift, and turn-on bias repeatability, parameterized by a
-  YAML datasheet spec.</li>
+  Gauss-Markov bias drift, turn-on bias repeatability, scale-factor and
+  misalignment errors, and initial-alignment errors, parameterized by a YAML
+  datasheet spec.</li>
 <li><strong>Rotating-Earth strapdown mechanization</strong>: Earth rate, transport rate,
   <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> radii of curvature, and Somigliana normal gravity evaluated at the
   current latitude/altitude every step — not a flat-Earth approximation.</li>

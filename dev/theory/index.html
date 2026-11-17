@@ -897,10 +897,14 @@ g_e = 9.7803253359~\text{m/s}^2,\quad k = 1.93185265241\times10^{-3},
 <div class="arithmatex">\[
 g(\phi, h) = g_0(\phi)\left(1 - \frac{2h}{a}\right)
 \]</div>
-<p>This first-order correction (<span class="arithmatex">\(\partial g/\partial h \approx -2g/a\)</span>) is
-accurate to about 1 µg below 10 km — well under the navigation-grade
-accelerometer bias — so the higher-order <span class="arithmatex">\(f\)</span>, <span class="arithmatex">\(m\)</span>, and <span class="arithmatex">\(h^2\)</span> terms of
-the full formula are deliberately omitted. The local gravity vector is
+<p>This first-order correction (<span class="arithmatex">\(\partial g/\partial h \approx -2g/a\)</span>) omits
+the <span class="arithmatex">\(f\)</span>, <span class="arithmatex">\(m\)</span> and <span class="arithmatex">\(h^2\)</span> terms of the full <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> formula. Against the
+full formula it overstates gravity by about 2 µg per kilometre of height at
+low latitudes: about 7 µg at the packaged mission's 15,000 ft cruise
+altitude (18.5° N) and up to 14 µg at 10 km, comparable to a
+navigation-grade accelerometer's bias. The truth generator and the
+navigator share this model, so the approximation does not affect the
+simulated navigation errors. The local gravity vector is
 <span class="arithmatex">\(\mathbf{g}^n = [0,\, 0,\, +g(\phi,h)]^T\)</span> (Down positive).</p>
 <h2 id="strapdown-mechanization">Strapdown mechanization<a class="headerlink" href="#strapdown-mechanization" title="Permanent link">&para;</a></h2>
 <p><em>Module: <code>ins_sim/navigation/strapdown.py</code> (<code>strapdown_navgrade</code>)</em></p>
@@ -986,7 +990,9 @@ zero-noise self-consistency check in <code>main.py</code>).</p>
 </tbody>
 </table>
 <p>The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
-steady-state variance <span class="arithmatex">\(\sigma_{BI}^2\)</span> independent of the sample rate:</p>
+steady-state variance <span class="arithmatex">\(\sigma_{BI}^2\)</span> independent of the sample rate. It
+starts from its stationary distribution, <span class="arithmatex">\(b_0 \sim \mathcal{N}(0,
+\sigma_{BI}^2)\)</span>, so its variance is <span class="arithmatex">\(\sigma_{BI}^2\)</span> from the first sample:</p>
 <div class="arithmatex">\[
 b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,
 \qquad a = e^{-\Delta t/\tau}

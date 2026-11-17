@@ -882,13 +882,18 @@ visualization, and authoring your own mission and <abbr title="Inertial measurem
 <h2 id="running-your-first-simulation">Running your first simulation<a class="headerlink" href="#running-your-first-simulation" title="Permanent link">&para;</a></h2>
 <p><img alt="The main window after a completed run" src="../assets/gui/main_window.png" /></p>
 <ol>
-<li><strong>Select a trajectory.</strong> The <em>Trajectory</em> combo lists the mission YAMLs
-   packaged with the app (<code>bqn_departure.yaml</code> by default). <em>Browse…</em> adds any
-   external mission file; the app validates that it has the expected
-   trajectory structure (a top-level <code>phases</code> list) before accepting it.</li>
-<li><strong>Select an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec.</strong> Same pattern: the packaged navigation-grade spec
-   (<code>imu_spec.yaml</code>) by default, or <em>Browse…</em> for your own (validated for
-   top-level <code>gyro</code> and <code>accel</code> sections).</li>
+<li><strong>Select a trajectory.</strong> The <em>Trajectory</em> list shows the mission YAMLs
+   in the <code>trajectories</code> folder next to the app: the app's own folder for
+   the downloaded bundle, or the current working directory when run from
+   source. On first launch the folder is created and seeded with the
+   packaged <code>bqn_departure.yaml</code>. Files you add or edit there appear the
+   next time you open the list, and your edits are never overwritten.
+   <em>Browse…</em> opens the same folder and accepts any mission file with a
+   top-level <code>phases</code> list. If that location is not writable, the app uses
+   <code>~/ins_sim/trajectories</code> instead.</li>
+<li><strong>Select an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec.</strong> Same pattern, with the <code>imu_specs</code> folder and the
+   packaged navigation-grade <code>imu_spec.yaml</code>. Files must have top-level
+   <code>gyro</code> and <code>accel</code> sections.</li>
 <li><strong>Set the ensemble size.</strong> <em>Monte Carlo iterations</em> (default 50) trades
    statistical confidence against run time — ensemble statistics converge as
    <span class="arithmatex">\(1/\sqrt{N}\)</span>, so quadrupling the trials halves the noise on the
@@ -916,10 +921,21 @@ nautical miles against decimal hours, with the ensemble <abbr title="Circular er
 a table lists the 50th and 95th percentile error at each whole hour.</p>
 <p><img alt="CEP tab" src="../assets/plots/cep.png" /></p>
 <p><strong>Attitude / Velocity / Position Errors</strong> — per-axis ensemble mean error with
-±3σ bands. Attitude panels are pitch/roll/heading in degrees (heading
-wrapped); velocity and position are North/East/Down. With baro aiding on, the
-Down channels stay bounded while North/East grow with the classic <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error
-signature; with aiding off, watch the Down channels run away.</p>
+±3σ bands, where σ is the sample standard deviation across trials. All three
+are resolved along the local North, East and Down axes at the true position,
+and every error is the estimate minus the truth (see
+<a href="../theory/notation/#errors">Notation &amp; conventions</a>):</p>
+<ul>
+<li><em>Attitude</em> shows the small rotation between the estimated and the true
+  attitude: the North and East tilts, and the heading error (the rotation
+  about Down), in degrees.</li>
+<li><em>Velocity</em> and <em>Position</em> show the North, East and Down components. The
+  position error is the latitude, longitude and height error converted to
+  metres.</li>
+</ul>
+<p>With baro aiding on, the Down channels stay bounded while North/East grow
+with the classic <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error signature; with aiding off, watch the Down
+channels run away.</p>
 <p><strong>3D Trajectory</strong> — the truth track (black), every trial's estimated track
 (steel blue), and the crimson swept tube of the 95th-percentile radial error.</p>
 <p><strong>Ground Track Map</strong> — the mission over OpenStreetMap tiles with the
