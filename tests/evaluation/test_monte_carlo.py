@@ -7,8 +7,8 @@ from ins_sim.sensors.imu import IMUSpec, draw_initial_misalignment
 from ins_sim.trajectory.kinematics import TruthTrajectory
 from ins_sim.trajectory.spline import NEDSplinePath
 
-ZERO_SENSORS = dict(gyro_arw=0.0, gyro_bi_std=0.0, gyro_br_std=0.0,
-                    accel_vrw=0.0, accel_bi_std=0.0, accel_br_std=0.0)
+ZERO_SENSORS = dict(gyro_arw=0.0, gyro_bias_instability=0.0, gyro_br_std=0.0,
+                    accel_vrw=0.0, accel_bias_instability=0.0, accel_br_std=0.0)
 
 
 def _short_truth():

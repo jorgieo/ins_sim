@@ -194,7 +194,7 @@ where each bias is split into a static and a dynamic part,
 | Term | Meaning | Drawn | `IMUSpec` field | YAML key |
 | ---- | ------- | ----- | --------------- | -------- |
 | \(\mathbf{b}_{gs}\), \(\mathbf{b}_{as}\) | Static (turn-on) bias | Once per trial | `gyro_br_std`, `accel_br_std` | `repeatability_*` |
-| \(\mathbf{b}_{gd}\), \(\mathbf{b}_{ad}\) | Dynamic (in-run) bias: first-order Gauss–Markov | Every sample | `*_bi_std`, `*_bi_tau` | `bias_instab_*`, `bias_tau_s` |
+| \(\mathbf{b}_{gd}\), \(\mathbf{b}_{ad}\) | Dynamic (in-run) bias: a first-order Gauss–Markov process whose Allan deviation peaks at the datasheet bias instability | Every sample | `*_bias_instability`, `*_bias_tau` | `bias_instab_*`, `bias_tau_s` |
 | \(\mathbf{M}_g\), \(\mathbf{M}_a\) | Scale factor (diagonal) and misalignment (off-diagonal) | Once per trial | `*_sf_std`, `*_ma_std` | `scale_factor_ppm`, `misalignment_urad` |
 | \(\mathbf{w}_g\), \(\mathbf{w}_a\) | White noise: ARW and VRW | Every sample | `gyro_arw`, `accel_vrw` | `arw_deg_per_rt_hr`, `vrw_m_per_s_per_rt_hr` |
 | \(\delta\psivec{nb}{n}(0)\) | Initial alignment error | Once per trial | `align_tilt_std`, `align_heading_std` | `alignment:` block |

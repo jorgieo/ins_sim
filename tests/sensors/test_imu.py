@@ -4,7 +4,7 @@ import numpy as np
 import pytest
 
 from ins_sim.config import default_imu_spec_path
-from ins_sim.sensors.imu import (IMUSpec, draw_initial_misalignment,
+from ins_sim.sensors.imu import (GM_ALLAN_PEAK, IMUSpec, draw_initial_misalignment,
                                  generate_imu_samples, load_imu_spec)
 
 
@@ -13,12 +13,12 @@ def test_load_imu_spec_matches_default_dataclass_values():
     default = IMUSpec()
 
     assert spec.gyro_arw == pytest.approx(default.gyro_arw)
-    assert spec.gyro_bi_std == pytest.approx(default.gyro_bi_std)
-    assert spec.gyro_bi_tau == pytest.approx(default.gyro_bi_tau)
+    assert spec.gyro_bias_instability == pytest.approx(default.gyro_bias_instability)
+    assert spec.gyro_bias_tau == pytest.approx(default.gyro_bias_tau)
     assert spec.gyro_br_std == pytest.approx(default.gyro_br_std)
     assert spec.accel_vrw == pytest.approx(default.accel_vrw)
-    assert spec.accel_bi_std == pytest.approx(default.accel_bi_std)
-    assert spec.accel_bi_tau == pytest.approx(default.accel_bi_tau)
+    assert spec.accel_bias_instability == pytest.approx(default.accel_bias_instability)
+    assert spec.accel_bias_tau == pytest.approx(default.accel_bias_tau)
     assert spec.accel_br_std == pytest.approx(default.accel_br_std)
 
 
@@ -33,8 +33,8 @@ def _stub_truth(M=200, dt=0.1):
 
 def test_generate_imu_samples_zero_noise_is_exact_passthrough():
     truth = _stub_truth()
-    zero_spec = IMUSpec(gyro_arw=0, gyro_bi_std=0, gyro_br_std=0,
-                        accel_vrw=0, accel_bi_std=0, accel_br_std=0)
+    zero_spec = IMUSpec(gyro_arw=0, gyro_bias_instability=0, gyro_br_std=0,
+                        accel_vrw=0, accel_bias_instability=0, accel_br_std=0)
     rng = np.random.default_rng(0)
     meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, zero_spec, rng)
     np.testing.assert_array_equal(meas_omega_ib_b, truth.omega_ib_b)
@@ -75,8 +75,8 @@ def test_scale_factor_error_is_multiplicative():
     # Only gyro scale factor active: measurement/truth ratio must be a
     # per-axis constant of plausible magnitude, identical at every sample.
     truth = _stub_truth()
-    spec = IMUSpec(gyro_arw=0, gyro_bi_std=0, gyro_br_std=0,
-                   accel_vrw=0, accel_bi_std=0, accel_br_std=0,
+    spec = IMUSpec(gyro_arw=0, gyro_bias_instability=0, gyro_br_std=0,
+                   accel_vrw=0, accel_bias_instability=0, accel_br_std=0,
                    gyro_sf_std=100e-6)
     rng = np.random.default_rng(3)
     meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, spec, rng)
@@ -94,8 +94,8 @@ def test_misalignment_couples_axes():
     # must pick up a proportional constant component.
     truth = _stub_truth()
     truth.omega_ib_b = np.tile([0.02, 0.0, 0.0], (len(truth.t), 1))
-    spec = IMUSpec(gyro_arw=0, gyro_bi_std=0, gyro_br_std=0,
-                   accel_vrw=0, accel_bi_std=0, accel_br_std=0,
+    spec = IMUSpec(gyro_arw=0, gyro_bias_instability=0, gyro_br_std=0,
+                   accel_vrw=0, accel_bias_instability=0, accel_br_std=0,
                    gyro_ma_std=100e-6)
     rng = np.random.default_rng(4)
     meas_omega_ib_b, _ = generate_imu_samples(truth, spec, rng)
@@ -128,7 +128,7 @@ def test_generate_imu_samples_white_noise_statistics():
     # samples (generous tolerance -- this is a statistical check).
     M, dt = 20000, 0.1
     truth = _stub_truth(M=M, dt=dt)
-    spec = IMUSpec(gyro_bi_std=0, gyro_br_std=0, accel_bi_std=0, accel_br_std=0)
+    spec = IMUSpec(gyro_bias_instability=0, gyro_br_std=0, accel_bias_instability=0, accel_br_std=0)
     rng = np.random.default_rng(7)
     meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, spec, rng)
 
@@ -147,8 +147,9 @@ def test_gauss_markov_bias_is_stationary_from_the_first_sample():
     # runs must equal the steady-state σ at the first sample (b_d[0] is drawn
     # from the stationary distribution) and stay there later on.
     sigma, tau = 1e-5, 20.0
-    spec = IMUSpec(gyro_arw=0, gyro_br_std=0, accel_vrw=0, accel_bi_std=0,
-                   accel_br_std=0, gyro_bi_std=sigma, gyro_bi_tau=tau)
+    spec = IMUSpec(gyro_arw=0, gyro_br_std=0, accel_vrw=0, accel_bias_instability=0,
+                   accel_br_std=0, gyro_bias_instability=sigma * GM_ALLAN_PEAK,
+                   gyro_bias_tau=tau)
     truth = _stub_truth(M=60, dt=1.0)
     bias = np.array([
         generate_imu_samples(truth, spec, np.random.default_rng(seed)).meas_omega_ib_b
@@ -168,9 +169,27 @@ def test_gyro_errors_do_not_depend_on_the_accelerometer_spec():
     # parameters must leave the gyro realization bit-identical.
     truth = _stub_truth()
     spec_a = IMUSpec()
-    spec_b = IMUSpec(accel_vrw=3 * spec_a.accel_vrw, accel_bi_std=0.0,
+    spec_b = IMUSpec(accel_vrw=3 * spec_a.accel_vrw, accel_bias_instability=0.0,
                      accel_sf_std=1e-4, accel_ma_std=1e-4)
     a = generate_imu_samples(truth, spec_a, np.random.default_rng(9))
     b = generate_imu_samples(truth, spec_b, np.random.default_rng(9))
     np.testing.assert_array_equal(a.meas_omega_ib_b, b.meas_omega_ib_b)
     assert not np.array_equal(a.meas_f_ib_b, b.meas_f_ib_b)
+
+
+def test_yaml_bias_instability_is_the_datasheet_value():
+    # The YAML's bias_instab_deg_per_hr is stored as given (in SI units) as
+    # the datasheet bias instability; the model's Gauss-Markov spread is
+    # derived from it so that the Allan deviation peaks at that value.
+    spec = load_imu_spec(str(default_imu_spec_path()))
+    datasheet = 0.01 * np.pi / 180.0 / 3600.0
+    assert spec.gyro_bias_instability == pytest.approx(datasheet)
+    assert spec.gyro_gm_std == pytest.approx(datasheet / GM_ALLAN_PEAK)
+    assert spec.accel_gm_std == pytest.approx(5e-6 * 9.80665 / GM_ALLAN_PEAK)
+
+
+def test_allan_peak_ratio_matches_the_gauss_markov_formula():
+    x = np.linspace(1.0, 3.0, 200001)                         # T / tau_c
+    adev = np.sqrt((2 * x - 3 + 4 * np.exp(-x) - np.exp(-2 * x)) / x**2)
+    assert adev.max() == pytest.approx(GM_ALLAN_PEAK, abs=1e-9)
+    assert x[np.argmax(adev)] == pytest.approx(1.8926, abs=1e-4)

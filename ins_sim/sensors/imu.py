@@ -21,10 +21,17 @@ from scipy.signal import lfilter
 if TYPE_CHECKING:
     from ins_sim.trajectory.kinematics import TruthTrajectory
 
+#: Peak of the Allan deviation of a first-order Gauss-Markov process, per
+#: unit of its steady-state spread σ. The peak occurs at an averaging time
+#: of 1.8926 correlation times. ins_sim models bias instability with such a
+#: process and sets σ = B / GM_ALLAN_PEAK, so that the simulated bias's
+#: Allan deviation peaks at the datasheet bias instability B.
+GM_ALLAN_PEAK = 0.6173642831
+
 
 @dataclass
 class IMUSpec:
-    """Navigation-grade IMU error parameters.
+    """Navigation-grade IMU error parameters, as quoted on a sensor datasheet.
 
     The defaults are typical of fielded navigation-grade systems, such as a
     ring-laser-gyro aircraft INS:
@@ -35,16 +42,22 @@ class IMUSpec:
     | Bias instability | 0.01 °/h | 5 µg |
     | Turn-on repeatability | 0.01 °/h | 25 µg |
 
-    The field names are datasheet parameters; each one sets the spread of
-    a Groves (2013) error term (see the Notation & conventions page).
+    Every field is a datasheet parameter in SI units; each one sets the
+    spread of a Groves (2013) error term (see the Notation & conventions
+    page). Bias instability is the datasheet value, the floor of the
+    sensor's Allan deviation. The in-run bias is simulated as a first-order
+    Gauss-Markov process whose steady-state spread (`gyro_gm_std`,
+    `accel_gm_std`) is chosen so that its Allan deviation peaks at exactly
+    that value.
 
     Attributes:
         gyro_arw: Gyro angular random walk, the density of the white
             noise w_g [rad/√s].
-        gyro_bi_std: Gyro bias-instability steady-state std dev of the
-            Gauss-Markov dynamic bias b_gd [rad/s].
-        gyro_bi_tau: Gyro bias-instability Gauss-Markov correlation
-            time [s].
+        gyro_bias_instability: Gyro bias instability from the datasheet,
+            the floor of the Allan deviation [rad/s]. Sets the dynamic
+            bias b_gd.
+        gyro_bias_tau: Correlation time of the Gauss-Markov process that
+            models the gyro bias instability [s].
         gyro_br_std: Gyro turn-on bias repeatability, the std dev of the
             static bias b_gs [rad/s].
         gyro_sf_std: Gyro scale-factor error std dev (diagonal of M_g),
@@ -53,10 +66,11 @@ class IMUSpec:
             drawn once per run per element [rad].
         accel_vrw: Accelerometer velocity random walk, the density of the
             white noise w_a [(m/s)/√s].
-        accel_bi_std: Accelerometer bias-instability steady-state std
-            dev of the Gauss-Markov dynamic bias b_ad [m/s²].
-        accel_bi_tau: Accelerometer bias-instability Gauss-Markov
-            correlation time [s].
+        accel_bias_instability: Accelerometer bias instability from the
+            datasheet, the floor of the Allan deviation [m/s²]. Sets the
+            dynamic bias b_ad.
+        accel_bias_tau: Correlation time of the Gauss-Markov process that
+            models the accelerometer bias instability [s].
         accel_br_std: Accelerometer turn-on bias repeatability, the std
             dev of the static bias b_as [m/s²].
         accel_sf_std: Accelerometer scale-factor error std dev (diagonal
@@ -76,22 +90,40 @@ class IMUSpec:
         keep their exact-passthrough behavior.
     """
     # Gyro
-    gyro_arw:    float = 0.002 * np.pi/180 / 60          # rad / √s
-    gyro_bi_std: float = 0.01  * np.pi/180 / 3600        # rad / s
-    gyro_bi_tau: float = 3600.0                          # GM correlation time [s]
-    gyro_br_std: float = 0.01  * np.pi/180 / 3600        # rad / s
-    gyro_sf_std: float = 0.0                             # dimensionless
-    gyro_ma_std: float = 0.0                             # rad
+    gyro_arw:              float = 0.002 * np.pi/180 / 60    # rad / √s
+    gyro_bias_instability: float = 0.01  * np.pi/180 / 3600  # rad / s (datasheet)
+    gyro_bias_tau:         float = 3600.0                    # GM correlation time [s]
+    gyro_br_std:           float = 0.01  * np.pi/180 / 3600  # rad / s
+    gyro_sf_std:           float = 0.0                       # dimensionless
+    gyro_ma_std:           float = 0.0                       # rad
     # Accel
-    accel_vrw:    float = 0.005 / 60                     # (m/s) / √s
-    accel_bi_std: float =  5e-6 * 9.80665                # 5 µg
-    accel_bi_tau: float = 3600.0
-    accel_br_std: float = 25e-6 * 9.80665                # 25 µg
-    accel_sf_std: float = 0.0                            # dimensionless
-    accel_ma_std: float = 0.0                            # rad
+    accel_vrw:              float = 0.005 / 60               # (m/s) / √s
+    accel_bias_instability: float =  5e-6 * 9.80665          # 5 µg (datasheet)
+    accel_bias_tau:         float = 3600.0                   # GM correlation time [s]
+    accel_br_std:           float = 25e-6 * 9.80665          # 25 µg
+    accel_sf_std:           float = 0.0                      # dimensionless
+    accel_ma_std:           float = 0.0                      # rad
     # Initial alignment
-    align_tilt_std:    float = 0.0                       # rad
-    align_heading_std: float = 0.0                       # rad
+    align_tilt_std:    float = 0.0                           # rad
+    align_heading_std: float = 0.0                           # rad
+
+    @property
+    def gyro_gm_std(self) -> float:
+        """Steady-state std dev of the gyro Gauss-Markov bias b_gd [rad/s].
+
+        Chosen so that the bias's Allan deviation peaks at
+        `gyro_bias_instability`: σ = B / GM_ALLAN_PEAK ≈ 1.62·B.
+        """
+        return self.gyro_bias_instability / GM_ALLAN_PEAK
+
+    @property
+    def accel_gm_std(self) -> float:
+        """Steady-state std dev of the accelerometer Gauss-Markov bias b_ad [m/s²].
+
+        Chosen so that the bias's Allan deviation peaks at
+        `accel_bias_instability`: σ = B / GM_ALLAN_PEAK ≈ 1.62·B.
+        """
+        return self.accel_bias_instability / GM_ALLAN_PEAK
 
 
 class IMUSamples(NamedTuple):
@@ -135,14 +167,14 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
     DEG_HR = np.pi / 180 / 3600
     return IMUSpec(
         gyro_arw     = g["arw_deg_per_rt_hr"]          * np.pi / 180 / 60,
-        gyro_bi_std  = g["bias_instab_deg_per_hr"]     * DEG_HR,
-        gyro_bi_tau  = g["bias_tau_s"],
+        gyro_bias_instability = g["bias_instab_deg_per_hr"]  * DEG_HR,
+        gyro_bias_tau         = g["bias_tau_s"],
         gyro_br_std  = g["repeatability_deg_per_hr"]   * DEG_HR,
         gyro_sf_std  = g.get("scale_factor_ppm", 0.0)   * 1e-6,
         gyro_ma_std  = g.get("misalignment_urad", 0.0)  * 1e-6,
         accel_vrw    = a["vrw_m_per_s_per_rt_hr"]      / 60,
-        accel_bi_std = a["bias_instab_ug"]              * 1e-6 * 9.80665,
-        accel_bi_tau = a["bias_tau_s"],
+        accel_bias_instability = a["bias_instab_ug"]     * 1e-6 * 9.80665,
+        accel_bias_tau         = a["bias_tau_s"],
         accel_br_std = a["repeatability_ug"]            * 1e-6 * 9.80665,
         accel_sf_std = a.get("scale_factor_ppm", 0.0)   * 1e-6,
         accel_ma_std = a.get("misalignment_urad", 0.0)  * 1e-6,
@@ -283,8 +315,9 @@ def generate_imu_samples(truth: "TruthTrajectory", spec: IMUSpec,
       drawn once per run.
     - b_as, b_gs: static (turn-on) bias ~ N(0, σ_BR²), drawn once per run.
     - b_ad, b_gd: dynamic bias, a first-order Gauss-Markov process with
-      steady-state std σ_BI and correlation time τ_BI, stationary from
-      t = 0.
+      correlation time τ and steady-state spread σ = B / GM_ALLAN_PEAK, so
+      that its Allan deviation peaks at the datasheet bias instability B.
+      Stationary from t = 0.
     - w_a, w_g: white noise, with σ = VRW/√tau_i or ARW/√tau_i per sample.
 
     The gyro and accelerometer triads draw from separate random streams
@@ -317,8 +350,8 @@ def generate_imu_samples(truth: "TruthTrajectory", spec: IMUSpec,
     rng_gyro, rng_accel = rng.spawn(2)
     meas_omega_ib_b = _triad_measurement(
         rng_gyro, truth.omega_ib_b, tau_i, spec.gyro_sf_std, spec.gyro_ma_std,
-        spec.gyro_br_std, spec.gyro_bi_std, spec.gyro_bi_tau, spec.gyro_arw)
+        spec.gyro_br_std, spec.gyro_gm_std, spec.gyro_bias_tau, spec.gyro_arw)
     meas_f_ib_b = _triad_measurement(
         rng_accel, truth.f_ib_b, tau_i, spec.accel_sf_std, spec.accel_ma_std,
-        spec.accel_br_std, spec.accel_bi_std, spec.accel_bi_tau, spec.accel_vrw)
+        spec.accel_br_std, spec.accel_gm_std, spec.accel_bias_tau, spec.accel_vrw)
     return IMUSamples(meas_omega_ib_b, meas_f_ib_b)
