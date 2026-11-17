@@ -11,7 +11,7 @@ license = {text = "MIT"}
 classifiers = ["License :: OSI Approved :: MIT License"]
 requires-python = ">=3.11"
 dependencies = [
-    "numpy",
+    "numpy>=1.25",          # Generator.spawn (per-source random streams)
     "scipy",
     "pyyaml",
     "matplotlib",

@@ -66,10 +66,14 @@ $$
 g(\phi, h) = g_0(\phi)\left(1 - \frac{2h}{a}\right)
 $$
 
-This first-order correction (\(\partial g/\partial h \approx -2g/a\)) is
-accurate to about 1 µg below 10 km — well under the navigation-grade
-accelerometer bias — so the higher-order \(f\), \(m\), and \(h^2\) terms of
-the full formula are deliberately omitted. The local gravity vector is
+This first-order correction (\(\partial g/\partial h \approx -2g/a\)) omits
+the \(f\), \(m\) and \(h^2\) terms of the full WGS-84 formula. Against the
+full formula it overstates gravity by about 2 µg per kilometre of height at
+low latitudes: about 7 µg at the packaged mission's 15,000 ft cruise
+altitude (18.5° N) and up to 14 µg at 10 km, comparable to a
+navigation-grade accelerometer's bias. The truth generator and the
+navigator share this model, so the approximation does not affect the
+simulated navigation errors. The local gravity vector is
 \(\mathbf{g}^n = [0,\, 0,\, +g(\phi,h)]^T\) (Down positive).
 
 ## Strapdown mechanization
@@ -143,7 +147,9 @@ $$
 | \(\boldsymbol{\eta}_k\) | ARW/VRW white noise | every sample |
 
 The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
-steady-state variance \(\sigma_{BI}^2\) independent of the sample rate:
+steady-state variance \(\sigma_{BI}^2\) independent of the sample rate. It
+starts from its stationary distribution, \(b_0 \sim \mathcal{N}(0,
+\sigma_{BI}^2)\), so its variance is \(\sigma_{BI}^2\) from the first sample:
 
 $$
 b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,

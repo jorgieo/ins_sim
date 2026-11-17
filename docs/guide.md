@@ -7,13 +7,18 @@ visualization, and authoring your own mission and IMU configuration files.
 
 ![The main window after a completed run](assets/gui/main_window.png)
 
-1. **Select a trajectory.** The *Trajectory* combo lists the mission YAMLs
-   packaged with the app (`bqn_departure.yaml` by default). *Browse…* adds any
-   external mission file; the app validates that it has the expected
-   trajectory structure (a top-level `phases` list) before accepting it.
-2. **Select an IMU spec.** Same pattern: the packaged navigation-grade spec
-   (`imu_spec.yaml`) by default, or *Browse…* for your own (validated for
-   top-level `gyro` and `accel` sections).
+1. **Select a trajectory.** The *Trajectory* list shows the mission YAMLs
+   in the `trajectories` folder next to the app: the app's own folder for
+   the downloaded bundle, or the current working directory when run from
+   source. On first launch the folder is created and seeded with the
+   packaged `bqn_departure.yaml`. Files you add or edit there appear the
+   next time you open the list, and your edits are never overwritten.
+   *Browse…* opens the same folder and accepts any mission file with a
+   top-level `phases` list. If that location is not writable, the app uses
+   `~/ins_sim/trajectories` instead.
+2. **Select an IMU spec.** Same pattern, with the `imu_specs` folder and the
+   packaged navigation-grade `imu_spec.yaml`. Files must have top-level
+   `gyro` and `accel` sections.
 3. **Set the ensemble size.** *Monte Carlo iterations* (default 50) trades
    statistical confidence against run time — ensemble statistics converge as
    \(1/\sqrt{N}\), so quadrupling the trials halves the noise on the
@@ -45,10 +50,21 @@ a table lists the 50th and 95th percentile error at each whole hour.
 ![CEP tab](assets/plots/cep.png)
 
 **Attitude / Velocity / Position Errors** — per-axis ensemble mean error with
-±3σ bands. Attitude panels are pitch/roll/heading in degrees (heading
-wrapped); velocity and position are North/East/Down. With baro aiding on, the
-Down channels stay bounded while North/East grow with the classic INS error
-signature; with aiding off, watch the Down channels run away.
+±3σ bands, where σ is the sample standard deviation across trials. All three
+are resolved along the local North, East and Down axes at the true position,
+and every error is the estimate minus the truth (see
+[Notation & conventions](theory/notation.md#errors)):
+
+- *Attitude* shows the small rotation between the estimated and the true
+  attitude: the North and East tilts, and the heading error (the rotation
+  about Down), in degrees.
+- *Velocity* and *Position* show the North, East and Down components. The
+  position error is the latitude, longitude and height error converted to
+  metres.
+
+With baro aiding on, the Down channels stay bounded while North/East grow
+with the classic INS error signature; with aiding off, watch the Down
+channels run away.
 
 **3D Trajectory** — the truth track (black), every trial's estimated track
 (steel blue), and the crimson swept tube of the 95th-percentile radial error.

@@ -9,6 +9,7 @@ import matplotlib.pyplot as plt
 from ins_sim.trajectory.kinematics import build_trajectory
 from ins_sim.sensors.imu import IMUSpec, load_imu_spec
 from ins_sim.navigation.strapdown import NavState, strapdown_navgrade
+from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import run_monte_carlo, percentile_envelope
 from ins_sim.evaluation.visualization import build_summary_figure
 from ins_sim.gui.figures import figure_map
@@ -59,13 +60,14 @@ def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0):
         seed: Seed for the master random generator. Defaults to 0.
 
     Returns:
-        tuple: (est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b, r95) —
-            see run_monte_carlo and percentile_envelope for the shape and
-            meaning of each element.
+        tuple: (mc, r95), the MonteCarloResult and the 95th-percentile 3D
+            position-error envelope, shape (M,) [m].
     """
     mc = run_monte_carlo(truth, spec, n_trials=n_trials, seed=seed)
-    r95 = percentile_envelope(mc.est_r_lb_l, truth.r_lb_l, q=95)
-    return mc.est_r_lb_l, mc.est_euler_nb, mc.est_L_b, mc.est_lambda_b, r95
+    delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
+                                  truth.L_b, truth.lambda_b, truth.h_b)
+    r95 = percentile_envelope(delta_r_eb_n, q=95)
+    return mc, r95
 
 
 def print_trajectory_summary(truth):
@@ -159,8 +161,7 @@ def main(argv=None):
 
     n_trials = args.trials
     spec = load_imu_spec(args.imu_spec)
-    est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b, r95 = simulate(
-        truth, spec, n_trials=n_trials, seed=args.seed)
+    mc, r95 = simulate(truth, spec, n_trials=n_trials, seed=args.seed)
     print(f"95th-pct error  start: {r95[0]:6.3f} m   end: {r95[-1]:6.1f} m")
 
     elapsed = datetime.now() - simulation_start
@@ -168,10 +169,8 @@ def main(argv=None):
     minutes, seconds = divmod(rem, 60)
     print(f"Monte Carlo simulation time: {int(hours)}h {int(minutes)}m {int(seconds)}s")
 
-    fig  = build_summary_figure(truth, est_r_lb_l, est_euler_nb, r95, n_trials)
-    fmap = figure_map(SimpleNamespace(
-        truth=truth, est_r_lb_l=est_r_lb_l, est_L_b=est_L_b,
-        est_lambda_b=est_lambda_b, n_trials=n_trials))
+    fig  = build_summary_figure(truth, mc, r95)
+    fmap = figure_map(SimpleNamespace(truth=truth, **mc._asdict(), n_trials=n_trials))
 
     maps_dir = os.path.join(os.path.dirname(__file__), "maps")
     os.makedirs(maps_dir, exist_ok=True)

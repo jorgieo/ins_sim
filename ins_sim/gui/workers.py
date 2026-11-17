@@ -13,6 +13,7 @@ import numpy as np
 from PySide6.QtCore import QObject, Signal
 
 from ins_sim.config import default_imu_spec_path
+from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import percentile_envelope, run_monte_carlo
 from ins_sim.sensors.imu import load_imu_spec
 from ins_sim.trajectory.kinematics import build_trajectory
@@ -30,7 +31,9 @@ class SimulationResult:
     est_L_b: np.ndarray       # (n_trials, M) latitude [rad]
     est_lambda_b: np.ndarray  # (n_trials, M) longitude [rad]
     est_v_eb_n: np.ndarray    # (n_trials, M, 3) NED velocity [m/s]
-    r95: np.ndarray           # (M,) 95th-pct radial error envelope [m]
+    est_h_b: np.ndarray       # (n_trials, M) height [m]
+    delta_psi_nb_n: np.ndarray  # (n_trials, M, 3) attitude error, NED [rad]
+    r95: np.ndarray           # (M,) 95th-pct 3D position-error envelope [m]
     n_trials: int
     config: dict = field(default_factory=dict)
     elapsed_s: float = 0.0
@@ -100,7 +103,9 @@ class SimulationWorker(QObject):
         mc = run_monte_carlo(
             truth, spec, n_trials=n_trials, seed=self._seed,
             progress_callback=self._on_progress, baro_aiding=baro_aiding)
-        r95 = percentile_envelope(mc.est_r_lb_l, truth.r_lb_l, q=95)
+        delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
+                                      truth.L_b, truth.lambda_b, truth.h_b)
+        r95 = percentile_envelope(delta_r_eb_n, q=95)
 
         elapsed = time.monotonic() - start
         self.log_message.emit(

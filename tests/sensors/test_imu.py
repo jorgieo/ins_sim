@@ -140,3 +140,37 @@ def test_generate_imu_samples_white_noise_statistics():
 
     assert gyro_noise_std == pytest.approx(expected_gyro_std, rel=0.05)
     assert accel_noise_std == pytest.approx(expected_accel_std, rel=0.05)
+
+
+def test_gauss_markov_bias_is_stationary_from_the_first_sample():
+    # Only the gyro dynamic bias is active. Its spread across independent
+    # runs must equal the steady-state σ at the first sample (b_d[0] is drawn
+    # from the stationary distribution) and stay there later on.
+    sigma, tau = 1e-5, 20.0
+    spec = IMUSpec(gyro_arw=0, gyro_br_std=0, accel_vrw=0, accel_bi_std=0,
+                   accel_br_std=0, gyro_bi_std=sigma, gyro_bi_tau=tau)
+    truth = _stub_truth(M=60, dt=1.0)
+    bias = np.array([
+        generate_imu_samples(truth, spec, np.random.default_rng(seed)).meas_omega_ib_b
+        - truth.omega_ib_b
+        for seed in range(2000)
+    ])                                                  # (runs, M, 3)
+    assert bias[:, 0].std() == pytest.approx(sigma, rel=0.06)
+    assert bias[:, -1].std() == pytest.approx(sigma, rel=0.06)
+    # Lag-k correlation of a first-order Gauss-Markov process is exp(-k·dt/τ).
+    k = 10
+    corr = np.corrcoef(bias[:, 0].ravel(), bias[:, k].ravel())[0, 1]
+    assert corr == pytest.approx(np.exp(-k * 1.0 / tau), abs=0.05)
+
+
+def test_gyro_errors_do_not_depend_on_the_accelerometer_spec():
+    # Each triad draws from its own stream: changing accelerometer
+    # parameters must leave the gyro realization bit-identical.
+    truth = _stub_truth()
+    spec_a = IMUSpec()
+    spec_b = IMUSpec(accel_vrw=3 * spec_a.accel_vrw, accel_bi_std=0.0,
+                     accel_sf_std=1e-4, accel_ma_std=1e-4)
+    a = generate_imu_samples(truth, spec_a, np.random.default_rng(9))
+    b = generate_imu_samples(truth, spec_b, np.random.default_rng(9))
+    np.testing.assert_array_equal(a.meas_omega_ib_b, b.meas_omega_ib_b)
+    assert not np.array_equal(a.meas_f_ib_b, b.meas_f_ib_b)

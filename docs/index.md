@@ -17,8 +17,9 @@ navigation error grows over time for a given IMU grade.
   speed ramps, climbs, and turns, specified in conventional aviation units and
   converted to strict SI internally.
 - **Navigation-grade IMU error model**: angular/velocity random walk,
-  Gauss-Markov bias drift, and turn-on bias repeatability, parameterized by a
-  YAML datasheet spec.
+  Gauss-Markov bias drift, turn-on bias repeatability, scale-factor and
+  misalignment errors, and initial-alignment errors, parameterized by a YAML
+  datasheet spec.
 - **Rotating-Earth strapdown mechanization**: Earth rate, transport rate,
   WGS-84 radii of curvature, and Somigliana normal gravity evaluated at the
   current latitude/altitude every step — not a flat-Earth approximation.

@@ -1,9 +1,9 @@
 """Main application window for the INS simulator GUI.
 
 Left-hand control panel holds the configuration widgets and run
-controls; the right-hand frame is an empty placeholder reserved for
-future plotting canvases. Simulations run in a background QThread via
-SimulationWorker so the UI stays responsive.
+controls; the right-hand VisualizationPanel shows one interactive plotly
+tab per selected visualization after a run. Simulations run in a
+background QThread via SimulationWorker so the UI stays responsive.
 """
 
 import sys
@@ -43,7 +43,7 @@ CONTROL_PANEL_WIDTH = 320
 
 
 class MainWindow(QMainWindow):
-    """Top-level window: control panel on the left, plot area placeholder on the right.
+    """Top-level window: control panel on the left, visualization tabs on the right.
 
     Signals:
         configChanged: Emitted whenever any configuration widget changes,

@@ -31,7 +31,7 @@ DEFAULT_IMU_SPEC_NAME = "imu_spec.yaml"
 #: Stable config keys -> human-readable checkbox labels.
 VISUALIZATION_CHOICES = {
     "trajectory_3d":    "3D Trajectory",
-    "attitude_errors":  "Attitude/Euler Angle Errors",
+    "attitude_errors":  "Attitude Errors",
     "velocity_errors":  "Velocity Errors",
     "position_errors":  "Position Errors",
     "cep":              "Circular Error Probable",

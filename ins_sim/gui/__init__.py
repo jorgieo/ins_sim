@@ -1,6 +1,7 @@
 """Desktop GUI for the INS Monte Carlo simulator (requires the ``gui`` extra).
 
-PySide6 is imported lazily inside the submodules so that the core
-``ins_sim`` library remains importable without the GUI dependencies.
+The Qt-dependent submodules (main_window, canvas, widgets, workers)
+import PySide6 at module level, so they need the ``gui`` extra; the core
+``ins_sim`` library, ``figures`` and ``paths`` do not.
 Launch with ``python -m ins_sim.gui``.
 """

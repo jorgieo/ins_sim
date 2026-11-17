@@ -2,6 +2,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
+from ins_sim.evaluation.errors import position_error
+
 NM = 1852.0
 
 
@@ -53,29 +55,22 @@ def plot_error_tube(ax, r_lb_l: np.ndarray, r95: np.ndarray, color: str = "crims
                     edgecolor='none', linewidth=0)
 
 
-def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray,
-                         r95: np.ndarray, n_trials: int) -> plt.Figure:
+def build_summary_figure(truth, mc, r95: np.ndarray) -> plt.Figure:
     """Builds the 2x3 Monte Carlo summary figure.
 
     Figure panels: 3D ground track with swept 95th-pct error tube,
-    radial error envelope, CEP plot, and pitch/roll/heading attitude
-    envelopes. Does not call plt.show() -- the caller decides.
+    3D position-error envelope, CEP, and the three components of the
+    attitude error delta_psi_nb^n. Does not call plt.show() -- the
+    caller decides.
 
     Note:
         Applies sns.set_theme(...) as a side effect (global rcParams
         mutation), matching the original script's behavior.
 
     Args:
-        truth: Truth trajectory exposing r_lb_l, t and euler_nb
-            ([roll, pitch, heading], shape (M, 3) [rad]).
-        est_r_lb_l: Estimated position per Monte Carlo trial, shape
-            (n_trials, M, 3) [m].
-        est_euler_nb: Estimated Euler angles [roll, pitch, heading]
-            per trial, shape (n_trials, M, 3) [rad].
-        r95: 95th-percentile radial position error envelope, shape
-            (M,) [m].
-        n_trials: Number of Monte Carlo trials represented in
-            est_r_lb_l.
+        truth: Truth trajectory exposing r_lb_l, t, L_b, lambda_b and h_b.
+        mc: MonteCarloResult from run_monte_carlo.
+        r95: 95th-percentile 3D position-error envelope, shape (M,) [m].
 
     Returns:
         matplotlib.figure.Figure: The assembled summary figure.
@@ -96,8 +91,11 @@ def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray
         },
     )
 
+    n_trials = len(mc.est_r_lb_l)
     P   = truth.r_lb_l
     t_m = truth.t / 60.0   # minutes for x-axis
+    delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
+                                  truth.L_b, truth.lambda_b, truth.h_b)
 
     step = max(1, len(P) // 4000)
     fig  = plt.figure(figsize=(22, 12), layout='constrained')
@@ -106,8 +104,8 @@ def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray
     ax  = fig.add_subplot(gs[0, 0], projection='3d')
     ax2 = fig.add_subplot(gs[0, 1])
     ax3 = fig.add_subplot(gs[0, 2])
-    ax4 = fig.add_subplot(gs[1, 0])   # Pitch
-    ax5 = fig.add_subplot(gs[1, 1])   # Roll
+    ax4 = fig.add_subplot(gs[1, 0])   # North tilt
+    ax5 = fig.add_subplot(gs[1, 1])   # East tilt
     ax6 = fig.add_subplot(gs[1, 2])   # Heading
 
     # ---- 3-D ground track + 95th-pct error tube ---------------------------
@@ -121,7 +119,7 @@ def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray
     ax.plot(P_km[::step, 1], P_km[::step, 0], -P_km[::step, 2],
             'k-', lw=1.5, label='Truth')
     for i in range(min(6, n_trials)):
-        Q_km = est_r_lb_l[i] / 1000.0
+        Q_km = mc.est_r_lb_l[i] / 1000.0
         ax.plot(Q_km[::step, 1], Q_km[::step, 0], -Q_km[::step, 2],
                 '-', color='steelblue', alpha=0.35, lw=0.5)
     plot_error_tube(ax, P_km, r95_km)
@@ -131,18 +129,18 @@ def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray
     ax.set_title(f'{n_trials}-trial Monte Carlo')
     ax.legend(loc='upper left')
 
-    # ---- 3-D radial error vs time -----------------------------------------
-    err_all = np.linalg.norm(est_r_lb_l - P[None, :, :], axis=2)
+    # ---- 3-D position error vs time ---------------------------------------
+    err_all = np.linalg.norm(delta_r_eb_n, axis=2)
     ax2.plot(t_m, err_all.T, color='steelblue', alpha=0.20, lw=0.5)
     ax2.plot(t_m, r95, color='crimson', lw=2.0, label='95th pct')
     ax2.fill_between(t_m, 0, r95, color='crimson', alpha=0.15)
     ax2.set_xlabel('Time (min)')
     ax2.set_ylabel('3-D position error (m)')
-    ax2.set_title('Radial error envelope')
+    ax2.set_title('Position error envelope')
     ax2.legend()
 
     # ---- CEP vs time + linear fit -----------------------------------------
-    horiz_err = np.linalg.norm(est_r_lb_l[:, :, :2] - P[None, :, :2], axis=2)
+    horiz_err = np.linalg.norm(delta_r_eb_n[:, :, :2], axis=2)
     cep = np.percentile(horiz_err, 50, axis=0)
 
     mask60 = t_m <= 60.0
@@ -160,23 +158,23 @@ def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray
     ax3.set_title('CEP along path')
     ax3.legend()
 
-    # ---- Attitude error envelopes -----------------------------------------
-    euler_err = est_euler_nb - truth.euler_nb[None, :, :]
-    euler_err[:, :, 2] = (euler_err[:, :, 2] + np.pi) % (2 * np.pi) - np.pi
-    p95_euler = np.rad2deg(np.percentile(np.abs(euler_err), 95, axis=0))
+    # ---- Attitude error delta_psi_nb^n ------------------------------------
+    delta_psi_deg = np.rad2deg(mc.delta_psi_nb_n)
+    p95_abs = np.percentile(np.abs(delta_psi_deg), 95, axis=0)
 
-    for ax_att, col, title, ylabel in [
-        (ax4, 1, 'Pitch',   'Pitch (deg)'),
-        (ax5, 0, 'Roll',    'Roll (deg)'),
-        (ax6, 2, 'Heading', 'Heading (deg)'),
+    for ax_att, col, title in [
+        (ax4, 0, 'North tilt error'),
+        (ax5, 1, 'East tilt error'),
+        (ax6, 2, 'Heading error'),
     ]:
-        truth_deg = np.rad2deg(truth.euler_nb[:, col])
-        err95     = p95_euler[:, col]
-        ax_att.fill_between(t_m, truth_deg - err95, truth_deg + err95,
-                            color='crimson', alpha=0.25, label='95th pct envelope')
-        ax_att.plot(t_m, truth_deg, color='navy', lw=1.5, label='Truth')
+        ax_att.plot(t_m, delta_psi_deg[:, :, col].T, color='steelblue',
+                    alpha=0.20, lw=0.5)
+        ax_att.fill_between(t_m, -p95_abs[:, col], p95_abs[:, col],
+                            color='crimson', alpha=0.20,
+                            label='95th pct |error|')
+        ax_att.axhline(0.0, color='gray', lw=0.8)
         ax_att.set_xlabel('Time (min)')
-        ax_att.set_ylabel(ylabel)
+        ax_att.set_ylabel(f'{title} (deg)')
         ax_att.set_title(title)
         ax_att.legend(fontsize=8)
 

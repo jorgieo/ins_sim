@@ -33,8 +33,9 @@ def _synthetic_result(seed=0):
     lat = np.deg2rad(18.5) + pos_n[:, 0] / 6.378e6
     lon = np.deg2rad(-67.1) + pos_n[:, 1] / 6.0e6
 
+    h_b = -pos_n[:, 2]                                   # 3000 m, constant
     truth = SimpleNamespace(t=t, r_lb_l=pos_n, v_eb_n=vel_n, euler_nb=euler,
-                            L_b=lat, lambda_b=lon)
+                            L_b=lat, lambda_b=lon, h_b=h_b)
 
     # Per-trial error: distinct linear drift rates + noise, so the
     # ensemble median differs from every individual trial's fit.
@@ -46,12 +47,15 @@ def _synthetic_result(seed=0):
     euler_runs = euler[None, :, :] + rng.normal(0.0, 0.01, (N_TRIALS, M, 3))
     lat_runs = lat[None, :] + pos_runs[:, :, 0] / 6.378e6 - pos_n[None, :, 0] / 6.378e6
     lon_runs = lon[None, :] + pos_runs[:, :, 1] / 6.0e6 - pos_n[None, :, 1] / 6.0e6
+    h_runs = h_b[None, :] - (pos_runs[:, :, 2] - pos_n[None, :, 2])
+    delta_psi = rng.normal(0.0, 1e-4, (N_TRIALS, M, 3))
     r95 = np.percentile(
         np.linalg.norm(pos_runs - pos_n[None, :, :], axis=2), 95, axis=0)
 
     return SimpleNamespace(
         truth=truth, est_r_lb_l=pos_runs, est_euler_nb=euler_runs,
         est_L_b=lat_runs, est_lambda_b=lon_runs, est_v_eb_n=vel_runs,
+        est_h_b=h_runs, delta_psi_nb_n=delta_psi,
         r95=r95, n_trials=N_TRIALS, config={})
 
 
@@ -129,3 +133,20 @@ def test_map_has_all_trials_envelope_truth_and_markers():
     assert len(markers.lat) == 24
 
     assert fig.layout.map.style == "open-street-map"
+
+
+def test_bands_use_unbiased_spread_and_tolerate_one_trial():
+    result = _synthetic_result()
+    two = SimpleNamespace(**{**vars(result), "n_trials": 2,
+                             "delta_psi_nb_n": result.delta_psi_nb_n[:2]})
+    fig = figures.figure_attitude(two)
+    upper = np.asarray(fig.data[0].y, dtype=float)      # first panel, mean + 3σ
+    deg = np.rad2deg(two.delta_psi_nb_n[:, :, 0])
+    step = figures._line_step(M)
+    expected = (deg.mean(axis=0) + 3 * deg.std(axis=0, ddof=1))[::step]
+    np.testing.assert_allclose(upper, expected)
+
+    one = SimpleNamespace(**{**vars(result), "n_trials": 1,
+                             "delta_psi_nb_n": result.delta_psi_nb_n[:1]})
+    fig = figures.figure_attitude(one)
+    assert np.all(np.isfinite(np.asarray(fig.data[0].y, dtype=float)))

@@ -21,7 +21,8 @@ strapdown INS Monte Carlo simulator with a PySide6 desktop front end.
 accelerometer outputs a perfect IMU would produce along that trajectory
 (ω_ib^b and f_ib^b in Groves notation), corrupts them with a navigation-grade IMU error model
 (angular/velocity random walk, Gauss-Markov bias drift, turn-on bias
-repeatability), and runs a strapdown mechanization to recover position,
+repeatability, scale-factor and misalignment errors, initial-alignment
+errors), and runs a strapdown mechanization to recover position,
 velocity, and attitude. A Monte Carlo ensemble over independent noise
 realizations characterizes how navigation error grows over time for a given
 IMU grade.
@@ -65,8 +66,9 @@ pip install ".[gui]"
 python -m ins_sim.gui
 ```
 
-- Select a mission trajectory and IMU error specification (packaged YAMLs or
-  your own files with the same schema).
+- Select a mission trajectory and IMU error specification from the
+  `trajectories` and `imu_specs` folders next to the app (seeded with the
+  packaged defaults; add your own files there or use *Browse…*).
 - Set the trial count, integration time step, and baro altitude aiding
   (uncheck it to run the vertical channel free-inertial).
 - Run the Monte Carlo ensemble in the background with live log output.

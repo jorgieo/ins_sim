@@ -22,6 +22,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from ins_sim.config import default_imu_spec_path, default_trajectory_path  # noqa: E402
+from ins_sim.evaluation.errors import position_error  # noqa: E402
 from ins_sim.evaluation.monte_carlo import percentile_envelope, run_monte_carlo  # noqa: E402
 from ins_sim.gui import figures  # noqa: E402
 from ins_sim.sensors.imu import load_imu_spec  # noqa: E402
@@ -51,7 +52,9 @@ def run_baseline(trials: int, dt: float, seed: int) -> SimpleNamespace:
         truth, spec, n_trials=trials, seed=seed,
         progress_callback=lambda done, total: print(
             f"  trial {done}/{total}", flush=True))
-    r95 = percentile_envelope(mc.est_r_lb_l, truth.r_lb_l, q=95)
+    delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
+                                  truth.L_b, truth.lambda_b, truth.h_b)
+    r95 = percentile_envelope(delta_r_eb_n, q=95)
     return SimpleNamespace(truth=truth, **mc._asdict(), r95=r95, n_trials=trials)
 
 

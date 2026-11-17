@@ -1,8 +1,9 @@
 """Plotly figure builders for the simulator's visualization tabs.
 
 Qt-free by design: every builder takes a SimulationResult-shaped object
-(truth, est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b, est_v_eb_n, r95,
-n_trials) and returns a plotly.graph_objects.Figure, so the module is
+(truth, est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b, est_v_eb_n,
+est_h_b, delta_psi_nb_n, r95, n_trials) and returns a
+plotly.graph_objects.Figure, so the module is
 unit-testable headlessly and reusable from the CLI (main.py's saved map).
 
 Chart language matches the rest of the project: navy = truth/mean,
@@ -19,6 +20,8 @@ payload stays under ~MAX_TRIAL_POINTS points.
 import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
+
+from ins_sim.evaluation.errors import position_error, velocity_error
 
 NM = 1852.0
 
@@ -76,11 +79,16 @@ def _bundle(x, ys):
     return np.tile(np.append(x, np.nan), len(ys)), _nan_join(ys)
 
 
+def position_errors(result) -> np.ndarray:
+    """Per-run position error delta_r_eb^n in local NED [m], shape (n_trials, M, 3)."""
+    truth = result.truth
+    return position_error(result.est_L_b, result.est_lambda_b, result.est_h_b,
+                          truth.L_b, truth.lambda_b, truth.h_b)
+
+
 def horizontal_error_nm(result) -> np.ndarray:
     """Per-run horizontal position error in NM, shape (n_trials, M)."""
-    return np.linalg.norm(
-        result.est_r_lb_l[:, :, :2] - result.truth.r_lb_l[None, :, :2],
-        axis=2) / NM
+    return np.linalg.norm(position_errors(result)[:, :, :2], axis=2) / NM
 
 
 # =========================================================================
@@ -143,7 +151,8 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
         plotly.graph_objects.Figure: The assembled subplot figure.
     """
     mean = err_runs.mean(axis=0)
-    sigma = err_runs.std(axis=0)
+    # Unbiased (N−1) spread; a single trial has no spread to estimate.
+    sigma = err_runs.std(axis=0, ddof=1 if len(err_runs) > 1 else 0)
     s = _line_step(len(t_min))
     t = t_min[::s]
 
@@ -177,13 +186,11 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
 
 
 def figure_attitude(result) -> go.Figure:
-    """Pitch/roll/heading Euler-angle errors with ±3σ bands [deg]."""
-    truth = result.truth
-    euler_err = result.est_euler_nb - truth.euler_nb[None, :, :]
-    euler_err[:, :, 2] = (euler_err[:, :, 2] + np.pi) % (2 * np.pi) - np.pi
+    """Attitude error delta_psi_nb^n (tilts and heading) with ±3σ bands [deg]."""
     return _bands_figure(
-        truth.t / 60.0, np.rad2deg(euler_err),
-        [(1, "Pitch error"), (0, "Roll error"), (2, "Heading error")],
+        result.truth.t / 60.0, np.rad2deg(result.delta_psi_nb_n),
+        [(0, "North tilt error"), (1, "East tilt error"),
+         (2, "Heading error")],
         "deg")
 
 
@@ -191,7 +198,7 @@ def figure_velocity(result) -> go.Figure:
     """NED velocity errors with ±3σ bands [m/s]."""
     truth = result.truth
     return _bands_figure(
-        truth.t / 60.0, result.est_v_eb_n - truth.v_eb_n[None, :, :],
+        truth.t / 60.0, velocity_error(result.est_v_eb_n, truth.v_eb_n),
         [(0, "North velocity error"), (1, "East velocity error"),
          (2, "Down velocity error")],
         "m/s")
@@ -201,7 +208,7 @@ def figure_position(result) -> go.Figure:
     """NED position errors with ±3σ bands [m]."""
     truth = result.truth
     return _bands_figure(
-        truth.t / 60.0, result.est_r_lb_l - truth.r_lb_l[None, :, :],
+        truth.t / 60.0, position_errors(result),
         [(0, "North position error"), (1, "East position error"),
          (2, "Down position error")],
         "m")
@@ -324,8 +331,7 @@ def figure_map(result) -> go.Figure:
     lon_deg = np.rad2deg(truth.lambda_b)
     t_min = truth.t / 60.0
 
-    horiz_err = np.linalg.norm(
-        result.est_r_lb_l[:, :, :2] - P[None, :, :2], axis=2)
+    horiz_err = np.linalg.norm(position_errors(result)[:, :, :2], axis=2)
     p95_horiz = np.percentile(horiz_err, 95, axis=0)
 
     # Perpendicular envelope in geographic space: track gradient ->
