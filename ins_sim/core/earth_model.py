@@ -7,7 +7,7 @@ geodetic height h_b. Velocity v_eb^n is resolved in NED.
 Gravity: Somigliana normal gravity + free-air height correction, with the
 local gravity vector g_b^n = [0, 0, +g(L_b, h_b)] (Down positive).
 
-Symbols follow Groves (2013); see the Notation & conventions page.
+Symbols follow Groves (2013); see [Notation & conventions][notation-conventions].
 """
 
 from typing import NamedTuple
@@ -46,6 +46,15 @@ def wgs84_radii(L_b: npt.ArrayLike) -> Radii:
         Radii: (R_N, R_E), the meridian and transverse radii of curvature
             [m], each with the shape of `L_b`. Unpacks positionally as
             ``R_N, R_E = wgs84_radii(L_b)``.
+
+    Examples:
+        At the equator the transverse radius is the semi-major axis and
+        the meridian radius is at its smallest:
+
+        >>> from ins_sim.core.earth_model import wgs84_radii
+        >>> R_N, R_E = wgs84_radii(0.0)
+        >>> round(float(R_N)), round(float(R_E))
+        (6335439, 6378137)
     """
     # --8<-- [start:radii]
     sin2_L = np.sin(L_b) ** 2
@@ -66,6 +75,16 @@ def earth_rate_n(L_b: npt.ArrayLike) -> np.ndarray:
         numpy.ndarray: omega_ie^n, the Earth rotation rate vector [rad/s]
             resolved in NED. Shape (3,) for scalar `L_b`, shape (M, 3)
             for `L_b` of shape (M,).
+
+    Examples:
+        At 45° N the Earth's 15.04 °/h rotation splits equally between
+        the North and (negative) Down axes:
+
+        >>> import numpy as np
+        >>> from ins_sim.core.earth_model import earth_rate_n
+        >>> omega_ie_n = earth_rate_n(np.deg2rad(45.0))
+        >>> [round(float(x), 3) for x in np.rad2deg(omega_ie_n) * 3600]   # °/h
+        [10.636, 0.0, -10.636]
     """
     L_b = np.asarray(L_b)
     zeros = np.zeros_like(L_b)
@@ -92,6 +111,16 @@ def transport_rate_n(v_eb_n: npt.ArrayLike, L_b: npt.ArrayLike,
         numpy.ndarray: omega_en^n, the transport rate vector [rad/s]
             resolved in NED. Shape (3,) for scalar inputs, shape (M, 3)
             for inputs of shape (M, 3)/(M,)/(M,).
+
+    Examples:
+        Flying due north at 250 m/s turns the local NED frame about its
+        East axis (negative sign: the frame pitches nose-down to stay level):
+
+        >>> import numpy as np
+        >>> from ins_sim.core.earth_model import transport_rate_n
+        >>> omega_en_n = transport_rate_n([250.0, 0.0, 0.0], np.deg2rad(45.0), 4572.0)
+        >>> [round(float(x), 3) for x in np.rad2deg(omega_en_n) * 3600]   # °/h
+        [0.0, -8.09, 0.0]
     """
     v_eb_n = np.asarray(v_eb_n)
     L_b = np.asarray(L_b)
@@ -117,6 +146,14 @@ def normal_gravity(L_b: npt.ArrayLike, h_b: npt.ArrayLike) -> float | np.ndarray
     Returns:
         float | numpy.ndarray: Local gravity magnitude g(L_b, h_b)
             [m/s²], with the shape of the inputs.
+
+    Examples:
+        >>> import numpy as np
+        >>> from ins_sim.core.earth_model import normal_gravity
+        >>> round(float(normal_gravity(0.0, 0.0)), 7)       # equator, sea level
+        9.7803253
+        >>> round(float(normal_gravity(np.deg2rad(45.0), 10000.0)), 4)
+        9.7754
     """
     g_e = 9.7803253359          # equatorial gravity
     k   = 1.93185265241e-3      # Somigliana ratio constant

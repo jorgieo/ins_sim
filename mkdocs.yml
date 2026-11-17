@@ -42,17 +42,46 @@ nav:
       - theory/index.md
       - Notation & conventions: theory/notation.md
   - Reference:
+      - Python API:
+          - reference/api/index.md
+          - Earth model: reference/api/earth-model.md
+          - Trajectory: reference/api/trajectory.md
+          - Sensors: reference/api/sensors.md
+          - Navigation: reference/api/navigation.md
+          - Evaluation: reference/api/evaluation.md
+          - Configuration: reference/api/config.md
       - Glossary: reference/glossary.md
       - Bibliography: reference/bibliography.md
 
 plugins:
   - search
+  # Lets docstrings link to page headings, e.g. [text][notation-conventions].
+  - autorefs
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [.]
+          options:
+            docstring_style: google
+            docstring_section_style: list
+            members_order: source
+            merge_init_into_class: true
+            filters: ["!^_"]
+            heading_level: 2
+            show_root_heading: true
+            show_source: true
+            show_signature_annotations: true
+            separate_signature: true
+            signature_crossrefs: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
 
 hooks:
   - tools/mkdocs_hooks.py
 
 watch:
   - includes
+  - ins_sim
 
 markdown_extensions:
   - abbr

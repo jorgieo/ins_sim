@@ -1,3 +1,18 @@
+"""Truth trajectory: the reference motion, and what a perfect IMU measures along it.
+
+`build_trajectory` builds a `TruthTrajectory` from a mission YAML, phase by
+phase; `TruthTrajectory.from_spline` builds one by flying a spline path at
+constant speed. Either way the truth carries the curvilinear position,
+velocity and attitude at every sample, plus the outputs a perfect gyro
+(omega_ib_b) and accelerometer (f_ib_b) would produce.
+
+Those IMU outputs are derived as the exact inverse of the strapdown
+mechanization's update, so feeding them back through the navigator
+reproduces the truth to numerical precision. That zero-noise round trip
+checks the consistency of the two halves; it does not measure how
+accurately the mechanization integrates continuous motion.
+"""
+
 from typing import NamedTuple
 
 import numpy as np
@@ -44,20 +59,19 @@ class TruthTrajectory:
     """Truth state derived from a raw kinematic profile, consistent with rotating-Earth navigation kinematics.
 
     Computed at every sample (Groves notation):
-      • Position relative to the start point, r_lb^l (linearized
-        geodetic reprojection, so it is directly comparable to the
-        strapdown output)
-      • Velocity v_eb^n and its time derivative (input / numerical
-        derivative)
-      • Curvilinear position (L_b, lambda_b, h_b) integrated from start
-      • Euler angles (input)
-      • Angular rate omega_ib^b that a perfect gyro would output —
-        this includes Earth rate and transport rate, resolved in body
-        axes, via the exact discrete body-to-NED rotation
-      • Specific force f_ib^b that a perfect accelerometer would output
-        — derived from the forward-difference rotating-frame velocity
-        equation so that a forward-Euler strapdown can recover the
-        truth exactly
+
+    - Position relative to the start point, r_lb^l (linearized geodetic
+      reprojection, so it is directly comparable to the strapdown output).
+    - Velocity v_eb^n (input) and its time derivative (numerical).
+    - Curvilinear position (L_b, lambda_b, h_b), integrated from the start.
+    - Euler angles (input).
+    - Angular rate omega_ib^b that a perfect gyro would output. This
+      includes Earth rate and transport rate, resolved in body axes, via
+      the exact discrete body-to-NED rotation.
+    - Specific force f_ib^b that a perfect accelerometer would output,
+      derived from the forward-difference rotating-frame velocity
+      equation so that a forward-Euler strapdown recovers the truth
+      exactly.
 
     Attributes:
         tau_i (float): Sample interval [s].
@@ -187,6 +201,16 @@ class TruthTrajectory:
 
         Returns:
             TruthTrajectory: Truth trajectory over the spline.
+
+        Examples:
+            A 5 km leg flown due north at 100 m/s:
+
+            >>> from ins_sim.trajectory.kinematics import TruthTrajectory
+            >>> from ins_sim.trajectory.spline import NEDSplinePath
+            >>> path = NEDSplinePath([[0.0, 0.0, 0.0], [5000.0, 0.0, 0.0]])
+            >>> truth = TruthTrajectory.from_spline(path, speed=100.0, tau_i=0.1)
+            >>> [round(float(v), 6) for v in truth.v_eb_n[100]]
+            [100.0, 0.0, 0.0]
         """
         T = path.length / speed
         t = np.arange(0.0, T + tau_i, tau_i)
@@ -562,6 +586,16 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
         ValueError: If a phase has an unrecognized `type`, or if a
             `speed_end_mach` speed_ramp phase appears before any
             `climb` phase.
+
+    Examples:
+        The packaged mission at coarse 5 s steps (each phase is sampled on
+        whole steps, so coarse sampling shortens it slightly):
+
+        >>> from ins_sim.config import default_trajectory_path
+        >>> from ins_sim.trajectory.kinematics import build_trajectory
+        >>> truth, v_sprint, R_turn = build_trajectory(str(default_trajectory_path()), tau_i=5.0)
+        >>> round(float(truth.t[-1]) / 60)          # minutes of flight
+        79
     """
     with open(yaml_path) as fh:
         cfg = yaml.safe_load(fh)

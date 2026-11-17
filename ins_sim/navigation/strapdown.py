@@ -1,3 +1,12 @@
+"""Strapdown inertial navigation in the local North-East-Down frame.
+
+`strapdown_navgrade` integrates gyro and accelerometer outputs into
+attitude, velocity and curvilinear position on the rotating WGS-84 Earth,
+accounting for Earth rate, transport rate, Coriolis and normal gravity.
+An optional barometric height measurement stabilizes the vertical channel,
+which is unstable when the navigator runs on inertial sensors alone.
+"""
+
 from collections.abc import Sequence
 from typing import NamedTuple
 
@@ -54,16 +63,17 @@ def strapdown_navgrade(meas_omega_ib_b: np.ndarray, meas_f_ib_b: np.ndarray,
                        baro_tau: float = 100.0) -> NavSolution:
     """Runs local-level (NED) strapdown integration with rotating-Earth corrections.
 
-    Per step (Groves notation):
-      1. Evaluate omega_ie^n, omega_en^n, g(L_b, h_b) at the current state.
-      2. Body rate relative to the navigation frame:
-                 omega_nb^b = omega_ib^b − C_n^b · (omega_ie^n + omega_en^n)
-      3. Update C_b^n via the exact rotation-vector exponential of
-         omega_nb^b·tau_i.
-      4. Resolve specific force into NED: f_ib^n = C_b^n · f_ib^b.
-      5. Rotating-frame velocity equation (forward Euler):
-                 dv_eb^n/dt = f_ib^n − (2·omega_ie^n + omega_en^n) × v_eb^n + g_b^n
-      6. Forward-Euler curvilinear position update.
+    Each step (Groves notation):
+
+    1. Evaluate omega_ie^n, omega_en^n and g(L_b, h_b) at the current state.
+    2. Body rate relative to the navigation frame:
+       `omega_nb^b = omega_ib^b − C_n^b·(omega_ie^n + omega_en^n)`.
+    3. Update C_b^n with the exact rotation-vector exponential of
+       omega_nb^b·tau_i.
+    4. Resolve specific force into NED: `f_ib^n = C_b^n·f_ib^b`.
+    5. Velocity update, forward Euler:
+       `dv_eb^n/dt = f_ib^n − (2·omega_ie^n + omega_en^n) × v_eb^n + g_b^n`.
+    6. Curvilinear position update, forward Euler.
 
     Args:
         meas_omega_ib_b: Gyro output, angular rate of the body relative to
@@ -89,6 +99,22 @@ def strapdown_navgrade(meas_omega_ib_b: np.ndarray, meas_f_ib_b: np.ndarray,
     Returns:
         NavSolution: (r_lb_l, L_b, lambda_b, h_b, v_eb_n, q_b_n) at every
             sample; unpacks positionally in that order.
+
+    Examples:
+        A level IMU at rest senses only Earth rate and gravity, and the
+        navigator stays exactly at rest:
+
+        >>> import numpy as np
+        >>> from scipy.spatial.transform import Rotation
+        >>> from ins_sim.core.earth_model import earth_rate_n, normal_gravity
+        >>> from ins_sim.navigation.strapdown import NavState, strapdown_navgrade
+        >>> L_b = np.deg2rad(45.0)
+        >>> gyro = np.tile(earth_rate_n(L_b), (100, 1))
+        >>> accel = np.tile([0.0, 0.0, -normal_gravity(L_b, 0.0)], (100, 1))
+        >>> start = NavState(L_b, 0.0, 0.0, np.zeros(3), Rotation.identity().as_quat())
+        >>> nav = strapdown_navgrade(gyro, accel, start, tau_i=0.1)
+        >>> float(np.abs(nav.v_eb_n).max())
+        0.0
     """
     M = len(meas_omega_ib_b)
     L_b = np.zeros(M); lambda_b = np.zeros(M); h_b = np.zeros(M)

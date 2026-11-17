@@ -1,13 +1,27 @@
+"""Matplotlib summary figure for the command-line tool (`main.py`).
+
+The GUI builds its interactive plotly figures in `ins_sim.gui.figures`;
+this module draws the static 2 × 3 summary the command-line run shows.
+"""
+
+from typing import TYPE_CHECKING
+
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 
 from ins_sim.evaluation.errors import position_error
 
+if TYPE_CHECKING:
+    from mpl_toolkits.mplot3d.axes3d import Axes3D
+
+    from ins_sim.evaluation.monte_carlo import MonteCarloResult
+    from ins_sim.trajectory.kinematics import TruthTrajectory
+
 NM = 1852.0
 
 
-def plot_error_tube(ax, r_lb_l: np.ndarray, r95: np.ndarray, color: str = "crimson",
+def plot_error_tube(ax: "Axes3D", r_lb_l: np.ndarray, r95: np.ndarray, color: str = "crimson",
                     alpha: float = 0.20, n_circle: int = 24) -> None:
     """Draws the swept-volume tube of the radial error envelope around the truth track.
 
@@ -55,7 +69,8 @@ def plot_error_tube(ax, r_lb_l: np.ndarray, r95: np.ndarray, color: str = "crims
                     edgecolor='none', linewidth=0)
 
 
-def build_summary_figure(truth, mc, r95: np.ndarray) -> plt.Figure:
+def build_summary_figure(truth: "TruthTrajectory", mc: "MonteCarloResult",
+                         r95: np.ndarray) -> plt.Figure:
     """Builds the 2x3 Monte Carlo summary figure.
 
     Figure panels: 3D ground track with swept 95th-pct error tube,

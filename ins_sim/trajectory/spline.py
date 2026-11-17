@@ -1,3 +1,10 @@
+"""Smooth paths through waypoints, for building test and example trajectories.
+
+`NEDSplinePath` interpolates waypoints given in metres along North, East
+and Down from a start point; `TruthTrajectory.from_spline` flies such a
+path at constant speed.
+"""
+
 import numpy as np
 import numpy.typing as npt
 from scipy.interpolate import CubicSpline
@@ -16,6 +23,12 @@ class NEDSplinePath:
         length (float): Total chord length of the path [m].
         cs (scipy.interpolate.CubicSpline): Underlying cubic spline,
             mapping arc-length s to NED position.
+
+    Examples:
+        >>> from ins_sim.trajectory.spline import NEDSplinePath
+        >>> path = NEDSplinePath([[0.0, 0.0, 0.0], [3.0, 4.0, 0.0], [3.0, 4.0, -12.0]])
+        >>> float(path.length)                  # 5 m + 12 m of chords
+        17.0
     """
     def __init__(self, waypoints: npt.ArrayLike, bc_type: str = "not-a-knot"):
         """Initializes the spline from a sequence of NED waypoints.

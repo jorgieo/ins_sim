@@ -1,3 +1,12 @@
+"""Monte Carlo evaluation: many independent runs of the noisy IMU and the navigator.
+
+`run_monte_carlo` repeats the sensor-error draw and the strapdown
+navigation for a number of trials and collects every trial's estimates and
+attitude error. The spread across trials is the simulator's measure of
+navigation performance; `percentile_envelope` summarizes it as a
+position-error percentile over time.
+"""
+
 from collections.abc import Callable
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -73,6 +82,17 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
 
     Returns:
         MonteCarloResult: estimates and attitude errors for every trial.
+
+    Examples:
+        >>> from ins_sim.evaluation.monte_carlo import run_monte_carlo
+        >>> from ins_sim.sensors.imu import IMUSpec
+        >>> from ins_sim.trajectory.kinematics import TruthTrajectory
+        >>> from ins_sim.trajectory.spline import NEDSplinePath
+        >>> path = NEDSplinePath([[0.0, 0.0, 0.0], [3000.0, 1000.0, -50.0]])
+        >>> truth = TruthTrajectory.from_spline(path, speed=150.0, tau_i=0.1)
+        >>> mc = run_monte_carlo(truth, IMUSpec(), n_trials=3, seed=1)
+        >>> mc.est_L_b.shape == (3, len(truth.t))
+        True
     """
     M = len(truth.t)
     est_r_lb_l     = np.zeros((n_trials, M, 3))
@@ -130,5 +150,15 @@ def percentile_envelope(delta_r_eb_n: np.ndarray, q: float = 95) -> np.ndarray:
     Returns:
         numpy.ndarray: q-th percentile of the 3D error magnitude across
             trials at each time step, shape (M,) [m].
+
+    Examples:
+        Five trials whose errors are 1 to 5 m at every sample:
+
+        >>> import numpy as np
+        >>> from ins_sim.evaluation.monte_carlo import percentile_envelope
+        >>> delta_r = np.zeros((5, 2, 3))
+        >>> delta_r[:, :, 0] = np.arange(1.0, 6.0)[:, None]
+        >>> [float(x) for x in percentile_envelope(delta_r, q=50)]
+        [3.0, 3.0]
     """
     return np.percentile(np.linalg.norm(delta_r_eb_n, axis=2), q, axis=0)

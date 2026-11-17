@@ -1,3 +1,16 @@
+"""IMU error model: datasheet parameters and simulated gyro and accelerometer outputs.
+
+An `IMUSpec`, usually loaded from YAML with `load_imu_spec`, sets the
+spread of each error term in the Groves (2013) sensor model:
+
+    meas_f_ib_b     = b_a + (I + M_a)·f_ib_b     + w_a
+    meas_omega_ib_b = b_g + (I + M_g)·omega_ib_b + w_g
+
+`generate_imu_samples` draws one realization of these errors along a truth
+trajectory, and `draw_initial_misalignment` draws the initial alignment
+error. The terms are described on [Notation & conventions][imu-errors].
+"""
+
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, NamedTuple
 
@@ -13,14 +26,14 @@ if TYPE_CHECKING:
 class IMUSpec:
     """Navigation-grade IMU error parameters.
 
-    Reference numbers (typical fielded systems, e.g. ring-laser-gyro
-    aircraft INS, marine-grade strapdown):
-        Gyro ARW            ≈ 0.002 °/√hr
-        Gyro bias instab.   ≈ 0.01  °/hr
-        Gyro repeatability  ≈ 0.01  °/hr
-        Accel VRW           ≈ 0.005 m/s/√hr
-        Accel bias instab.  ≈ 5  µg
-        Accel repeatability ≈ 25 µg
+    The defaults are typical of fielded navigation-grade systems, such as a
+    ring-laser-gyro aircraft INS:
+
+    | Parameter | Gyro | Accelerometer |
+    | --------- | ---- | ------------- |
+    | Random walk (ARW, VRW) | 0.002 °/√h | 0.005 m/s/√h |
+    | Bias instability | 0.01 °/h | 5 µg |
+    | Turn-on repeatability | 0.01 °/h | 25 µg |
 
     The field names are datasheet parameters; each one sets the spread of
     a Groves (2013) error term (see the Notation & conventions page).
@@ -105,6 +118,14 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
 
     Returns:
         IMUSpec: Equivalent error-parameter set converted to SI units.
+
+    Examples:
+        >>> import numpy as np
+        >>> from ins_sim.config import default_imu_spec_path
+        >>> from ins_sim.sensors.imu import load_imu_spec
+        >>> spec = load_imu_spec(str(default_imu_spec_path()))
+        >>> round(float(np.rad2deg(spec.gyro_arw) * 60), 4)   # back to °/√h
+        0.002
     """
     with open(yaml_path) as fh:
         cfg = yaml.safe_load(fh)
@@ -170,6 +191,13 @@ def draw_initial_misalignment(spec: IMUSpec,
     Returns:
         numpy.ndarray: Attitude error rotation vector resolved in NED,
             [North tilt, East tilt, Down (heading)], shape (3,) [rad].
+
+    Examples:
+        >>> import numpy as np
+        >>> from ins_sim.sensors.imu import IMUSpec, draw_initial_misalignment
+        >>> spec = IMUSpec(align_tilt_std=1e-5, align_heading_std=7e-4)
+        >>> draw_initial_misalignment(spec, np.random.default_rng(0)).shape
+        (3,)
     """
     return rng.normal(0.0, [spec.align_tilt_std,
                             spec.align_tilt_std,
@@ -247,15 +275,17 @@ def generate_imu_samples(truth: "TruthTrajectory", spec: IMUSpec,
     """Generates noisy IMU samples from a truth trajectory and an error spec.
 
     Per-axis IMU model (Groves notation):
+
         meas_f_ib_b     = b_a + (I + M_a)·f_ib_b     + w_a
         meas_omega_ib_b = b_g + (I + M_g)·omega_ib_b + w_g
 
-      M_a, M_g   scale factor (diagonal) + misalignment (off-diagonal),
-                 drawn once per run — see _error_matrix
-      b_as, b_gs static (turn-on) bias ~ N(0, σ_BR²), drawn once per run
-      b_ad, b_gd dynamic bias: 1st-order Gauss-Markov, steady-state std
-                 σ_BI, correlation time τ_BI, stationary from t = 0
-      w_a, w_g   white noise, σ = VRW/√tau_i or ARW/√tau_i per sample
+    - M_a, M_g: scale factor (diagonal) and misalignment (off-diagonal),
+      drawn once per run.
+    - b_as, b_gs: static (turn-on) bias ~ N(0, σ_BR²), drawn once per run.
+    - b_ad, b_gd: dynamic bias, a first-order Gauss-Markov process with
+      steady-state std σ_BI and correlation time τ_BI, stationary from
+      t = 0.
+    - w_a, w_g: white noise, with σ = VRW/√tau_i or ARW/√tau_i per sample.
 
     The gyro and accelerometer triads draw from separate random streams
     spawned from `rng`, so changing one triad's parameters leaves the
@@ -271,6 +301,17 @@ def generate_imu_samples(truth: "TruthTrajectory", spec: IMUSpec,
     Returns:
         IMUSamples: (meas_omega_ib_b, meas_f_ib_b), the noisy gyro and
             accelerometer outputs, each shape (M, 3).
+
+    Examples:
+        >>> import numpy as np
+        >>> from ins_sim.sensors.imu import IMUSpec, generate_imu_samples
+        >>> from ins_sim.trajectory.kinematics import TruthTrajectory
+        >>> from ins_sim.trajectory.spline import NEDSplinePath
+        >>> path = NEDSplinePath([[0.0, 0.0, 0.0], [1000.0, 0.0, 0.0]])
+        >>> truth = TruthTrajectory.from_spline(path, speed=100.0, tau_i=0.1)
+        >>> imu = generate_imu_samples(truth, IMUSpec(), np.random.default_rng(1))
+        >>> imu.meas_omega_ib_b.shape == truth.omega_ib_b.shape
+        True
     """
     tau_i = truth.tau_i
     rng_gyro, rng_accel = rng.spawn(2)

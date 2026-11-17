@@ -3,7 +3,8 @@
 Every error is the **estimate minus the truth**. All three are resolved in
 the local NED axes at the true position, so attitude, velocity and
 position errors share one frame. They are also what the linearized error
-model (covariance analysis) propagates.
+model (covariance analysis) propagates. The definitions are spelled out on
+[Notation & conventions][notation-conventions].
 """
 
 import numpy as np
@@ -29,6 +30,16 @@ def attitude_error(est_C_b_n: Rotation, C_b_n: Rotation) -> np.ndarray:
 
     Returns:
         numpy.ndarray: delta_psi_nb^n, shape (3,) or (M, 3) [rad].
+
+    Examples:
+        A 1 mrad heading error appears on the Down component:
+
+        >>> from scipy.spatial.transform import Rotation
+        >>> from ins_sim.evaluation.errors import attitude_error
+        >>> C_b_n = Rotation.from_euler("ZYX", [30.0, 2.0, 5.0], degrees=True)
+        >>> est_C_b_n = Rotation.from_rotvec([0.0, 0.0, 1e-3]) * C_b_n
+        >>> [round(float(x), 6) for x in attitude_error(est_C_b_n, C_b_n)]
+        [0.0, 0.0, 0.001]
     """
     return (est_C_b_n * C_b_n.inv()).as_rotvec()
 
@@ -58,6 +69,17 @@ def position_error(est_L_b: npt.ArrayLike, est_lambda_b: npt.ArrayLike,
 
     Returns:
         numpy.ndarray: delta_r_eb^n, shape (..., M, 3) [m].
+
+    Examples:
+        A 1 µrad latitude error at 45° N is about 6.4 m North; a height
+        estimate 10 m too high is a −10 m Down error:
+
+        >>> import numpy as np
+        >>> from ins_sim.evaluation.errors import position_error
+        >>> L_b = np.deg2rad(45.0)
+        >>> delta_r = position_error(L_b + 1e-6, 0.0, 10.0, L_b, 0.0, 0.0)
+        >>> [round(float(x), 2) for x in delta_r]
+        [6.37, 0.0, -10.0]
     """
     L_b = np.asarray(L_b)
     h_b = np.asarray(h_b)
