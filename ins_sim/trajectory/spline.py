@@ -1,4 +1,5 @@
 import numpy as np
+import numpy.typing as npt
 from scipy.interpolate import CubicSpline
 
 
@@ -16,7 +17,7 @@ class NEDSplinePath:
         cs (scipy.interpolate.CubicSpline): Underlying cubic spline,
             mapping arc-length s to NED position.
     """
-    def __init__(self, waypoints, bc_type="not-a-knot"):
+    def __init__(self, waypoints: npt.ArrayLike, bc_type: str = "not-a-knot"):
         """Initializes the spline from a sequence of NED waypoints.
 
         Args:
@@ -30,7 +31,7 @@ class NEDSplinePath:
         self.length  = float(self.s_knots[-1])
         self.cs      = CubicSpline(self.s_knots, pts, bc_type=bc_type)
 
-    def position(self, s):
+    def position(self, s: npt.ArrayLike) -> np.ndarray:
         """Evaluates NED position at arc-length(s) along the path.
 
         Args:

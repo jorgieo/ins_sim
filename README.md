@@ -19,7 +19,7 @@ strapdown INS Monte Carlo simulator with a PySide6 desktop front end.
 
 `ins_sim` generates a truth flight trajectory, derives the gyro and
 accelerometer outputs a perfect IMU would produce along that trajectory
-(`ω_ib_b`, `f_b`), corrupts them with a navigation-grade IMU error model
+(ω_ib^b and f_ib^b in Groves notation), corrupts them with a navigation-grade IMU error model
 (angular/velocity random walk, Gauss-Markov bias drift, turn-on bias
 repeatability), and runs a strapdown mechanization to recover position,
 velocity, and attitude. A Monte Carlo ensemble over independent noise
@@ -104,7 +104,7 @@ To use a different mission profile or IMU grade, point `build_trajectory` /
 from ins_sim.trajectory.kinematics import build_trajectory
 from ins_sim.sensors.imu import load_imu_spec
 
-truth, v_sprint, R_turn = build_trajectory("path/to/your_mission.yaml", dt=0.1)
+truth, v_sprint, R_turn = build_trajectory("path/to/your_mission.yaml", tau_i=0.1)
 spec = load_imu_spec("path/to/your_imu_spec.yaml")
 ```
 
@@ -135,7 +135,7 @@ flowchart TD
     TRUTH -->|"true ω, specific force"| SENSOR
     SENSOR -->|"measured ω, f (+ noise)"| NAV
     NAV -->|"pos, vel, attitude"| EVAL
-    EARTH -.->|"ω_ie, ω_en, g, R_M/R_N"| TRUTH
+    EARTH -.->|"ω_ie, ω_en, g, R_N/R_E"| TRUTH
     EARTH -.-> NAV
 ```
 

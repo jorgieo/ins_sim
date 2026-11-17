@@ -161,13 +161,17 @@ from ins_sim.trajectory.kinematics import build_trajectory
 from ins_sim.sensors.imu import load_imu_spec
 from ins_sim.evaluation.monte_carlo import run_monte_carlo, percentile_envelope
 
-truth, v_sprint, R_turn = build_trajectory("mission.yaml", dt=0.1)
+truth, v_sprint, R_turn = build_trajectory("mission.yaml", tau_i=0.1)
 spec = load_imu_spec("imu_spec.yaml")
 
-pos_runs, euler_runs, lat_runs, lon_runs, vel_runs = run_monte_carlo(
-    truth, spec, n_trials=100, seed=7, baro_aiding=True)
-r95 = percentile_envelope(pos_runs, truth.pos_n, q=95)
+mc = run_monte_carlo(truth, spec, n_trials=100, seed=7, baro_aiding=True)
+r95 = percentile_envelope(mc.est_r_lb_l, truth.r_lb_l, q=95)
 ```
+
+Python names follow the symbols on the
+[Notation & conventions](theory/notation.md) page: for example,
+`truth.r_lb_l` is the true position relative to the start point, and
+`mc.est_r_lb_l` holds every trial's estimate of it.
 
 The documentation figures on this site are produced by exactly this pipeline
 — see `tools/generate_doc_plots.py` in the repository.

@@ -53,19 +53,19 @@ def test_truth_trajectory_straight_line_heading_and_quaternion_convention():
     # quat ~= [0, 0, 0, 1] -- scalar-last [x, y, z, w] convention.
     waypoints = [[0.0, 0.0, 0.0], [0.0, 5000.0, 0.0]]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory.from_spline(path, speed=100.0, dt=0.1)
+    truth = TruthTrajectory.from_spline(path, speed=100.0, tau_i=0.1)
 
     interior = slice(20, -20)   # avoid spline-endpoint derivative artifacts
-    heading_deg = np.rad2deg(truth.euler[interior, 2])
+    heading_deg = np.rad2deg(truth.euler_nb[interior, 2])
     np.testing.assert_allclose(heading_deg, 90.0, atol=0.5)
 
-    quat = truth.R_b2n.as_quat()
+    quat = truth.C_b_n.as_quat()
     assert quat.shape == (len(truth.t), 4)
     # scalar-last: the w (last) component should be near cos(0/2)=1 for this
     # near-level, near-zero-heading-rate... but heading=90 deg here, so check
     # against an explicit Rotation built the same way instead.
     expected = Rot.from_euler('ZYX', np.column_stack([
-        truth.euler[interior, 2], truth.euler[interior, 1], truth.euler[interior, 0],
+        truth.euler_nb[interior, 2], truth.euler_nb[interior, 1], truth.euler_nb[interior, 0],
     ])).as_quat()
     np.testing.assert_allclose(quat[interior], expected, atol=1e-9)
 
@@ -74,17 +74,17 @@ def test_truth_trajectory_level_zero_heading_quat_is_near_identity():
     # heading=0 (due north), no turn, no climb -> phi=theta=psi~0 -> quat ~= [0,0,0,1].
     waypoints = [[0.0, 0.0, 0.0], [5000.0, 0.0, 0.0]]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory.from_spline(path, speed=100.0, dt=0.1)
+    truth = TruthTrajectory.from_spline(path, speed=100.0, tau_i=0.1)
     mid = len(truth.t) // 2
-    quat_mid = truth.R_b2n[mid].as_quat()
+    quat_mid = truth.C_b_n[mid].as_quat()
     np.testing.assert_allclose(quat_mid, [0.0, 0.0, 0.0, 1.0], atol=1e-6)
 
 
 def test_truth_trajectory_rotations_are_orthonormal():
     waypoints = [[0.0, 0.0, 0.0], [1000.0, 500.0, -50.0], [3000.0, 1500.0, -100.0]]
     path = NEDSplinePath(waypoints)
-    truth = TruthTrajectory.from_spline(path, speed=80.0, dt=0.1)
-    R = truth.R_b2n.as_matrix()
+    truth = TruthTrajectory.from_spline(path, speed=80.0, tau_i=0.1)
+    R = truth.C_b_n.as_matrix()
     should_be_identity = np.einsum('kij,kil->kjl', R, R)
     eye = np.tile(np.eye(3), (len(truth.t), 1, 1))
     np.testing.assert_allclose(should_be_identity, eye, atol=1e-9)
@@ -98,25 +98,26 @@ def test_truth_trajectory_rotations_are_orthonormal():
 def test_build_trajectory_fixture_yaml_has_expected_attributes_and_shape():
     truth, v_sprint, R_turn = build_trajectory(FIXTURE_YAML)
 
-    expected_attrs = {"t", "dt", "pos_n", "vel_n", "acc_n", "lat", "lon", "alt",
-                      "euler", "R_b2n", "omega_b", "f_b", "g_loc"}
+    expected_attrs = {"t", "tau_i", "r_lb_l", "v_eb_n", "v_eb_n_dot", "L_b",
+                      "lambda_b", "h_b", "euler_nb", "C_b_n", "omega_ib_b",
+                      "f_ib_b", "g"}
     assert expected_attrs.issubset(set(dir(truth)))
 
     M = len(truth.t)
     assert M > 1
-    assert truth.pos_n.shape == (M, 3)
-    assert truth.omega_b.shape == (M, 3)
-    assert truth.f_b.shape == (M, 3)
+    assert truth.r_lb_l.shape == (M, 3)
+    assert truth.omega_ib_b.shape == (M, 3)
+    assert truth.f_ib_b.shape == (M, 3)
     assert np.all(np.diff(truth.t) > 0)
-    np.testing.assert_allclose(truth.pos_n[0], [0.0, 0.0, 0.0], atol=1e-6)
-    assert np.all(np.isfinite(truth.pos_n))
-    assert np.all(np.isfinite(truth.omega_b))
-    assert np.all(np.isfinite(truth.f_b))
+    np.testing.assert_allclose(truth.r_lb_l[0], [0.0, 0.0, 0.0], atol=1e-6)
+    assert np.all(np.isfinite(truth.r_lb_l))
+    assert np.all(np.isfinite(truth.omega_ib_b))
+    assert np.all(np.isfinite(truth.f_ib_b))
 
 
 def test_build_trajectory_overrides_dt():
-    truth, *_ = build_trajectory(FIXTURE_YAML, dt=0.25)
-    assert truth.dt == 0.25
+    truth, *_ = build_trajectory(FIXTURE_YAML, tau_i=0.25)
+    assert truth.tau_i == 0.25
 
 
 # =========================================================================

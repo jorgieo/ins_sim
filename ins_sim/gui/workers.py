@@ -25,11 +25,11 @@ class SimulationResult:
     """Everything a plotting layer needs from one completed Monte Carlo run."""
 
     truth: object
-    pos_runs: np.ndarray      # (n_trials, M, 3) NED position [m]
-    euler_runs: np.ndarray    # (n_trials, M, 3) [phi, theta, psi] [rad]
-    lat_runs: np.ndarray      # (n_trials, M) latitude [rad]
-    lon_runs: np.ndarray      # (n_trials, M) longitude [rad]
-    vel_runs: np.ndarray      # (n_trials, M, 3) NED velocity [m/s]
+    est_r_lb_l: np.ndarray    # (n_trials, M, 3) position relative to start [m]
+    est_euler_nb: np.ndarray  # (n_trials, M, 3) [roll, pitch, heading] [rad]
+    est_L_b: np.ndarray       # (n_trials, M) latitude [rad]
+    est_lambda_b: np.ndarray  # (n_trials, M) longitude [rad]
+    est_v_eb_n: np.ndarray    # (n_trials, M, 3) NED velocity [m/s]
     r95: np.ndarray           # (M,) 95th-pct radial error envelope [m]
     n_trials: int
     config: dict = field(default_factory=dict)
@@ -83,9 +83,9 @@ class SimulationWorker(QObject):
 
         self.log_message.emit(f"Loading trajectory: {Path(trajectory_path).name} "
                               f"(dt = {dt} s)")
-        truth, _, _ = build_trajectory(str(trajectory_path), dt=dt)
+        truth, _, _ = build_trajectory(str(trajectory_path), tau_i=dt)
 
-        total_dist = np.sum(np.linalg.norm(np.diff(truth.pos_n, axis=0), axis=1))
+        total_dist = np.sum(np.linalg.norm(np.diff(truth.r_lb_l, axis=0), axis=1))
         self.log_message.emit(
             f"Trajectory: {total_dist/NM:.1f} nm, {truth.t[-1]/60:.1f} min, "
             f"{len(truth.t):,} samples")
@@ -97,10 +97,10 @@ class SimulationWorker(QObject):
         vertical = "baro-damped" if baro_aiding else "free-inertial"
         self.log_message.emit(f"Running {n_trials} Monte Carlo trials "
                               f"({vertical} vertical channel)...")
-        pos_runs, euler_runs, lat_runs, lon_runs, vel_runs = run_monte_carlo(
+        mc = run_monte_carlo(
             truth, spec, n_trials=n_trials, seed=self._seed,
             progress_callback=self._on_progress, baro_aiding=baro_aiding)
-        r95 = percentile_envelope(pos_runs, truth.pos_n, q=95)
+        r95 = percentile_envelope(mc.est_r_lb_l, truth.r_lb_l, q=95)
 
         elapsed = time.monotonic() - start
         self.log_message.emit(
@@ -108,8 +108,7 @@ class SimulationWorker(QObject):
             f"start: {r95[0]:.3f} m, end: {r95[-1]:.1f} m")
 
         return SimulationResult(
-            truth=truth, pos_runs=pos_runs, euler_runs=euler_runs,
-            lat_runs=lat_runs, lon_runs=lon_runs, vel_runs=vel_runs, r95=r95,
+            truth=truth, **mc._asdict(), r95=r95,
             n_trials=n_trials, config=dict(self._config), elapsed_s=elapsed)
 
     def _on_progress(self, n_done: int, n_total: int) -> None:

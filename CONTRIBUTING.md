@@ -51,9 +51,18 @@ without a dictionary.
 | Errors | `delta_psi_nb_n`, `delta_v_eb_n` | Estimate minus truth |
 
 Capitalised names such as `L_b`, `R_N`, `C_b_n` and `M_a` are deliberate
-exceptions to PEP 8: they match the printed symbols. YAML keys,
-command-line flags and GUI labels keep their user-facing names (for
-example `dt` for the integration interval τ_i).
+exceptions to PEP 8: they match the printed symbols.
+
+The convention covers the public API and the navigation-equation code
+(Earth model, truth IMU outputs, IMU error model, strapdown mechanization,
+Monte Carlo). Some names stay as they are:
+
+- YAML keys, command-line flags and GUI labels keep their user-facing
+  names (for example `dt` for the integration interval τ_i).
+- The private mission-geometry helpers in `trajectory/kinematics.py`
+  (`_ground_roll`, `_turn`, `_geodetic_bearing`, ...) keep descriptive
+  names such as `hdg_deg` and `lat_deg`, because they work in the YAML's
+  aviation units rather than in navigation-equation quantities.
 
 ## Documentation style guide
 

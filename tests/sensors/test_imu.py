@@ -25,9 +25,9 @@ def test_load_imu_spec_matches_default_dataclass_values():
 def _stub_truth(M=200, dt=0.1):
     return SimpleNamespace(
         t=np.arange(M) * dt,
-        dt=dt,
-        omega_b=np.full((M, 3), 0.01),
-        f_b=np.tile([0.0, 0.0, -9.81], (M, 1)),
+        tau_i=dt,
+        omega_ib_b=np.full((M, 3), 0.01),
+        f_ib_b=np.tile([0.0, 0.0, -9.81], (M, 1)),
     )
 
 
@@ -36,20 +36,20 @@ def test_generate_imu_samples_zero_noise_is_exact_passthrough():
     zero_spec = IMUSpec(gyro_arw=0, gyro_bi_std=0, gyro_br_std=0,
                         accel_vrw=0, accel_bi_std=0, accel_br_std=0)
     rng = np.random.default_rng(0)
-    omega_meas, f_meas = generate_imu_samples(truth, zero_spec, rng)
-    np.testing.assert_array_equal(omega_meas, truth.omega_b)
-    np.testing.assert_array_equal(f_meas, truth.f_b)
+    meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, zero_spec, rng)
+    np.testing.assert_array_equal(meas_omega_ib_b, truth.omega_ib_b)
+    np.testing.assert_array_equal(meas_f_ib_b, truth.f_ib_b)
 
 
 def test_generate_imu_samples_shapes():
     truth = _stub_truth(M=500)
     spec = IMUSpec()
     rng = np.random.default_rng(1)
-    omega_meas, f_meas = generate_imu_samples(truth, spec, rng)
-    assert omega_meas.shape == (500, 3)
-    assert f_meas.shape == (500, 3)
-    assert np.all(np.isfinite(omega_meas))
-    assert np.all(np.isfinite(f_meas))
+    meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, spec, rng)
+    assert meas_omega_ib_b.shape == (500, 3)
+    assert meas_f_ib_b.shape == (500, 3)
+    assert np.all(np.isfinite(meas_omega_ib_b))
+    assert np.all(np.isfinite(meas_f_ib_b))
 
 
 def test_generate_imu_samples_reproducible_with_same_seed():
@@ -79,32 +79,32 @@ def test_scale_factor_error_is_multiplicative():
                    accel_vrw=0, accel_bi_std=0, accel_br_std=0,
                    gyro_sf_std=100e-6)
     rng = np.random.default_rng(3)
-    omega_meas, f_meas = generate_imu_samples(truth, spec, rng)
+    meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, spec, rng)
 
-    ratio = omega_meas / truth.omega_b
+    ratio = meas_omega_ib_b / truth.omega_ib_b
     np.testing.assert_allclose(
         ratio, np.broadcast_to(ratio[0], ratio.shape), rtol=0, atol=1e-12)
     assert np.all(ratio[0] != 1.0)
     assert np.all(np.abs(ratio[0] - 1.0) < 5 * 100e-6)
-    np.testing.assert_array_equal(f_meas, truth.f_b)
+    np.testing.assert_array_equal(meas_f_ib_b, truth.f_ib_b)
 
 
 def test_misalignment_couples_axes():
     # Truth rate along x only; with misalignment active the y/z gyros
     # must pick up a proportional constant component.
     truth = _stub_truth()
-    truth.omega_b = np.tile([0.02, 0.0, 0.0], (len(truth.t), 1))
+    truth.omega_ib_b = np.tile([0.02, 0.0, 0.0], (len(truth.t), 1))
     spec = IMUSpec(gyro_arw=0, gyro_bi_std=0, gyro_br_std=0,
                    accel_vrw=0, accel_bi_std=0, accel_br_std=0,
                    gyro_ma_std=100e-6)
     rng = np.random.default_rng(4)
-    omega_meas, _ = generate_imu_samples(truth, spec, rng)
+    meas_omega_ib_b, _ = generate_imu_samples(truth, spec, rng)
 
-    assert np.all(omega_meas[:, 1] != 0.0)
-    assert np.all(omega_meas[:, 2] != 0.0)
-    assert np.abs(omega_meas[0, 1]) < 0.02 * 5 * 100e-6
+    assert np.all(meas_omega_ib_b[:, 1] != 0.0)
+    assert np.all(meas_omega_ib_b[:, 2] != 0.0)
+    assert np.abs(meas_omega_ib_b[0, 1]) < 0.02 * 5 * 100e-6
     # x-axis sees only its own (zero) scale factor -- unchanged
-    np.testing.assert_array_equal(omega_meas[:, 0], truth.omega_b[:, 0])
+    np.testing.assert_array_equal(meas_omega_ib_b[:, 0], truth.omega_ib_b[:, 0])
 
 
 def test_draw_initial_misalignment_statistics_and_zero_spec():
@@ -130,10 +130,10 @@ def test_generate_imu_samples_white_noise_statistics():
     truth = _stub_truth(M=M, dt=dt)
     spec = IMUSpec(gyro_bi_std=0, gyro_br_std=0, accel_bi_std=0, accel_br_std=0)
     rng = np.random.default_rng(7)
-    omega_meas, f_meas = generate_imu_samples(truth, spec, rng)
+    meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, spec, rng)
 
-    gyro_noise_std = np.std(omega_meas - truth.omega_b)
-    accel_noise_std = np.std(f_meas - truth.f_b)
+    gyro_noise_std = np.std(meas_omega_ib_b - truth.omega_ib_b)
+    accel_noise_std = np.std(meas_f_ib_b - truth.f_ib_b)
 
     expected_gyro_std = spec.gyro_arw / np.sqrt(dt)
     expected_accel_std = spec.accel_vrw / np.sqrt(dt)

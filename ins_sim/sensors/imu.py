@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from typing import TYPE_CHECKING, NamedTuple
 
 import numpy as np
 import yaml
 from scipy.signal import lfilter
+
+if TYPE_CHECKING:
+    from ins_sim.trajectory.kinematics import TruthTrajectory
 
 
 @dataclass
@@ -18,32 +22,39 @@ class IMUSpec:
         Accel bias instab.  ≈ 5  µg
         Accel repeatability ≈ 25 µg
 
+    The field names are datasheet parameters; each one sets the spread of
+    a Groves (2013) error term (see the Notation & conventions page).
+
     Attributes:
-        gyro_arw: Gyro angular random walk [rad/√s].
+        gyro_arw: Gyro angular random walk, the density of the white
+            noise w_g [rad/√s].
         gyro_bi_std: Gyro bias-instability steady-state std dev of the
-            Gauss-Markov process [rad/s].
+            Gauss-Markov dynamic bias b_gd [rad/s].
         gyro_bi_tau: Gyro bias-instability Gauss-Markov correlation
             time [s].
-        gyro_br_std: Gyro turn-on bias repeatability std dev [rad/s].
-        gyro_sf_std: Gyro scale-factor error std dev, drawn once per
-            run per axis [dimensionless, e.g. 5e-6 = 5 ppm].
-        gyro_ma_std: Gyro axis-misalignment std dev, drawn once per
-            run per off-diagonal element [rad].
-        accel_vrw: Accelerometer velocity random walk [(m/s)/√s].
+        gyro_br_std: Gyro turn-on bias repeatability, the std dev of the
+            static bias b_gs [rad/s].
+        gyro_sf_std: Gyro scale-factor error std dev (diagonal of M_g),
+            drawn once per run per axis [dimensionless, e.g. 5e-6 = 5 ppm].
+        gyro_ma_std: Gyro axis-misalignment std dev (off-diagonal of M_g),
+            drawn once per run per element [rad].
+        accel_vrw: Accelerometer velocity random walk, the density of the
+            white noise w_a [(m/s)/√s].
         accel_bi_std: Accelerometer bias-instability steady-state std
-            dev of the Gauss-Markov process [m/s²].
+            dev of the Gauss-Markov dynamic bias b_ad [m/s²].
         accel_bi_tau: Accelerometer bias-instability Gauss-Markov
             correlation time [s].
-        accel_br_std: Accelerometer turn-on bias repeatability std
-            dev [m/s²].
-        accel_sf_std: Accelerometer scale-factor error std dev
-            [dimensionless].
-        accel_ma_std: Accelerometer axis-misalignment std dev [rad].
-        align_tilt_std: Initial-alignment tilt (N/E) misalignment std
-            dev [rad]. Physically ≈ accel repeatability / g.
-        align_heading_std: Initial-alignment heading (azimuth)
-            misalignment std dev [rad]. Physically ≈ gyrocompass
-            limit, gyro repeatability / (Ω_ie·cos φ).
+        accel_br_std: Accelerometer turn-on bias repeatability, the std
+            dev of the static bias b_as [m/s²].
+        accel_sf_std: Accelerometer scale-factor error std dev (diagonal
+            of M_a) [dimensionless].
+        accel_ma_std: Accelerometer axis-misalignment std dev
+            (off-diagonal of M_a) [rad].
+        align_tilt_std: Initial-alignment tilt (N/E) error std dev [rad].
+            Physically ≈ accel repeatability / g.
+        align_heading_std: Initial-alignment heading (azimuth) error std
+            dev [rad]. Physically ≈ gyrocompass limit, gyro repeatability
+            / (omega_ie·cos L_b).
 
     Note:
         The multiplicative (scale factor, misalignment) and
@@ -68,6 +79,21 @@ class IMUSpec:
     # Initial alignment
     align_tilt_std:    float = 0.0                       # rad
     align_heading_std: float = 0.0                       # rad
+
+
+class IMUSamples(NamedTuple):
+    """Simulated IMU outputs, one row per sample interval tau_i.
+
+    Attributes:
+        meas_omega_ib_b: Gyro output, the measured angular rate of the body
+            relative to inertial space, resolved in body axes, shape
+            (M, 3) [rad/s].
+        meas_f_ib_b: Accelerometer output, the measured specific force,
+            resolved in body axes, shape (M, 3) [m/s²].
+    """
+
+    meas_omega_ib_b: np.ndarray
+    meas_f_ib_b: np.ndarray
 
 
 def load_imu_spec(yaml_path: str) -> IMUSpec:
@@ -128,12 +154,13 @@ def _error_matrix(rng: np.random.Generator, sf_std: float,
 
 def draw_initial_misalignment(spec: IMUSpec,
                               rng: np.random.Generator) -> np.ndarray:
-    """Draws a per-run initial-alignment attitude error rotation vector.
+    """Draws a per-run initial-alignment attitude error delta_psi_nb^n.
 
     Models the residual error of a stationary gyrocompass alignment:
     small tilts about North/East (limited by accelerometer bias over g)
     and a larger azimuth error about Down (limited by east-gyro bias
-    over Ω_ie·cos φ). Apply as R_init = exp([ψ×])·R_true with ψ in NED.
+    over omega_ie·cos L_b). Apply as C_b^n(estimated) =
+    exp([delta_psi_nb^n ^])·C_b^n(true).
 
     Args:
         spec: IMU error-parameter set (align_tilt_std,
@@ -141,73 +168,82 @@ def draw_initial_misalignment(spec: IMUSpec,
         rng: Seeded NumPy random generator.
 
     Returns:
-        numpy.ndarray: NED rotation vector [δ_N, δ_E, δ_D], shape
-            (3,) [rad].
+        numpy.ndarray: Attitude error rotation vector resolved in NED,
+            [North tilt, East tilt, Down (heading)], shape (3,) [rad].
     """
     return rng.normal(0.0, [spec.align_tilt_std,
                             spec.align_tilt_std,
                             spec.align_heading_std])
 
 
-def generate_imu_samples(truth, spec: IMUSpec,
-                         rng: np.random.Generator):
+def generate_imu_samples(truth: "TruthTrajectory", spec: IMUSpec,
+                         rng: np.random.Generator) -> IMUSamples:
     """Generates noisy IMU samples from a truth trajectory and an error spec.
 
-    Per-axis IMU model:
-        measurement = (I + M)·truth + b_repeat + b_drift(t) + η_white(t)
+    Per-axis IMU model (Groves notation):
+        meas_f_ib_b     = b_a + (I + M_a)·f_ib_b     + w_a
+        meas_omega_ib_b = b_g + (I + M_g)·omega_ib_b + w_g
 
-      M          scale factor (diag) + misalignment (off-diag),
+      M_a, M_g   scale factor (diagonal) + misalignment (off-diagonal),
                  drawn once per run — see _error_matrix
-      b_repeat   ~ N(0, σ_BR²)               drawn once per run
-      b_drift    1st-order Gauss-Markov, steady-state std σ_BI, τ_BI
-      η_white    σ = ARW/√dt or VRW/√dt      per-sample white noise
+      b_as, b_gs static (turn-on) bias ~ N(0, σ_BR²), drawn once per run
+      b_ad, b_gd dynamic bias: 1st-order Gauss-Markov, steady-state std
+                 σ_BI, correlation time τ_BI
+      w_a, w_g   white noise, σ = VRW/√tau_i or ARW/√tau_i per sample
 
     Discrete AR(1) form for the GM drift gives steady-state variance σ²
-    independent of dt:    b[k+1] = a·b[k] + √(1−a²)·σ·w,   a = exp(−dt/τ).
+    independent of tau_i:  b[k+1] = a·b[k] + √(1−a²)·σ·u,  a = exp(−tau_i/τ).
 
     Args:
-        truth: Truth trajectory object exposing `t`, `dt`, `omega_b`
-            (ω_ib_b, shape (M, 3) [rad/s]), and `f_b` (shape (M, 3)
-            [m/s²]).
+        truth: Truth trajectory exposing `t`, `tau_i`, `omega_ib_b`
+            (shape (M, 3) [rad/s]) and `f_ib_b` (shape (M, 3) [m/s²]).
         spec: IMU error-parameter set.
         rng: Seeded NumPy random generator.
 
     Returns:
-        tuple[numpy.ndarray, numpy.ndarray]: (omega_meas, f_meas), the
-            noisy gyro and accelerometer outputs, each shape (M, 3).
+        IMUSamples: (meas_omega_ib_b, meas_f_ib_b), the noisy gyro and
+            accelerometer outputs, each shape (M, 3).
     """
-    M, dt = len(truth.t), truth.dt
+    n_samples, tau_i = len(truth.t), truth.tau_i
 
+    # --8<-- [start:scale_misalignment]
     # Per-run multiplicative errors (scale factor + misalignment). With
     # zero stds these are exact identity transforms, preserving the
     # zero-noise passthrough property.
     M_g = _error_matrix(rng, spec.gyro_sf_std,  spec.gyro_ma_std)
     M_a = _error_matrix(rng, spec.accel_sf_std, spec.accel_ma_std)
-    omega_true = truth.omega_b @ (np.eye(3) + M_g).T
-    f_true     = truth.f_b     @ (np.eye(3) + M_a).T
+    scaled_omega_ib_b = truth.omega_ib_b @ (np.eye(3) + M_g).T   # (I + M_g)·omega_ib_b
+    scaled_f_ib_b     = truth.f_ib_b     @ (np.eye(3) + M_a).T   # (I + M_a)·f_ib_b
+    # --8<-- [end:scale_misalignment]
 
-    # Constant turn-on biases (per axis, per run)
-    b_g_repeat = rng.normal(0.0, spec.gyro_br_std,  size=3)
-    b_a_repeat = rng.normal(0.0, spec.accel_br_std, size=3)
+    # --8<-- [start:static_bias]
+    # Static (turn-on) biases, per axis, constant over the run
+    b_gs = rng.normal(0.0, spec.gyro_br_std,  size=3)
+    b_as = rng.normal(0.0, spec.accel_br_std, size=3)
+    # --8<-- [end:static_bias]
 
-    # Gauss-Markov drift histories: discrete AR(1) recursion b[k] = a*b[k-1]
-    # + sg*w[k] with b[0] = 0, implemented as an IIR filter over white noise
-    # that is zeroed at index 0 (so the filter's zero initial condition
-    # reproduces b[0] = 0 exactly).
-    a_g = np.exp(-dt / spec.gyro_bi_tau)
-    a_a = np.exp(-dt / spec.accel_bi_tau)
-    sg  = np.sqrt(1.0 - a_g * a_g) * spec.gyro_bi_std
-    sa  = np.sqrt(1.0 - a_a * a_a) * spec.accel_bi_std
-    w_g = rng.normal(size=(M, 3)); w_g[0] = 0.0
-    w_a = rng.normal(size=(M, 3)); w_a[0] = 0.0
-    b_g_drift = lfilter([1.0], [1.0, -a_g], sg * w_g, axis=0)
-    b_a_drift = lfilter([1.0], [1.0, -a_a], sa * w_a, axis=0)
+    # --8<-- [start:dynamic_bias]
+    # Dynamic (Gauss-Markov) bias histories: discrete AR(1) recursion
+    # b[k] = a*b[k-1] + s*u[k] with b[0] = 0, implemented as an IIR filter
+    # over unit white noise u that is zeroed at index 0 (so the filter's
+    # zero initial condition reproduces b[0] = 0 exactly).
+    a_g = np.exp(-tau_i / spec.gyro_bi_tau)
+    a_a = np.exp(-tau_i / spec.accel_bi_tau)
+    s_g = np.sqrt(1.0 - a_g * a_g) * spec.gyro_bi_std
+    s_a = np.sqrt(1.0 - a_a * a_a) * spec.accel_bi_std
+    u_g = rng.normal(size=(n_samples, 3)); u_g[0] = 0.0
+    u_a = rng.normal(size=(n_samples, 3)); u_a[0] = 0.0
+    b_gd = lfilter([1.0], [1.0, -a_g], s_g * u_g, axis=0)
+    b_ad = lfilter([1.0], [1.0, -a_a], s_a * u_a, axis=0)
+    # --8<-- [end:dynamic_bias]
 
-    # White noise: ARW/√dt is the discrete-time σ that yields integrated
+    # --8<-- [start:white_noise]
+    # White noise: ARW/√tau_i is the discrete-time σ that yields integrated
     # angle uncertainty growing as ARW · √t, independent of sample rate.
-    eta_g = rng.normal(0.0, spec.gyro_arw  / np.sqrt(dt), size=(M, 3))
-    eta_a = rng.normal(0.0, spec.accel_vrw / np.sqrt(dt), size=(M, 3))
+    w_g = rng.normal(0.0, spec.gyro_arw  / np.sqrt(tau_i), size=(n_samples, 3))
+    w_a = rng.normal(0.0, spec.accel_vrw / np.sqrt(tau_i), size=(n_samples, 3))
+    # --8<-- [end:white_noise]
 
-    omega_meas = omega_true + b_g_repeat + b_g_drift + eta_g
-    f_meas     = f_true     + b_a_repeat + b_a_drift + eta_a
-    return omega_meas, f_meas
+    meas_omega_ib_b = scaled_omega_ib_b + b_gs + b_gd + w_g
+    meas_f_ib_b     = scaled_f_ib_b     + b_as + b_ad + w_a
+    return IMUSamples(meas_omega_ib_b, meas_f_ib_b)

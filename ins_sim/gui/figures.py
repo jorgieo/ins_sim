@@ -1,7 +1,7 @@
 """Plotly figure builders for the simulator's visualization tabs.
 
 Qt-free by design: every builder takes a SimulationResult-shaped object
-(truth, pos_runs, euler_runs, lat_runs, lon_runs, vel_runs, r95,
+(truth, est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b, est_v_eb_n, r95,
 n_trials) and returns a plotly.graph_objects.Figure, so the module is
 unit-testable headlessly and reusable from the CLI (main.py's saved map).
 
@@ -76,10 +76,10 @@ def _bundle(x, ys):
     return np.tile(np.append(x, np.nan), len(ys)), _nan_join(ys)
 
 
-def horizontal_error_nm(result):
+def horizontal_error_nm(result) -> np.ndarray:
     """Per-run horizontal position error in NM, shape (n_trials, M)."""
     return np.linalg.norm(
-        result.pos_runs[:, :, :2] - result.truth.pos_n[None, :, :2],
+        result.est_r_lb_l[:, :, :2] - result.truth.r_lb_l[None, :, :2],
         axis=2) / NM
 
 
@@ -179,7 +179,7 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
 def figure_attitude(result) -> go.Figure:
     """Pitch/roll/heading Euler-angle errors with ±3σ bands [deg]."""
     truth = result.truth
-    euler_err = result.euler_runs - truth.euler[None, :, :]
+    euler_err = result.est_euler_nb - truth.euler_nb[None, :, :]
     euler_err[:, :, 2] = (euler_err[:, :, 2] + np.pi) % (2 * np.pi) - np.pi
     return _bands_figure(
         truth.t / 60.0, np.rad2deg(euler_err),
@@ -191,7 +191,7 @@ def figure_velocity(result) -> go.Figure:
     """NED velocity errors with ±3σ bands [m/s]."""
     truth = result.truth
     return _bands_figure(
-        truth.t / 60.0, result.vel_runs - truth.vel_n[None, :, :],
+        truth.t / 60.0, result.est_v_eb_n - truth.v_eb_n[None, :, :],
         [(0, "North velocity error"), (1, "East velocity error"),
          (2, "Down velocity error")],
         "m/s")
@@ -201,7 +201,7 @@ def figure_position(result) -> go.Figure:
     """NED position errors with ±3σ bands [m]."""
     truth = result.truth
     return _bands_figure(
-        truth.t / 60.0, result.pos_runs - truth.pos_n[None, :, :],
+        truth.t / 60.0, result.est_r_lb_l - truth.r_lb_l[None, :, :],
         [(0, "North position error"), (1, "East position error"),
          (2, "Down position error")],
         "m")
@@ -211,7 +211,7 @@ def figure_position(result) -> go.Figure:
 # 3D trajectory
 # =========================================================================
 
-def _tube_mesh(truth_pos, r95, n_circle=24) -> go.Mesh3d:
+def _tube_mesh(r_lb_l, r95, n_circle=24) -> go.Mesh3d:
     """Builds the swept 95th-pct radial error tube as a crimson mesh.
 
     Ports plot_error_tube's parallel-transport frame: unit tangents along
@@ -219,14 +219,15 @@ def _tube_mesh(truth_pos, r95, n_circle=24) -> go.Mesh3d:
     circle of radius r95 swept around each ring.
 
     Args:
-        truth_pos: Truth NED position (consistently scaled), shape (M, 3).
+        r_lb_l: Truth position relative to the start point (consistently
+            scaled), shape (M, 3).
         r95: Radial envelope per sample, shape (M,), same units.
         n_circle: Points per circular cross-section. Defaults to 24.
 
     Returns:
         plotly.graph_objects.Mesh3d: Tube mesh in (East, North, Up) axes.
     """
-    T = np.gradient(truth_pos, axis=0)
+    T = np.gradient(r_lb_l, axis=0)
     T = T / np.linalg.norm(T, axis=1, keepdims=True)
 
     seed = np.array([0.0, 0.0, 1.0])
@@ -246,10 +247,10 @@ def _tube_mesh(truth_pos, r95, n_circle=24) -> go.Mesh3d:
 
     th = np.linspace(0.0, 2 * np.pi, n_circle, endpoint=False)
     c, s = np.cos(th), np.sin(th)
-    tube = (truth_pos[:, None, :]
+    tube = (r_lb_l[:, None, :]
             + r95[:, None, None] * (c[None, :, None] * N1[:, None, :]
                                     + s[None, :, None] * N2[:, None, :]))
-    M = len(truth_pos)
+    M = len(r_lb_l)
     verts = tube.reshape(M * n_circle, 3)
 
     # Two triangles per quad between ring k and k+1, wrapping the circle.
@@ -274,13 +275,13 @@ def _tube_mesh(truth_pos, r95, n_circle=24) -> go.Mesh3d:
 def figure_trajectory_3d(result) -> go.Figure:
     """3D track: truth vs all INS trials, with the 95th-pct error tube."""
     truth = result.truth
-    P_km = truth.pos_n / 1000.0
+    P_km = truth.r_lb_l / 1000.0
     M = len(P_km)
 
     fig = go.Figure()
 
     s_t = _trial_step(result.n_trials, M)
-    runs_km = result.pos_runs[:, ::s_t] / 1000.0
+    runs_km = result.est_r_lb_l[:, ::s_t] / 1000.0
     fig.add_trace(go.Scatter3d(
         x=_nan_join(runs_km[:, :, 1]), y=_nan_join(runs_km[:, :, 0]),
         z=_nan_join(-runs_km[:, :, 2]), mode="lines",
@@ -317,14 +318,14 @@ def figure_map(result) -> go.Figure:
     network for the basemap; overlays render regardless).
     """
     truth = result.truth
-    P = truth.pos_n
+    P = truth.r_lb_l
     M = len(P)
-    lat_deg = np.rad2deg(truth.lat)
-    lon_deg = np.rad2deg(truth.lon)
+    lat_deg = np.rad2deg(truth.L_b)
+    lon_deg = np.rad2deg(truth.lambda_b)
     t_min = truth.t / 60.0
 
     horiz_err = np.linalg.norm(
-        result.pos_runs[:, :, :2] - P[None, :, :2], axis=2)
+        result.est_r_lb_l[:, :, :2] - P[None, :, :2], axis=2)
     p95_horiz = np.percentile(horiz_err, 95, axis=0)
 
     # Perpendicular envelope in geographic space: track gradient ->
@@ -343,8 +344,8 @@ def figure_map(result) -> go.Figure:
 
     s_t = _trial_step(result.n_trials, M)
     fig.add_trace(go.Scattermap(
-        lat=_nan_join(np.rad2deg(result.lat_runs[:, ::s_t])),
-        lon=_nan_join(np.rad2deg(result.lon_runs[:, ::s_t])),
+        lat=_nan_join(np.rad2deg(result.est_L_b[:, ::s_t])),
+        lon=_nan_join(np.rad2deg(result.est_lambda_b[:, ::s_t])),
         mode="lines",
         line=dict(color=STEELBLUE_FAINT, width=1),
         name="Trial tracks", hoverinfo="skip"))

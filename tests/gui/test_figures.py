@@ -33,8 +33,8 @@ def _synthetic_result(seed=0):
     lat = np.deg2rad(18.5) + pos_n[:, 0] / 6.378e6
     lon = np.deg2rad(-67.1) + pos_n[:, 1] / 6.0e6
 
-    truth = SimpleNamespace(t=t, pos_n=pos_n, vel_n=vel_n, euler=euler,
-                            lat=lat, lon=lon)
+    truth = SimpleNamespace(t=t, r_lb_l=pos_n, v_eb_n=vel_n, euler_nb=euler,
+                            L_b=lat, lambda_b=lon)
 
     # Per-trial error: distinct linear drift rates + noise, so the
     # ensemble median differs from every individual trial's fit.
@@ -50,8 +50,8 @@ def _synthetic_result(seed=0):
         np.linalg.norm(pos_runs - pos_n[None, :, :], axis=2), 95, axis=0)
 
     return SimpleNamespace(
-        truth=truth, pos_runs=pos_runs, euler_runs=euler_runs,
-        lat_runs=lat_runs, lon_runs=lon_runs, vel_runs=vel_runs,
+        truth=truth, est_r_lb_l=pos_runs, est_euler_nb=euler_runs,
+        est_L_b=lat_runs, est_lambda_b=lon_runs, est_v_eb_n=vel_runs,
         r95=r95, n_trials=N_TRIALS, config={})
 
 

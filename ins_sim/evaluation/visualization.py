@@ -5,16 +5,16 @@ import seaborn as sns
 NM = 1852.0
 
 
-def plot_error_tube(ax, truth_pos, r95, color="crimson",
-                    alpha=0.20, n_circle=24):
+def plot_error_tube(ax, r_lb_l: np.ndarray, r95: np.ndarray, color: str = "crimson",
+                    alpha: float = 0.20, n_circle: int = 24) -> None:
     """Draws the swept-volume tube of the radial error envelope around the truth track.
 
     Args:
         ax: Matplotlib 3D axes to draw on.
-        truth_pos: Truth NED (or consistently scaled) position, shape
-            (M, 3).
+        r_lb_l: Truth position relative to the start point (or a
+            consistently scaled copy), shape (M, 3).
         r95: Radial error envelope at each time step, shape (M,), in
-            the same units as truth_pos.
+            the same units as r_lb_l.
         color: Surface color. Defaults to "crimson".
         alpha: Surface opacity. Defaults to 0.20.
         n_circle: Number of points approximating the tube's circular
@@ -23,7 +23,7 @@ def plot_error_tube(ax, truth_pos, r95, color="crimson",
     Returns:
         None: Draws directly onto `ax`.
     """
-    T = np.gradient(truth_pos, axis=0)
+    T = np.gradient(r_lb_l, axis=0)
     T = T / np.linalg.norm(T, axis=1, keepdims=True)
 
     seed = np.array([0.0, 0.0, 1.0])
@@ -42,7 +42,7 @@ def plot_error_tube(ax, truth_pos, r95, color="crimson",
 
     th = np.linspace(0.0, 2*np.pi, n_circle)
     c, s = np.cos(th), np.sin(th)
-    tube = (truth_pos[:, None, :]
+    tube = (r_lb_l[:, None, :]
             + r95[:, None, None] * (c[None, :, None] * N1[:, None, :]
                                   + s[None, :, None] * N2[:, None, :]))
 
@@ -53,7 +53,8 @@ def plot_error_tube(ax, truth_pos, r95, color="crimson",
                     edgecolor='none', linewidth=0)
 
 
-def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
+def build_summary_figure(truth, est_r_lb_l: np.ndarray, est_euler_nb: np.ndarray,
+                         r95: np.ndarray, n_trials: int) -> plt.Figure:
     """Builds the 2x3 Monte Carlo summary figure.
 
     Figure panels: 3D ground track with swept 95th-pct error tube,
@@ -65,16 +66,16 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
         mutation), matching the original script's behavior.
 
     Args:
-        truth: Truth trajectory object exposing pos_n, t, and euler
-            ([φ, θ, ψ], shape (M, 3) [rad]).
-        pos_runs: NED position per Monte Carlo trial, shape
+        truth: Truth trajectory exposing r_lb_l, t and euler_nb
+            ([roll, pitch, heading], shape (M, 3) [rad]).
+        est_r_lb_l: Estimated position per Monte Carlo trial, shape
             (n_trials, M, 3) [m].
-        euler_runs: Euler angles [φ, θ, ψ] per trial, shape
-            (n_trials, M, 3) [rad].
+        est_euler_nb: Estimated Euler angles [roll, pitch, heading]
+            per trial, shape (n_trials, M, 3) [rad].
         r95: 95th-percentile radial position error envelope, shape
             (M,) [m].
         n_trials: Number of Monte Carlo trials represented in
-            pos_runs.
+            est_r_lb_l.
 
     Returns:
         matplotlib.figure.Figure: The assembled summary figure.
@@ -95,7 +96,7 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
         },
     )
 
-    P   = truth.pos_n
+    P   = truth.r_lb_l
     t_m = truth.t / 60.0   # minutes for x-axis
 
     step = max(1, len(P) // 4000)
@@ -120,7 +121,7 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
     ax.plot(P_km[::step, 1], P_km[::step, 0], -P_km[::step, 2],
             'k-', lw=1.5, label='Truth')
     for i in range(min(6, n_trials)):
-        Q_km = pos_runs[i] / 1000.0
+        Q_km = est_r_lb_l[i] / 1000.0
         ax.plot(Q_km[::step, 1], Q_km[::step, 0], -Q_km[::step, 2],
                 '-', color='steelblue', alpha=0.35, lw=0.5)
     plot_error_tube(ax, P_km, r95_km)
@@ -131,7 +132,7 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
     ax.legend(loc='upper left')
 
     # ---- 3-D radial error vs time -----------------------------------------
-    err_all = np.linalg.norm(pos_runs - P[None, :, :], axis=2)
+    err_all = np.linalg.norm(est_r_lb_l - P[None, :, :], axis=2)
     ax2.plot(t_m, err_all.T, color='steelblue', alpha=0.20, lw=0.5)
     ax2.plot(t_m, r95, color='crimson', lw=2.0, label='95th pct')
     ax2.fill_between(t_m, 0, r95, color='crimson', alpha=0.15)
@@ -141,7 +142,7 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
     ax2.legend()
 
     # ---- CEP vs time + linear fit -----------------------------------------
-    horiz_err = np.linalg.norm(pos_runs[:, :, :2] - P[None, :, :2], axis=2)
+    horiz_err = np.linalg.norm(est_r_lb_l[:, :, :2] - P[None, :, :2], axis=2)
     cep = np.percentile(horiz_err, 50, axis=0)
 
     mask60 = t_m <= 60.0
@@ -160,7 +161,7 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
     ax3.legend()
 
     # ---- Attitude error envelopes -----------------------------------------
-    euler_err = euler_runs - truth.euler[None, :, :]
+    euler_err = est_euler_nb - truth.euler_nb[None, :, :]
     euler_err[:, :, 2] = (euler_err[:, :, 2] + np.pi) % (2 * np.pi) - np.pi
     p95_euler = np.rad2deg(np.percentile(np.abs(euler_err), 95, axis=0))
 
@@ -169,7 +170,7 @@ def build_summary_figure(truth, pos_runs, euler_runs, r95, n_trials):
         (ax5, 0, 'Roll',    'Roll (deg)'),
         (ax6, 2, 'Heading', 'Heading (deg)'),
     ]:
-        truth_deg = np.rad2deg(truth.euler[:, col])
+        truth_deg = np.rad2deg(truth.euler_nb[:, col])
         err95     = p95_euler[:, col]
         ax_att.fill_between(t_m, truth_deg - err95, truth_deg + err95,
                             color='crimson', alpha=0.25, label='95th pct envelope')

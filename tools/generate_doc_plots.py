@@ -43,19 +43,16 @@ SIM_FIGURES = [
 
 def run_baseline(trials: int, dt: float, seed: int) -> SimpleNamespace:
     """Runs the baseline Monte Carlo and returns a figures-compatible result."""
-    truth, _, _ = build_trajectory(str(default_trajectory_path()), dt=dt)
+    truth, _, _ = build_trajectory(str(default_trajectory_path()), tau_i=dt)
     spec = load_imu_spec(str(default_imu_spec_path()))
     print(f"Baseline: {trials} trials, dt={dt} s, "
           f"{len(truth.t):,} samples/trial", flush=True)
-    pos_runs, euler_runs, lat_runs, lon_runs, vel_runs = run_monte_carlo(
+    mc = run_monte_carlo(
         truth, spec, n_trials=trials, seed=seed,
         progress_callback=lambda done, total: print(
             f"  trial {done}/{total}", flush=True))
-    r95 = percentile_envelope(pos_runs, truth.pos_n, q=95)
-    return SimpleNamespace(
-        truth=truth, pos_runs=pos_runs, euler_runs=euler_runs,
-        lat_runs=lat_runs, lon_runs=lon_runs, vel_runs=vel_runs,
-        r95=r95, n_trials=trials)
+    r95 = percentile_envelope(mc.est_r_lb_l, truth.r_lb_l, q=95)
+    return SimpleNamespace(truth=truth, **mc._asdict(), r95=r95, n_trials=trials)
 
 
 def main() -> int:

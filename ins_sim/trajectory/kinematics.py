@@ -1,3 +1,5 @@
+from typing import NamedTuple
+
 import numpy as np
 import yaml
 from scipy.ndimage import gaussian_filter1d
@@ -12,28 +14,28 @@ from ins_sim.trajectory.spline import NEDSplinePath
 # =========================================================================
 # 1. Navigation-grade truth trajectory
 # =========================================================================
-def _euler_from_velocity(vel_n, dt, g_ref):
-    """Derives heading/pitch/roll Euler angles from a NED velocity profile.
+def _euler_from_velocity(v_eb_n, tau_i, g_ref):
+    """Derives roll/pitch/heading Euler angles from a NED velocity profile.
 
     Heading and pitch come directly from the velocity direction; roll
-    is back-solved from the coordinated-turn condition tan(φ) =
-    v_h·ψ̇ / g, so that the resulting attitude matches what a
+    is back-solved from the coordinated-turn condition tan(phi_nb) =
+    v_h·psi_dot / g, so that the resulting attitude matches what a
     constant-altitude, slip-free turn would produce.
 
     Args:
-        vel_n: NED velocity, shape (M, 3) [m/s].
-        dt: Sample interval [s].
+        v_eb_n: Velocity resolved in NED, shape (M, 3) [m/s].
+        tau_i: Sample interval [s].
         g_ref: Reference local gravity used in the coordinated-turn
             bank-angle formula [m/s²].
 
     Returns:
-        numpy.ndarray: Euler angles [φ_roll, θ_pitch, ψ_heading],
-            shape (M, 3) [rad].
+        numpy.ndarray: Euler angles [phi_nb (roll), theta_nb (pitch),
+            psi_nb (heading)], shape (M, 3) [rad].
     """
-    psi   = np.unwrap(np.arctan2(vel_n[:, 1], vel_n[:, 0]))
-    v_h   = np.linalg.norm(vel_n[:, :2], axis=1)
-    theta = np.arctan2(-vel_n[:, 2], np.maximum(v_h, 1e-6))
-    psi_dot = np.gradient(psi, dt)
+    psi   = np.unwrap(np.arctan2(v_eb_n[:, 1], v_eb_n[:, 0]))
+    v_h   = np.linalg.norm(v_eb_n[:, :2], axis=1)
+    theta = np.arctan2(-v_eb_n[:, 2], np.maximum(v_h, 1e-6))
+    psi_dot = np.gradient(psi, tau_i)
     phi   = np.arctan2(v_h * psi_dot, g_ref)
     return np.column_stack([phi, theta, psi])
 
@@ -41,157 +43,163 @@ def _euler_from_velocity(vel_n, dt, g_ref):
 class TruthTrajectory:
     """Truth state derived from a raw kinematic profile, consistent with rotating-Earth navigation kinematics.
 
-    Computed at every sample:
-      • NED position relative to start (linearized geodetic
-        reprojection, so it is directly comparable to strapdown output)
-      • NED velocity, NED inertial-acceleration  (input / numerical
+    Computed at every sample (Groves notation):
+      • Position relative to the start point, r_lb^l (linearized
+        geodetic reprojection, so it is directly comparable to the
+        strapdown output)
+      • Velocity v_eb^n and its time derivative (input / numerical
         derivative)
-      • Geodetic position (lat, lon, alt) integrated from start
-      • Body Euler angles (input)
-      • Body angular rate ω_ib_b that a perfect gyro would output —
-        this includes Earth rate and transport rate, expressed in
-        body, via the exact discrete body-to-NED rotation
-      • Specific force f_b that a perfect accelerometer would output —
-        derived from the forward-difference rotating-frame velocity
+      • Curvilinear position (L_b, lambda_b, h_b) integrated from start
+      • Euler angles (input)
+      • Angular rate omega_ib^b that a perfect gyro would output —
+        this includes Earth rate and transport rate, resolved in body
+        axes, via the exact discrete body-to-NED rotation
+      • Specific force f_ib^b that a perfect accelerometer would output
+        — derived from the forward-difference rotating-frame velocity
         equation so that a forward-Euler strapdown can recover the
         truth exactly
 
     Attributes:
-        dt (float): Sample interval [s].
+        tau_i (float): Sample interval [s].
         t (numpy.ndarray): Time vector, shape (M,) [s].
-        pos_n (numpy.ndarray): NED position relative to start, shape
-            (M, 3) [m].
-        vel_n (numpy.ndarray): NED velocity, shape (M, 3) [m/s].
-        acc_n (numpy.ndarray): NED inertial acceleration, shape
-            (M, 3) [m/s²].
-        lat (numpy.ndarray): Geodetic latitude φ, shape (M,) [rad].
-        lon (numpy.ndarray): Geodetic longitude λ, shape (M,) [rad].
-        alt (numpy.ndarray): Geodetic altitude h, shape (M,) [m MSL].
-        euler (numpy.ndarray): Euler angles [φ_roll, θ_pitch,
-            ψ_heading], shape (M, 3) [rad].
-        R_b2n (scipy.spatial.transform.Rotation): Body-to-NED rotation,
-            vectorized over all M samples.
-        omega_b (numpy.ndarray): Truth gyro output ω_ib_b, shape
+        r_lb_l (numpy.ndarray): Position relative to the start point,
+            resolved in the start point's NED axes, shape (M, 3) [m].
+        v_eb_n (numpy.ndarray): Velocity of the body relative to the
+            Earth, resolved in NED, shape (M, 3) [m/s].
+        v_eb_n_dot (numpy.ndarray): Time derivative of v_eb_n (central
+            differences, diagnostic only), shape (M, 3) [m/s²].
+        L_b (numpy.ndarray): Geodetic latitude, shape (M,) [rad].
+        lambda_b (numpy.ndarray): Longitude, shape (M,) [rad].
+        h_b (numpy.ndarray): Geodetic height, shape (M,) [m].
+        euler_nb (numpy.ndarray): Euler angles [phi_nb (roll), theta_nb
+            (pitch), psi_nb (heading)], shape (M, 3) [rad].
+        C_b_n (scipy.spatial.transform.Rotation): Body-to-NED attitude
+            C_b^n, vectorized over all M samples.
+        omega_ib_b (numpy.ndarray): Truth gyro output omega_ib^b, shape
             (M, 3) [rad/s].
-        f_b (numpy.ndarray): Truth accelerometer output f_b, shape
+        f_ib_b (numpy.ndarray): Truth accelerometer output f_ib^b, shape
             (M, 3) [m/s²].
-        g_loc (numpy.ndarray): Local gravity magnitude g(φ, h), shape
+        g (numpy.ndarray): Local gravity magnitude g(L_b, h_b), shape
             (M,) [m/s²].
     """
-    def __init__(self, pos_n, vel_n, euler, dt,
-                 lat0_deg: float = 38.97, lon0_deg: float = -76.49,
-                 alt0: float = 100.0):
+    def __init__(self, pos_profile: np.ndarray, v_eb_n: np.ndarray,
+                 euler_nb: np.ndarray, tau_i: float,
+                 L_b0_deg: float = 38.97, lambda_b0_deg: float = -76.49,
+                 h_b0: float = 100.0):
         """Builds the truth trajectory from raw position/velocity/Euler-angle profiles.
 
         Args:
-            pos_n: Raw NED position profile, shape (M, 3) [m]. Only
-                used to determine the sample count; the exposed
-                `pos_n` attribute is recomputed from the integrated
-                geodetic position (see class docstring).
-            vel_n: NED velocity profile, shape (M, 3) [m/s].
-            euler: Euler angles [φ_roll, θ_pitch, ψ_heading], shape
-                (M, 3) [rad].
-            dt: Sample interval [s].
-            lat0_deg: Initial geodetic latitude [deg]. Defaults to
-                38.97.
-            lon0_deg: Initial geodetic longitude [deg]. Defaults to
-                -76.49.
-            alt0: Initial geodetic altitude [m MSL]. Defaults to 100.0.
+            pos_profile: Raw NED position profile, shape (M, 3) [m]. Only
+                used to determine the sample count; the exposed `r_lb_l`
+                attribute is recomputed from the integrated curvilinear
+                position (see class docstring).
+            v_eb_n: Velocity profile resolved in NED, shape (M, 3) [m/s].
+            euler_nb: Euler angles [roll, pitch, heading], shape (M, 3)
+                [rad].
+            tau_i: Sample interval [s].
+            L_b0_deg: Initial geodetic latitude [deg]. Defaults to 38.97.
+            lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.
+            h_b0: Initial geodetic height [m]. Defaults to 100.0.
         """
-        self.dt = dt
-        lat0 = np.deg2rad(lat0_deg)
-        lon0 = np.deg2rad(lon0_deg)
+        self.tau_i = tau_i
+        L_b0 = np.deg2rad(L_b0_deg)
+        lambda_b0 = np.deg2rad(lambda_b0_deg)
 
-        M = len(pos_n)
-        self.t = np.arange(M) * dt
-        self.vel_n = vel_n
-        self.acc_n = np.gradient(vel_n, dt, axis=0)
-        self.euler = euler
+        M = len(pos_profile)
+        self.t = np.arange(M) * tau_i
+        self.v_eb_n = v_eb_n
+        self.v_eb_n_dot = np.gradient(v_eb_n, tau_i, axis=0)
+        self.euler_nb = euler_nb
 
-        # ---- Geodetic position by integration ----------------------------
-        # Integrate (φ, λ, h) using current radii of curvature. Inherently
-        # sequential (lat[k+1] depends on lat[k]), so this stays a loop.
-        lat = np.zeros(M); lon = np.zeros(M); alt = np.zeros(M)
-        lat[0], lon[0], alt[0] = lat0, lon0, alt0
+        # ---- Curvilinear position by integration --------------------------
+        # Integrate (L_b, lambda_b, h_b) using current radii of curvature.
+        # Inherently sequential (L_b[k+1] depends on L_b[k]), so this stays
+        # a loop.
+        # --8<-- [start:truth_position]
+        L_b = np.zeros(M); lambda_b = np.zeros(M); h_b = np.zeros(M)
+        L_b[0], lambda_b[0], h_b[0] = L_b0, lambda_b0, h_b0
         for k in range(M - 1):
-            R_M, R_N = wgs84_radii(lat[k])
-            lat[k+1] = lat[k] + (vel_n[k, 0] / (R_M + alt[k])) * dt
-            lon[k+1] = lon[k] + (vel_n[k, 1] /
-                                 ((R_N + alt[k]) * np.cos(lat[k]))) * dt
-            alt[k+1] = alt[k] - vel_n[k, 2] * dt
-        self.lat, self.lon, self.alt = lat, lon, alt
+            R_N, R_E = wgs84_radii(L_b[k])
+            L_b[k+1] = L_b[k] + (v_eb_n[k, 0] / (R_N + h_b[k])) * tau_i
+            lambda_b[k+1] = lambda_b[k] + (v_eb_n[k, 1] /
+                                           ((R_E + h_b[k]) * np.cos(L_b[k]))) * tau_i
+            h_b[k+1] = h_b[k] - v_eb_n[k, 2] * tau_i
+        # --8<-- [end:truth_position]
+        self.L_b, self.lambda_b, self.h_b = L_b, lambda_b, h_b
 
-        # Body→NED rotation as a vectorized scipy Rotation stack
-        self.R_b2n = Rot.from_euler(
-            'ZYX', np.column_stack([euler[:, 2], euler[:, 1], euler[:, 0]]))
-        R_n2b = self.R_b2n.inv()
+        # Body-to-NED attitude as a vectorized scipy Rotation stack
+        self.C_b_n = Rot.from_euler(
+            'ZYX', np.column_stack([euler_nb[:, 2], euler_nb[:, 1], euler_nb[:, 0]]))
+        C_n_b = self.C_b_n.inv()
 
         # ---- Truth IMU outputs (exact discrete, vectorized) --------------
         # Consistent with strapdown_navgrade's forward-Euler recursion:
-        #   omega_ib_b[k] = exact discrete rotation vector R[k]→R[k+1] / dt
-        #                   plus Earth/transport rate in body frame
-        #   f_b[k]        = forward-difference specific force in NED,
-        #                   rotated to body:
-        #                     f_n[k] = (vel[k+1]-vel[k])/dt + Coriolis[k] - g[k]
-        w_ie = earth_rate_n(lat)                       # (M, 3)
-        w_en = transport_rate_n(vel_n, lat, alt)        # (M, 3)
-        g_arr = normal_gravity(lat, alt)                # (M,)
-        self.g_loc = g_arr
-        g_n = np.zeros((M, 3)); g_n[:, 2] = g_arr
+        #   omega_ib_b[k] = exact discrete rotation vector C[k]→C[k+1] / tau_i
+        #                   plus Earth/transport rate in body axes
+        #   f_ib_b[k]     = forward-difference specific force in NED,
+        #                   rotated to body axes:
+        #                     f_ib_n[k] = (v[k+1]-v[k])/tau_i + Coriolis[k] - g[k]
+        omega_ie_n = earth_rate_n(L_b)                       # (M, 3)
+        omega_en_n = transport_rate_n(v_eb_n, L_b, h_b)      # (M, 3)
+        g = normal_gravity(L_b, h_b)                         # (M,)
+        self.g = g
+        g_b_n = np.zeros((M, 3)); g_b_n[:, 2] = g
 
-        dvel = np.empty((M, 3))
-        dvel[:-1] = (vel_n[1:] - vel_n[:-1]) / dt
-        dvel[-1]  = dvel[-2]
-        f_n_truth = dvel + np.cross(2.0 * w_ie + w_en, vel_n) - g_n
-        self.f_b = R_n2b.apply(f_n_truth)
+        # --8<-- [start:truth_specific_force]
+        v_eb_n_rate = np.empty((M, 3))
+        v_eb_n_rate[:-1] = (v_eb_n[1:] - v_eb_n[:-1]) / tau_i
+        v_eb_n_rate[-1]  = v_eb_n_rate[-2]
+        f_ib_n = v_eb_n_rate + np.cross(2.0 * omega_ie_n + omega_en_n, v_eb_n) - g_b_n
+        self.f_ib_b = C_n_b.apply(f_ib_n)
+        # --8<-- [end:truth_specific_force]
 
-        dR_stack = self.R_b2n[:-1].inv() * self.R_b2n[1:]
-        omega_nb_b_disc = dR_stack.as_rotvec() / dt     # (M-1, 3)
-        omega_nb_b = np.vstack([omega_nb_b_disc, omega_nb_b_disc[-1:]])
-        self.omega_b = omega_nb_b + R_n2b.apply(w_ie + w_en)
+        # --8<-- [start:truth_angular_rate]
+        dC_b = self.C_b_n[:-1].inv() * self.C_b_n[1:]       # C_b(k+1)^b(k)
+        omega_nb_b_fwd = dC_b.as_rotvec() / tau_i            # (M-1, 3)
+        omega_nb_b = np.vstack([omega_nb_b_fwd, omega_nb_b_fwd[-1:]])
+        self.omega_ib_b = omega_nb_b + C_n_b.apply(omega_ie_n + omega_en_n)
+        # --8<-- [end:truth_angular_rate]
 
         # Reproject truth position through the same linearized geodetic
         # formula that strapdown_navgrade uses, so error =
-        # strapdown_pos_ned - truth.pos_n measures actual navigation error
+        # estimated r_lb_l - truth.r_lb_l measures actual navigation error
         # rather than flat-earth vs. curved-earth bias.
-        R_M0, R_N0 = wgs84_radii(lat0)
-        pos_n_geo = np.zeros((M, 3))
-        pos_n_geo[:, 0] = (lat - lat0)   * (R_M0 + alt0)
-        pos_n_geo[:, 1] = (lon - lon[0]) * (R_N0 + alt0) * np.cos(lat0)
-        pos_n_geo[:, 2] = -(alt - alt0)
-        self.pos_n = pos_n_geo
+        R_N0, R_E0 = wgs84_radii(L_b0)
+        r_lb_l = np.zeros((M, 3))
+        r_lb_l[:, 0] = (L_b - L_b0)   * (R_N0 + h_b0)
+        r_lb_l[:, 1] = (lambda_b - lambda_b[0]) * (R_E0 + h_b0) * np.cos(L_b0)
+        r_lb_l[:, 2] = -(h_b - h_b0)
+        self.r_lb_l = r_lb_l
 
     @classmethod
-    def from_spline(cls, path: NEDSplinePath, speed: float, dt: float,
-                     lat0_deg: float = 38.97, lon0_deg: float = -76.49,
-                     alt0: float = 100.0):
+    def from_spline(cls, path: NEDSplinePath, speed: float, tau_i: float,
+                     L_b0_deg: float = 38.97, lambda_b0_deg: float = -76.49,
+                     h_b0: float = 100.0) -> "TruthTrajectory":
         """Builds a truth trajectory by traversing a spline path at constant speed.
 
         Args:
             path: NED spline path to traverse.
             speed: Along-path speed [m/s], assumed constant.
-            dt: Sample interval [s].
-            lat0_deg: Initial geodetic latitude [deg]. Defaults to
-                38.97.
-            lon0_deg: Initial geodetic longitude [deg]. Defaults to
-                -76.49.
-            alt0: Initial geodetic altitude [m MSL]. Defaults to 100.0.
+            tau_i: Sample interval [s].
+            L_b0_deg: Initial geodetic latitude [deg]. Defaults to 38.97.
+            lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.
+            h_b0: Initial geodetic height [m]. Defaults to 100.0.
 
         Returns:
             TruthTrajectory: Truth trajectory over the spline.
         """
         T = path.length / speed
-        t = np.arange(0.0, T + dt, dt)
+        t = np.arange(0.0, T + tau_i, tau_i)
         s_of_t = np.minimum(speed * t, path.length)
-        pos_n = path.position(s_of_t)
-        vel_n = np.gradient(pos_n, dt, axis=0)
+        pos_profile = path.position(s_of_t)
+        v_eb_n = np.gradient(pos_profile, tau_i, axis=0)
         # Coordinated-turn bank uses local gravity at the start; for short
         # trajectories using a mean g is well within the rounding error
         # of the heading-rate derivative itself.
-        g_ref = normal_gravity(np.deg2rad(lat0_deg), alt0)
-        euler = _euler_from_velocity(vel_n, dt, g_ref)
-        return cls(pos_n, vel_n, euler, dt,
-                   lat0_deg=lat0_deg, lon0_deg=lon0_deg, alt0=alt0)
+        g_ref = normal_gravity(np.deg2rad(L_b0_deg), h_b0)
+        euler_nb = _euler_from_velocity(v_eb_n, tau_i, g_ref)
+        return cls(pos_profile, v_eb_n, euler_nb, tau_i,
+                   L_b0_deg=L_b0_deg, lambda_b0_deg=lambda_b0_deg, h_b0=h_b0)
 
 
 # =========================================================================
@@ -304,15 +312,15 @@ def _turn(entry, hdg_start_deg, hdg_end_deg, speed, alt_ned, R_turn, dt):
             exit_hdg), NED position and velocity arrays (each shape
             (N, 3)), and the exiting heading [deg].
     """
-    omega = speed / R_turn
+    turn_rate = speed / R_turn
     hdg0  = np.deg2rad(hdg_start_deg)
     delta = np.deg2rad(hdg_end_deg) - hdg0
     delta = (delta + np.pi) % (2 * np.pi) - np.pi   # wrap to (−π, π]
     sign  = float(np.sign(delta)) if delta != 0.0 else 1.0
-    N     = max(2, int(abs(delta) / omega / dt) + 1)
+    N     = max(2, int(abs(delta) / turn_rate / dt) + 1)
     t_    = np.arange(N) * dt
-    hdg_t = hdg0 + sign * omega * t_
-    vR    = speed / (sign * omega)
+    hdg_t = hdg0 + sign * turn_rate * t_
+    vR    = speed / (sign * turn_rate)
     pos   = np.zeros((N, 3))
     pos[:, 0] = entry[0] + vR * (np.sin(hdg_t) - np.sin(hdg0))
     pos[:, 1] = entry[1] + vR * (np.cos(hdg0)  - np.cos(hdg_t))
@@ -342,14 +350,14 @@ def _loiter(entry, hdg_deg, speed, alt_ned, n_revs, R_turn, direction='right', d
         tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
             and velocity arrays, each shape (N, 3).
     """
-    omega = speed / R_turn
+    turn_rate = speed / R_turn
     sign  = 1.0 if direction == 'right' else -1.0
     hdg0  = np.deg2rad(hdg_deg)
-    dur   = n_revs * 2.0 * np.pi / omega
+    dur   = n_revs * 2.0 * np.pi / turn_rate
     N     = max(2, int(dur / dt) + 1)
     t_    = np.arange(N) * dt
-    hdg_t = hdg0 + sign * omega * t_
-    vR    = speed / (sign * omega)
+    hdg_t = hdg0 + sign * turn_rate * t_
+    vR    = speed / (sign * turn_rate)
     pos   = np.zeros((N, 3))
     pos[:, 0] = entry[0] + vR * (np.sin(hdg_t) - np.sin(hdg0))
     pos[:, 1] = entry[1] + vR * (np.cos(hdg0)  - np.cos(hdg_t))
@@ -518,7 +526,23 @@ def _approx_geodetic(pos_ned, lat0_deg, lon0_deg, alt0_msl):
 # =========================================================================
 # 3. YAML-driven trajectory builder
 # =========================================================================
-def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
+class MissionTrajectory(NamedTuple):
+    """Result of building a mission from its YAML definition.
+
+    Attributes:
+        truth: Truth trajectory over the whole mission.
+        v_sprint: Sprint-leg speed [m/s] if a Mach-targeted speed_ramp
+            phase is present, else None.
+        R_turn: Turn radius [m] of the first coordinated turn
+            encountered, else None.
+    """
+
+    truth: TruthTrajectory
+    v_sprint: float | None
+    R_turn: float | None
+
+
+def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTrajectory:
     """Builds a phase-by-phase truth trajectory from a YAML mission definition.
 
     Each phase in the YAML maps to a helper function; fields omitted
@@ -527,22 +551,12 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
 
     Args:
         yaml_path: Path to the YAML mission-phase definition file.
-        dt: Sample interval [s]. When None, defaults to the file's
+        tau_i: Sample interval [s]. When None, defaults to the file's
             `simulation_time.dt_s` value.
 
     Returns:
-        tuple: (truth, v_sprint, R_turn) — same tuple shape as the
-            former build_bqn_trajectory(), kept for compatibility with
-            existing callers, where:
-                truth: A TruthTrajectory instance built from the
-                    phase-generated position/velocity/Euler-angle
-                    profiles, exposing t, dt, pos_n, vel_n, acc_n, lat,
-                    lon, alt, euler, R_b2n, omega_b (ω_ib_b), f_b, and
-                    g_loc.
-                v_sprint: Sprint-leg speed [m/s] if a Mach-targeted
-                    speed_ramp phase is present, else None.
-                R_turn: Turn radius [m] of the first coordinated turn
-                    encountered, else None.
+        MissionTrajectory: (truth, v_sprint, R_turn); unpacks
+            positionally as ``truth, v_sprint, R_turn = build_trajectory(...)``.
 
     Raises:
         ValueError: If a phase has an unrecognized `type`, or if a
@@ -566,8 +580,8 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
     alt0_msl     = float(dep["alt_ft"]) * FT
     nav_bank_deg = float(dep.get("nav_bank_angle_deg", 25.0))
 
-    if dt is None:
-        dt = float(sim["dt_s"])
+    if tau_i is None:
+        tau_i = float(sim["dt_s"])
 
     def _isa_speed(mach, alt_m_msl):
         T_isa = 288.15 - 0.0065 * alt_m_msl
@@ -595,7 +609,7 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
             v_final = float(phase["speed_final_kt"]) * KT
             pos, vel = _ground_roll(
                 float(phase["heading_deg"]), v_final,
-                float(phase["run_length_m"]), dt)
+                float(phase["run_length_m"]), tau_i)
             state["hdg_deg"] = float(phase["heading_deg"])
             state["speed"]   = v_final
 
@@ -604,7 +618,7 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
             pos, vel = _takeoff(
                 state["pos_last"], float(phase["heading_deg"]), state["speed"],
                 float(phase["pitch_deg"]), v_end_val,
-                float(phase["duration_s"]), dt)
+                float(phase["duration_s"]), tau_i)
             state["hdg_deg"] = float(phase["heading_deg"])
             state["speed"]   = v_end_val
 
@@ -615,7 +629,7 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
             pos, vel = _climb(
                 state["pos_last"], state["hdg_deg"], climb_speed,
                 state["pos_last"][2], ALT_NED_CRUISE,
-                pitch_deg=float(phase["pitch_deg"]), dt=dt)
+                pitch_deg=float(phase["pitch_deg"]), dt=tau_i)
             state["speed"]   = climb_speed
             state["alt_ned"] = ALT_NED_CRUISE
 
@@ -642,7 +656,7 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
                 R_turn_global = R_nav
             pos_t, vel_t, exit_hdg = _turn(
                 state["pos_last"], state["hdg_deg"], bearing_deg,
-                state["speed"], state["alt_ned"], R_nav, dt)
+                state["speed"], state["alt_ned"], R_nav, tau_i)
             state["hdg_deg"] = exit_hdg
 
             # Fly to waypoint (with altitude change if needed)
@@ -652,9 +666,9 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
                 pos_s, vel_s = _climb(
                     pos_t[-1], exit_hdg, wp_speed,
                     state["alt_ned"], wp_alt_ned,
-                    pitch_deg=implied_pitch, dt=dt)
+                    pitch_deg=implied_pitch, dt=tau_i)
             else:
-                pos_s, vel_s = _straight(pos_t[-1], exit_hdg, dist_h_m, wp_speed, dt)
+                pos_s, vel_s = _straight(pos_t[-1], exit_hdg, dist_h_m, wp_speed, tau_i)
 
             ALT_CRUISE     = wp_alt_m
             state["speed"]   = wp_speed
@@ -674,7 +688,7 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
                 pos_l, vel_l = _loiter(
                     sub_pos[-1], state["hdg_deg"], state["speed"],
                     state["alt_ned"], int(loiter_cfg["n_turns"]),
-                    R_loit, direction=loiter_cfg.get("direction", "right"), dt=dt)
+                    R_loit, direction=loiter_cfg.get("direction", "right"), dt=tau_i)
                 sub_pos = np.vstack([sub_pos, pos_l[1:]])
                 sub_vel = np.vstack([sub_vel, vel_l[1:]])
 
@@ -694,7 +708,7 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
             pos, vel = _speed_ramp(
                 state["pos_last"], state["hdg_deg"],
                 v_start, v_end_val, state["alt_ned"],
-                dur=float(phase["duration_s"]), dt=dt)
+                dur=float(phase["duration_s"]), dt=tau_i)
             state["speed"] = v_end_val
 
         else:
@@ -717,12 +731,15 @@ def build_trajectory(yaml_path: str, dt: float = None): # type: ignore
 
     # Smooth velocity to eliminate C1 kinks at phase boundaries.
     # Sigma ~2 s → roll/pitch transitions over 4–6 s, matching transport-category dynamics.
-    _att_sigma = max(1, int(2.0 / dt))
+    _att_sigma = max(1, int(2.0 / tau_i))
     all_vel = gaussian_filter1d(all_vel, sigma=_att_sigma, axis=0)
 
     g_ref = normal_gravity(np.deg2rad(lat0_deg), alt0_msl)
-    euler = _euler_from_velocity(all_vel, dt, g_ref)
+    euler = _euler_from_velocity(all_vel, tau_i, g_ref)
 
-    truth = TruthTrajectory(all_pos, all_vel, euler, dt,
-                            lat0_deg=lat0_deg, lon0_deg=lon0_deg, alt0=alt0_msl)
-    return truth, v_sprint, R_turn_global
+    # The departure elevation is given above mean sea level; with no geoid
+    # model it is used directly as the geodetic height h_b.
+    truth = TruthTrajectory(all_pos, all_vel, euler, tau_i,
+                            L_b0_deg=lat0_deg, lambda_b0_deg=lon0_deg,
+                            h_b0=alt0_msl)
+    return MissionTrajectory(truth, v_sprint, R_turn_global)
