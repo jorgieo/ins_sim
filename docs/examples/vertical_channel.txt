@@ -1,0 +1,8 @@
+Free-inertial time constant tau_v = 573.0 s
+Height error [m]  free-inertial           baro-aided
+t [min]           simulated  predicted    simulated  predicted
+      2             -120.9     -120.9        -14.6      -14.5
+      5             -313.8     -313.9          7.6        7.5
+     10             -715.2     -715.8          3.0        3.0
+     20            -2287.4    -2290.8          0.0        0.0
+     30            -6604.7    -6615.5          0.0        0.0

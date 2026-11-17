@@ -155,9 +155,11 @@ def gyro_bias(b_g: float = 0.01 * DEG_PER_HOUR, duration_s: float = 3 * 3600.0,
     R_N = float(wgs84_radii(0.0).R_N)
     omega_s = schuler_frequency(R_N)
     t = run.t
+    # --8<-- [start:gyro_bias_prediction]
     predicted = (-R_N * b_g * omega_s**2 / (omega_s**2 - WGS84_OMEGA**2)
                  * (np.sin(WGS84_OMEGA * t) / WGS84_OMEGA - np.sin(omega_s * t) / omega_s))
     single_channel = -R_N * b_g * (t - np.sin(omega_s * t) / omega_s)
+    # --8<-- [end:gyro_bias_prediction]
     simulated = run.delta_r_eb_n[:, 0]
     return SimpleNamespace(t=t, simulated=simulated, predicted=predicted,
                            single_channel=single_channel,

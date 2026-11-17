@@ -9,7 +9,11 @@ Each check runs the simulator's own code (the same truth generator, IMU
 error model and strapdown navigator the app uses) on a scenario simple
 enough to have an exact answer, usually a stationary IMU with exactly one
 error source. The test suite asserts every agreement on each commit, and
-the figures and table below are regenerated from the same scenarios.
+the figures and table below are regenerated from the same scenarios. The
+predictions are derived on the Theory pages: the
+[INS error model](../theory/error-model.md), the
+[Vertical channel](../theory/vertical-channel.md) and the
+[IMU error model](../theory/imu-errors.md).
 
 !!! abstract "Key results"
     - Every inertial check agrees with its prediction to within 0.3%, and

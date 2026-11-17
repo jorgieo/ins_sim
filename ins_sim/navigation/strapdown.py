@@ -4,7 +4,8 @@
 attitude, velocity and curvilinear position on the rotating WGS-84 Earth,
 accounting for Earth rate, transport rate, Coriolis and normal gravity.
 An optional barometric height measurement stabilizes the vertical channel,
-which is unstable when the navigator runs on inertial sensors alone.
+which is unstable when the navigator runs on inertial sensors alone. See the
+[Strapdown mechanization][strapdown-mechanization] theory page.
 """
 
 from collections.abc import Sequence
@@ -196,9 +197,11 @@ def strapdown_navgrade(meas_omega_ib_b: np.ndarray, meas_f_ib_b: np.ndarray,
         # Position relative to the start point (for plotting against
         # truth): linearized curvilinear-to-metres conversion using the
         # start-point radii R_N0, R_E0.
+        # --8<-- [start:relative_position]
         r_lb_l[k+1, 0] = (L_b[k+1] - L_b0) * (R_N0 + h_b0)
         r_lb_l[k+1, 1] = (lambda_b[k+1] - lambda_b[0]) * (R_E0 + h_b0) * np.cos(L_b0)
         r_lb_l[k+1, 2] = -(h_b[k+1] - h_b0)
+        # --8<-- [end:relative_position]
 
         C_b_n = C_b_n_next
 

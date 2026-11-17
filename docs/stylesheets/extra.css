@@ -1,0 +1,36 @@
+/* Diagrams drawn as inline SVG (includes/diagrams/*.svg, included into a
+   page inside a <figure class="ins-figure">). They take their colours from
+   the Material theme's variables, so they follow the light and dark
+   palettes like the text around them. */
+
+/* Material sizes a figure to fit its content, which leaves an SVG with no
+   intrinsic width too small to read: let it take the text column instead. */
+.md-typeset .ins-figure {
+  width: 100%;
+}
+
+.ins-figure svg {
+  display: block;
+  width: 100%;
+  max-width: 44rem;
+  height: auto;
+  margin: 0 auto;
+  color: var(--md-default-fg-color);
+  font-family: var(--md-text-font-family);
+}
+
+.ins-figure .stroke       { stroke: currentColor; stroke-width: 1.5; fill: none; }
+.ins-figure .stroke-thin  { stroke: var(--md-default-fg-color--light); stroke-width: 1; fill: none; }
+.ins-figure .stroke-accent { stroke: var(--md-accent-fg-color); stroke-width: 2.2; fill: none; }
+.ins-figure .dashed       { stroke-dasharray: 5 4; }
+.ins-figure .body-fill    { fill: var(--md-default-fg-color--lightest); stroke: currentColor; stroke-width: 1.2; }
+.ins-figure .dot          { fill: currentColor; }
+.ins-figure .bg           { fill: var(--md-default-bg-color); }
+.ins-figure .head         { fill: currentColor; }
+.ins-figure .head-accent  { fill: var(--md-accent-fg-color); }
+.ins-figure .head-thin    { fill: var(--md-default-fg-color--light); }
+
+.ins-figure text          { fill: currentColor; font-size: 15px; }
+.ins-figure text.accent   { fill: var(--md-accent-fg-color); }
+.ins-figure text.muted    { fill: var(--md-default-fg-color--light); }
+.ins-figure text.title    { fill: var(--md-default-fg-color--light); font-size: 13px; letter-spacing: 0.02em; }

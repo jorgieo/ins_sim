@@ -4,7 +4,8 @@
 navigation for a number of trials and collects every trial's estimates and
 attitude error. The spread across trials is the simulator's measure of
 navigation performance; `percentile_envelope` summarizes it as a
-position-error percentile over time.
+position-error percentile over time. See the
+[Monte Carlo evaluation][monte-carlo-evaluation] theory page.
 """
 
 from collections.abc import Callable
@@ -103,6 +104,7 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
     est_h_b        = np.zeros((n_trials, M))
     delta_psi_nb_n = np.zeros((n_trials, M, 3))
 
+    # --8<-- [start:trial]
     trial_rngs = np.random.default_rng(seed).spawn(n_trials)
     C_b_n0 = truth.C_b_n[0]
 
@@ -122,6 +124,7 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
         nav = strapdown_navgrade(
             meas_omega_ib_b, meas_f_ib_b, init_state, truth.tau_i,
             meas_h_b=truth.h_b if baro_aiding else None)
+        # --8<-- [end:trial]
         est_r_lb_l[i]   = nav.r_lb_l
         est_L_b[i]      = nav.L_b
         est_lambda_b[i] = nav.lambda_b
@@ -161,4 +164,6 @@ def percentile_envelope(delta_r_eb_n: np.ndarray, q: float = 95) -> np.ndarray:
         >>> [float(x) for x in percentile_envelope(delta_r, q=50)]
         [3.0, 3.0]
     """
+    # --8<-- [start:percentile]
     return np.percentile(np.linalg.norm(delta_r_eb_n, axis=2), q, axis=0)
+    # --8<-- [end:percentile]

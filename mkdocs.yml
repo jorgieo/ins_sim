@@ -41,6 +41,14 @@ nav:
   - Theory & Math:
       - theory/index.md
       - Notation & conventions: theory/notation.md
+      - Frames & attitude: theory/frames-attitude.md
+      - Earth & gravity: theory/earth-gravity.md
+      - Truth & ideal IMU: theory/truth-kinematics.md
+      - IMU error model: theory/imu-errors.md
+      - Strapdown mechanization: theory/mechanization.md
+      - Vertical channel: theory/vertical-channel.md
+      - INS error model: theory/error-model.md
+      - Monte Carlo evaluation: theory/monte-carlo.md
   - Validation: validation/index.md
   - Reference:
       - Python API:
@@ -116,6 +124,9 @@ markdown_extensions:
 extra:
   version:
     provider: mike
+
+extra_css:
+  - stylesheets/extra.css
 
 extra_javascript:
   - javascripts/mathjax.js

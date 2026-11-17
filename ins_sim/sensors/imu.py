@@ -8,7 +8,8 @@ spread of each error term in the Groves (2013) sensor model:
 
 `generate_imu_samples` draws one realization of these errors along a truth
 trajectory, and `draw_initial_misalignment` draws the initial alignment
-error. The terms are described on [Notation & conventions][imu-errors].
+error. The model is explained on the [IMU error model][imu-error-model]
+theory page, and its symbols on [Notation & conventions][imu-errors].
 """
 
 from dataclasses import dataclass
@@ -21,12 +22,14 @@ from scipy.signal import lfilter
 if TYPE_CHECKING:
     from ins_sim.trajectory.kinematics import TruthTrajectory
 
-#: Peak of the Allan deviation of a first-order Gauss-Markov process, per
-#: unit of its steady-state spread σ. The peak occurs at an averaging time
-#: of 1.8926 correlation times. ins_sim models bias instability with such a
-#: process and sets σ = B / GM_ALLAN_PEAK, so that the simulated bias's
-#: Allan deviation peaks at the datasheet bias instability B.
 GM_ALLAN_PEAK = 0.6173642831
+"""Peak of the Allan deviation of a first-order Gauss-Markov process, per unit of its spread.
+
+The peak occurs at an averaging time of 1.8926 correlation times.
+ins_sim models bias instability with such a process and sets its
+steady-state spread σ = B / GM_ALLAN_PEAK, so that the simulated bias's
+Allan deviation peaks at the datasheet bias instability B.
+"""
 
 
 @dataclass
@@ -164,6 +167,7 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
     g = cfg["gyro"]
     a = cfg["accel"]
     al = cfg.get("alignment", {})
+    # --8<-- [start:datasheet_units]
     DEG_HR = np.pi / 180 / 3600
     return IMUSpec(
         gyro_arw     = g["arw_deg_per_rt_hr"]          * np.pi / 180 / 60,
@@ -181,6 +185,7 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
         align_tilt_std    = al.get("tilt_std_deg", 0.0)    * np.pi / 180,
         align_heading_std = al.get("heading_std_deg", 0.0) * np.pi / 180,
     )
+    # --8<-- [end:datasheet_units]
 
 
 def _error_matrix(rng: np.random.Generator, sf_std: float,
@@ -231,9 +236,11 @@ def draw_initial_misalignment(spec: IMUSpec,
         >>> draw_initial_misalignment(spec, np.random.default_rng(0)).shape
         (3,)
     """
+    # --8<-- [start:initial_misalignment]
     return rng.normal(0.0, [spec.align_tilt_std,
                             spec.align_tilt_std,
                             spec.align_heading_std])
+    # --8<-- [end:initial_misalignment]
 
 
 def _triad_measurement(rng: np.random.Generator, truth_triad: np.ndarray,

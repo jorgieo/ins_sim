@@ -1,0 +1,2 @@
+Perfect sensors: largest speed in 1 h = 0.0 m/s
+0.01 °/h gyro bias: horizontal error after 1 h = 1346 m

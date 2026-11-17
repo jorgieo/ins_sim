@@ -41,7 +41,9 @@ def attitude_error(est_C_b_n: Rotation, C_b_n: Rotation) -> np.ndarray:
         >>> [round(float(x), 6) for x in attitude_error(est_C_b_n, C_b_n)]
         [0.0, 0.0, 0.001]
     """
+    # --8<-- [start:attitude_error]
     return (est_C_b_n * C_b_n.inv()).as_rotvec()
+    # --8<-- [end:attitude_error]
 
 
 def position_error(est_L_b: npt.ArrayLike, est_lambda_b: npt.ArrayLike,
@@ -89,11 +91,13 @@ def position_error(est_L_b: npt.ArrayLike, est_lambda_b: npt.ArrayLike,
     delta_lambda_b = np.mod(np.asarray(est_lambda_b) - lambda_b + np.pi, 2.0 * np.pi) - np.pi
     delta_h_b = np.asarray(est_h_b) - h_b
     R_N, R_E = wgs84_radii(L_b)
+    # --8<-- [start:position_error]
     return np.stack([
         (R_N + h_b) * delta_L_b,
         (R_E + h_b) * np.cos(L_b) * delta_lambda_b,
         -delta_h_b,
     ], axis=-1)
+    # --8<-- [end:position_error]
 
 
 def velocity_error(est_v_eb_n: npt.ArrayLike, v_eb_n: npt.ArrayLike) -> np.ndarray:

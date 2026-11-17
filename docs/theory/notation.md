@@ -215,28 +215,28 @@ pattern:
 
 | Symbol | Meaning | SI unit | Python (v0.3.0) | v0.2 name | Explained in |
 | ------ | ------- | ------- | --------------- | --------- | ------------ |
-| \(L_b\), \(\lambda_b\), \(h_b\) | Latitude, longitude, height | rad, rad, m | `L_b`, `lambda_b`, `h_b` | `lat`, `lon`, `alt` | Earth & gravity |
-| \(R_N\) | Meridian radius of curvature | m | `R_N` | `R_M` ⚠ | Earth & gravity |
-| \(R_E\) | Transverse radius of curvature | m | `R_E` | `R_N` ⚠ | Earth & gravity |
-| \(\wvec{ie}{n}\) | Earth rate, NED | rad/s | `omega_ie_n` | `w_ie` | Earth & gravity |
-| \(\wvec{en}{n}\) | Transport rate, NED | rad/s | `omega_en_n` | `w_en` | Earth & gravity |
-| \(\gvec{b}{n}\) | Gravity, NED | m/s² | `g_b_n` | `g_n` | Earth & gravity |
-| \(\Cmat{b}{n}\) | Attitude (scipy `Rotation`) | – | `C_b_n` | `R_b2n` | Frames & attitude |
-| \(\qvec{b}{n}\) | Attitude quaternion, scalar-last | – | `q_b_n` | `quat` | Frames & attitude |
-| \(\phi_{nb}\), \(\theta_{nb}\), \(\psi_{nb}\) | Roll, pitch, heading | rad | `euler_nb` | `euler` | Frames & attitude |
-| \(\wvec{ib}{b}\) | True angular rate | rad/s | `omega_ib_b` | `omega_b` | Truth & ideal IMU |
-| \(\fvec{ib}{b}\) | True specific force | m/s² | `f_ib_b` | `f_b` | Truth & ideal IMU |
-| \(\wvec[\tilde]{ib}{b}\) | Gyro output | rad/s | `meas_omega_ib_b` | `omega_meas` | IMU errors |
-| \(\fvec[\tilde]{ib}{b}\) | Accelerometer output | m/s² | `meas_f_ib_b` | `f_meas` | IMU errors |
-| \(\wvec{in}{n}\) | Rate of n relative to i | rad/s | `omega_in_n` | `w_in` | Mechanization |
-| \(\wvec{nb}{b}\) | Rate of b relative to n | rad/s | `omega_nb_b` | `w_nb_b` | Mechanization |
-| \(\vvec{eb}{n}\) | Velocity, NED | m/s | `v_eb_n` | `vel_n`, `v_n` | Mechanization |
-| \(\rvec{lb}{l}\) | Position relative to the start point | m | `r_lb_l` | `pos_n` | Mechanization |
-| \(\tau_i\) | IMU and integration interval | s | `tau_i` | `dt` | Mechanization |
-| \(\avec{ib}{b}\), \(\uvec{ib}{b}\) | Attitude and velocity increments | rad, m/s | `alpha_ib_b`, `upsilon_ib_b` | – | Mechanization |
-| \(\delta\psivec{nb}{n}\) | Attitude error | rad | `delta_psi_nb_n` | `mis_rotvec` (initial only) | INS error model |
-| \(\delta\vvec{eb}{n}\) | Velocity error | m/s | `delta_v_eb_n` | – | INS error model |
-| \(\delta\rvec{eb}{n}\) | Position error, local NED | m | `delta_r_eb_n` | – | INS error model |
+| \(L_b\), \(\lambda_b\), \(h_b\) | Latitude, longitude, height | rad, rad, m | `L_b`, `lambda_b`, `h_b` | `lat`, `lon`, `alt` | [Earth & gravity](earth-gravity.md) |
+| \(R_N\) | Meridian radius of curvature | m | `R_N` | `R_M` ⚠ | [Earth & gravity](earth-gravity.md) |
+| \(R_E\) | Transverse radius of curvature | m | `R_E` | `R_N` ⚠ | [Earth & gravity](earth-gravity.md) |
+| \(\wvec{ie}{n}\) | Earth rate, NED | rad/s | `omega_ie_n` | `w_ie` | [Earth & gravity](earth-gravity.md) |
+| \(\wvec{en}{n}\) | Transport rate, NED | rad/s | `omega_en_n` | `w_en` | [Earth & gravity](earth-gravity.md) |
+| \(\gvec{b}{n}\) | Gravity, NED | m/s² | `g_b_n` | `g_n` | [Earth & gravity](earth-gravity.md) |
+| \(\Cmat{b}{n}\) | Attitude (scipy `Rotation`) | – | `C_b_n` | `R_b2n` | [Frames & attitude](frames-attitude.md) |
+| \(\qvec{b}{n}\) | Attitude quaternion, scalar-last | – | `q_b_n` | `quat` | [Frames & attitude](frames-attitude.md) |
+| \(\phi_{nb}\), \(\theta_{nb}\), \(\psi_{nb}\) | Roll, pitch, heading | rad | `euler_nb` | `euler` | [Frames & attitude](frames-attitude.md) |
+| \(\wvec{ib}{b}\) | True angular rate | rad/s | `omega_ib_b` | `omega_b` | [Truth & ideal IMU](truth-kinematics.md) |
+| \(\fvec{ib}{b}\) | True specific force | m/s² | `f_ib_b` | `f_b` | [Truth & ideal IMU](truth-kinematics.md) |
+| \(\wvec[\tilde]{ib}{b}\) | Gyro output | rad/s | `meas_omega_ib_b` | `omega_meas` | [IMU error model](imu-errors.md) |
+| \(\fvec[\tilde]{ib}{b}\) | Accelerometer output | m/s² | `meas_f_ib_b` | `f_meas` | [IMU error model](imu-errors.md) |
+| \(\wvec{in}{n}\) | Rate of n relative to i | rad/s | `omega_in_n` | `w_in` | [Mechanization](mechanization.md) |
+| \(\wvec{nb}{b}\) | Rate of b relative to n | rad/s | `omega_nb_b` | `w_nb_b` | [Mechanization](mechanization.md) |
+| \(\vvec{eb}{n}\) | Velocity, NED | m/s | `v_eb_n` | `vel_n`, `v_n` | [Mechanization](mechanization.md) |
+| \(\rvec{lb}{l}\) | Position relative to the start point | m | `r_lb_l` | `pos_n` | [Mechanization](mechanization.md) |
+| \(\tau_i\) | IMU and integration interval | s | `tau_i` | `dt` | [Mechanization](mechanization.md) |
+| \(\avec{ib}{b}\), \(\uvec{ib}{b}\) | Attitude and velocity increments | rad, m/s | – (not used yet) | – | – |
+| \(\delta\psivec{nb}{n}\) | Attitude error | rad | `delta_psi_nb_n` | `mis_rotvec` (initial only) | [INS error model](error-model.md) |
+| \(\delta\vvec{eb}{n}\) | Velocity error | m/s | `delta_v_eb_n` | – | [INS error model](error-model.md) |
+| \(\delta\rvec{eb}{n}\) | Position error, local NED | m | `delta_r_eb_n` | – | [INS error model](error-model.md) |
 
 User-facing names do not change: YAML keys, command-line flags and GUI
 labels keep their datasheet-style names. For example, the GUI's

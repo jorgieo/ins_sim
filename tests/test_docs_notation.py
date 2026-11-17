@@ -19,10 +19,9 @@ import pytest
 DOCS = Path(__file__).resolve().parents[1] / "docs"
 
 # Pages still written in the v0.2 notation, exempt until they are rewritten.
-# Remove an entry when its page is converted to Groves notation.
-LEGACY_PAGES = {
-    "theory/index.md",
-}
+# Remove an entry when its page is converted to Groves notation. Every page
+# has been converted; the mechanism stays for pages imported later.
+LEGACY_PAGES: set[str] = set()
 
 # The notation page shows raw symbols and other textbooks' R_M on purpose
 # (the anatomy of a symbol, the divergence warning), so only the skew rule

@@ -8,6 +8,7 @@ Gravity: Somigliana normal gravity + free-air height correction, with the
 local gravity vector g_b^n = [0, 0, +g(L_b, h_b)] (Down positive).
 
 Symbols follow Groves (2013); see [Notation & conventions][notation-conventions].
+The models are explained on the [Earth & gravity][earth-gravity] theory page.
 """
 
 from typing import NamedTuple
@@ -16,10 +17,17 @@ import numpy as np
 import numpy.typing as npt
 
 # Defining constants of the WGS-84 ellipsoid.
-WGS84_A   = 6378137.0                 # Semi-major axis R_0 [m]
-WGS84_F   = 1.0 / 298.257223563       # Flattening f
-WGS84_E2  = WGS84_F * (2.0 - WGS84_F) # First eccentricity squared e^2
-WGS84_OMEGA = 7.2921151467e-5         # Earth rotation rate omega_ie [rad/s]
+WGS84_A = 6378137.0
+"""Semi-major axis of the WGS-84 ellipsoid: the equatorial radius R_0 [m]."""
+
+WGS84_F = 1.0 / 298.257223563
+"""Flattening f of the WGS-84 ellipsoid [dimensionless]."""
+
+WGS84_E2 = WGS84_F * (2.0 - WGS84_F)
+"""First eccentricity squared of the WGS-84 ellipsoid, e² = f·(2 − f) [dimensionless]."""
+
+WGS84_OMEGA = 7.2921151467e-5
+"""Earth rotation rate omega_ie [rad/s], as given in the GPS interface specification."""
 
 
 class Radii(NamedTuple):

@@ -1,0 +1,52 @@
+<svg viewBox="0 0 720 370" role="img" aria-labelledby="frames-title" xmlns="http://www.w3.org/2000/svg">
+<title id="frames-title">The Earth frames, the NED frame at a point on the Earth, and the body frame of an aircraft seen from above</title>
+<defs>
+<marker id="frames-head" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="11" markerHeight="11" orient="auto"><path class="head" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="frames-head-accent" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="12" markerHeight="12" orient="auto"><path class="head-accent" d="M0,0 L10,5 L0,10 z"/></marker>
+<marker id="frames-head-thin" viewBox="0 0 10 10" refX="9" refY="5" markerUnits="userSpaceOnUse" markerWidth="9" markerHeight="9" orient="auto"><path class="head-thin" d="M0,0 L10,5 L0,10 z"/></marker>
+</defs>
+<text class="title" x="24" y="26">EARTH FRAMES, SIDE VIEW</text>
+<ellipse class="body-fill" cx="190" cy="195" rx="130" ry="122"/>
+<line class="stroke-thin dashed" x1="60" y1="195" x2="190" y2="195"/>
+<text class="muted" x="66" y="187">Equator</text>
+<line class="stroke" x1="190" y1="345" x2="190" y2="50" marker-end="url(#frames-head)"/>
+<text x="200" y="58">z<tspan dy="4" font-size="11">e</tspan><tspan dy="-4">, z</tspan><tspan dy="4" font-size="11">i</tspan></text>
+<text class="muted" x="182" y="58" text-anchor="end">polar axis</text>
+<path class="stroke" d="M 164 96 A 26 8 0 0 0 212.5 100" marker-end="url(#frames-head)"/>
+<text x="137" y="118">ω<tspan dy="4" font-size="11">ie</tspan></text>
+<line class="stroke" x1="190" y1="195" x2="352" y2="195" marker-end="url(#frames-head)"/>
+<text x="358" y="200">x<tspan dy="4" font-size="11">e</tspan></text>
+<line class="stroke-thin dashed" x1="293.8" y1="121.6" x2="202.4" y2="195"/>
+<line class="stroke-accent" x1="293.8" y1="121.6" x2="261.2" y2="81.1" marker-end="url(#frames-head-accent)"/>
+<text class="accent" x="243" y="77">N</text>
+<line class="stroke-accent" x1="293.8" y1="121.6" x2="253.3" y2="154.2" marker-end="url(#frames-head-accent)"/>
+<text class="accent" x="224" y="160">D</text>
+<circle class="bg" cx="293.8" cy="121.6" r="7"/>
+<circle class="stroke-accent" cx="293.8" cy="121.6" r="7"/>
+<path class="stroke-accent" d="M 289 116.8 L 298.6 126.4 M 289 126.4 L 298.6 116.8"/>
+<text class="accent" x="307" y="114">E</text>
+<text class="muted" x="307" y="132">into the page</text>
+<text class="title" x="440" y="26">BODY FRAME, SEEN FROM ABOVE</text>
+<line class="stroke-thin dashed" x1="575" y1="200" x2="575" y2="64" marker-end="url(#frames-head-thin)"/>
+<text class="muted" x="583" y="70">N</text>
+<line class="stroke-thin dashed" x1="575" y1="200" x2="706" y2="200" marker-end="url(#frames-head-thin)"/>
+<text class="muted" x="698" y="190">E</text>
+<g transform="translate(575 200) rotate(50) scale(1.05)">
+<polygon class="body-fill" points="0,-52 5,-44 5,-10 56,12 56,20 5,8 5,30 20,42 20,48 3,44 0,50 -3,44 -20,48 -20,42 -5,30 -5,8 -56,20 -56,12 -5,-10 -5,-44"/>
+</g>
+<path class="stroke-accent" d="M 575 152 A 48 48 0 0 1 611.8 169.1"/>
+<text class="accent" x="600" y="140">ψ<tspan dy="4" font-size="11">nb</tspan></text>
+<line class="stroke" x1="575" y1="200" x2="651.6" y2="135.7" marker-end="url(#frames-head)"/>
+<text x="657" y="130">x<tspan dy="4" font-size="11">b</tspan></text>
+<text class="muted" x="657" y="149">forward</text>
+<line class="stroke" x1="575" y1="200" x2="639.3" y2="276.6" marker-end="url(#frames-head)"/>
+<text x="645" y="292">y<tspan dy="4" font-size="11">b</tspan></text>
+<text class="muted" x="645" y="311">right wing</text>
+<circle class="bg" cx="575" cy="200" r="7"/>
+<circle class="stroke" cx="575" cy="200" r="7"/>
+<path class="stroke" d="M 570.2 195.2 L 579.8 204.8 M 570.2 204.8 L 579.8 195.2"/>
+<circle class="bg" cx="452" cy="345" r="7"/>
+<circle class="stroke" cx="452" cy="345" r="7"/>
+<path class="stroke" d="M 447.2 340.2 L 456.8 349.8 M 447.2 349.8 L 456.8 340.2"/>
+<text x="467" y="350">z<tspan dy="4" font-size="11">b</tspan><tspan dy="-4" class="muted"> points down, into the page</tspan></text>
+</svg>

@@ -114,10 +114,12 @@ def figure_cep(result) -> go.Figure:
 
     # Drift-rate fit to the ensemble CEP (pointwise 50th percentile across
     # trials) over the first hour; the CEP itself is tabulated separately.
+    # --8<-- [start:cep]
     cep = np.percentile(horiz_err_nm, 50, axis=0)
     mask = t_hr <= 1.0
     if mask.sum() >= 2:
         coeffs = np.polyfit(t_hr[mask], cep[mask], 1)
+    # --8<-- [end:cep]
         x_fit = np.array([t_hr[0], t_hr[-1]])
         fig.add_trace(go.Scatter(
             x=x_fit, y=np.polyval(coeffs, x_fit), mode="lines",
@@ -150,9 +152,11 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
     Returns:
         plotly.graph_objects.Figure: The assembled subplot figure.
     """
+    # --8<-- [start:bands]
     mean = err_runs.mean(axis=0)
     # Unbiased (N−1) spread; a single trial has no spread to estimate.
     sigma = err_runs.std(axis=0, ddof=1 if len(err_runs) > 1 else 0)
+    # --8<-- [end:bands]
     s = _line_step(len(t_min))
     t = t_min[::s]
 

@@ -1,263 +1,68 @@
 # Theory & Math
 
-!!! note "Notation transition"
-    This page still uses the v0.2 symbols. In particular, \(R_N\) below is
-    the *transverse* radius of curvature and \(\phi\) is latitude. The
-    theory section is being rewritten in the notation of
-    [Groves (2013)](../reference/bibliography.md#groves2013); see
-    [Notation & conventions](notation.md) for the symbols it will use.
+These pages explain how ins_sim works: the physics it simulates and the
+mathematics it uses, exactly as implemented. Each equation appears next to
+the lines of code that evaluate it, pulled from the source when the site is
+built, so the two cannot drift apart. The symbols are those of
+[Groves (2013)](../reference/bibliography.md#groves2013), defined once on
+[Notation & conventions](notation.md).
 
-This page documents the physics and mathematics **as implemented** in the
-simulator, with pointers to the modules that carry each formulation. Symbols:
-geodetic latitude \(\phi\), longitude \(\lambda\), altitude \(h\); NED
-navigation frame \(n\); body frame \(b\); body-to-NED rotation
-\(\mathbf{C}_b^n\).
+## How the simulator fits together
 
-## WGS-84 Earth model
+```mermaid
+flowchart LR
+    MIS["Mission YAML"] --> TRUTH["Truth trajectory<br/>& ideal IMU"]
+    TRUTH --> IMU["IMU error model"]
+    IMU --> NAV["Strapdown<br/>mechanization"]
+    NAV --> MC["Monte Carlo<br/>statistics"]
+    EARTH(["Earth & gravity"]) -.-> TRUTH
+    EARTH -.-> NAV
+```
 
-*Module: `ins_sim/core/earth_model.py`*
+A run starts from a mission. The simulator builds the truth trajectory and
+works out what a perfect IMU would measure along it. It corrupts those
+measurements with the errors of a real IMU, feeds them to a strapdown
+navigator, and compares the navigator's answer with the truth. Repeating
+that many times, with fresh errors each time, gives the error statistics
+that the GUI plots. The Earth model supplies the shape, rotation and
+gravity of the Earth to both the truth and the navigator.
 
-| Constant | Symbol | Value |
-| -------- | ------ | ----- |
-| Semi-major axis | \(a\) | 6 378 137.0 m |
-| Flattening | \(f\) | 1 / 298.257223563 |
-| First eccentricity² | \(e^2 = f(2-f)\) | 6.694379990e−3 |
-| Earth rotation rate | \(\omega_{ie}\) | 7.2921151467e−5 rad/s |
+Each part has its own page:
 
-The radii of curvature at latitude \(\phi\):
+| Page | The question it answers | Code |
+| ---- | ----------------------- | ---- |
+| [Notation & conventions](notation.md) | What does each symbol mean? | – |
+| [Frames & attitude](frames-attitude.md) | Which reference frames are involved, and how is attitude described? | `scipy.spatial.transform` |
+| [Earth & gravity](earth-gravity.md) | How do latitude and longitude become metres, how fast does the Earth turn, and how strong is gravity? | `ins_sim.core.earth_model` |
+| [Truth trajectory & ideal IMU](truth-kinematics.md) | How is the reference motion built, and what would a perfect IMU measure? | `ins_sim.trajectory` |
+| [IMU error model](imu-errors.md) | How do real gyros and accelerometers differ from perfect ones? | `ins_sim.sensors.imu` |
+| [Strapdown mechanization](mechanization.md) | How does the navigator turn sensor outputs into position, velocity and attitude? | `ins_sim.navigation.strapdown` |
+| [Vertical channel](vertical-channel.md) | Why does height diverge, and how does the barometer hold it? | `ins_sim.navigation.strapdown` |
+| [INS error model](error-model.md) | Why do navigation errors grow the way they do? | – |
+| [Monte Carlo evaluation](monte-carlo.md) | How do many runs become error statistics? | `ins_sim.evaluation` |
 
-$$
-R_N = \frac{a}{\sqrt{1 - e^2\sin^2\phi}},
-\qquad
-R_M = \frac{a\,(1 - e^2)}{\left(1 - e^2\sin^2\phi\right)^{3/2}}
-$$
+## Reading paths
 
-where \(R_N\) (prime-vertical) governs east-west motion and \(R_M\)
-(meridian) governs north-south motion.
+- **New to inertial navigation:** [Frames & attitude](frames-attitude.md),
+  then [Earth & gravity](earth-gravity.md),
+  [Strapdown mechanization](mechanization.md) and the
+  [INS error model](error-model.md). The [Validation](../validation/index.md)
+  page then shows the simulator reproducing each prediction.
+- **Choosing or comparing IMUs:** the [IMU error model](imu-errors.md), the
+  [INS error model](error-model.md) and
+  [Monte Carlo evaluation](monte-carlo.md).
+- **Reading or extending the code:** [Notation & conventions](notation.md),
+  [Truth trajectory & ideal IMU](truth-kinematics.md) and
+  [Strapdown mechanization](mechanization.md). Every page ends with an
+  *In the code* table that links each equation to its function in the
+  [Python API](../reference/api/index.md).
 
-Earth rate and transport (craft) rate resolved in NED, both evaluated at the
-current state on every integration step:
+## How the pages are organized
 
-$$
-\boldsymbol{\omega}_{ie}^n =
-\begin{bmatrix} \omega_{ie}\cos\phi \\ 0 \\ -\omega_{ie}\sin\phi \end{bmatrix},
-\qquad
-\boldsymbol{\omega}_{en}^n =
-\begin{bmatrix}
-  \dfrac{v_E}{R_N + h} \\[2ex]
-  \dfrac{-v_N}{R_M + h} \\[2ex]
-  \dfrac{-v_E\tan\phi}{R_N + h}
-\end{bmatrix}
-$$
-
-## Gravity
-
-Normal gravity on the ellipsoid follows the Somigliana formula,
-
-$$
-g_0(\phi) = g_e\,\frac{1 + k\sin^2\phi}{\sqrt{1 - e^2\sin^2\phi}},
-\qquad
-g_e = 9.7803253359~\text{m/s}^2,\quad k = 1.93185265241\times10^{-3},
-$$
-
-with a **linear free-air altitude correction** as implemented:
-
-$$
-g(\phi, h) = g_0(\phi)\left(1 - \frac{2h}{a}\right)
-$$
-
-This first-order correction (\(\partial g/\partial h \approx -2g/a\)) omits
-the \(f\), \(m\) and \(h^2\) terms of the full WGS-84 formula. Against the
-full formula it overstates gravity by about 2 µg per kilometre of height at
-low latitudes: about 7 µg at the packaged mission's 15,000 ft cruise
-altitude (18.5° N) and up to 14 µg at 10 km, comparable to a
-navigation-grade accelerometer's bias. The truth generator and the
-navigator share this model, so the approximation does not affect the
-simulated navigation errors. The local gravity vector is
-\(\mathbf{g}^n = [0,\, 0,\, +g(\phi,h)]^T\) (Down positive).
-
-## Strapdown mechanization
-
-*Module: `ins_sim/navigation/strapdown.py` (`strapdown_navgrade`)*
-
-The mechanization integrates the classic NED navigation equations. In
-continuous form:
-
-$$
-\dot{\mathbf{C}}_b^n = \mathbf{C}_b^n\,\boldsymbol{\Omega}_{ib}^b
-                     - \boldsymbol{\Omega}_{in}^n\,\mathbf{C}_b^n,
-\qquad
-\boldsymbol{\Omega} = [\boldsymbol{\omega}\times]
-$$
-
-$$
-\dot{\mathbf{v}}^n = \mathbf{C}_b^n\,\mathbf{f}^b
-  - \left(2\boldsymbol{\omega}_{ie}^n + \boldsymbol{\omega}_{en}^n\right)
-    \times \mathbf{v}^n + \mathbf{g}^n
-$$
-
-$$
-\dot{\phi} = \frac{v_N}{R_M + h}, \qquad
-\dot{\lambda} = \frac{v_E}{(R_N + h)\cos\phi}, \qquad
-\dot{h} = -v_D
-$$
-
-Discretely, each step \(k \to k+1\) performs:
-
-1. Evaluate \(\boldsymbol{\omega}_{ie}^n\), \(\boldsymbol{\omega}_{en}^n\),
-   and \(g(\phi,h)\) at the current state.
-2. Form the body rate relative to the navigation frame:
-   \(\boldsymbol{\omega}_{nb}^b =
-   \boldsymbol{\omega}_{ib}^b -
-   \mathbf{C}_n^b\left(\boldsymbol{\omega}_{ie}^n +
-   \boldsymbol{\omega}_{en}^n\right)\).
-3. **Attitude** — advance by the *exact* rotation-vector exponential rather
-   than a first-order DCM update: the implementation stores attitude as a
-   scalar-last quaternion and right-multiplies by
-   \(\exp\!\left([\boldsymbol{\omega}_{nb}^b\,\Delta t\,\times]\right)\), which
-   is exactly the solution of the DCM differential equation above for a
-   constant rate over the step.
-4. Resolve specific force into NED: \(\mathbf{f}^n = \mathbf{C}_b^n\mathbf{f}^b\).
-5. **Velocity** — forward-Euler step of the velocity equation, including the
-   Coriolis term \(\left(2\boldsymbol{\omega}_{ie}^n +
-   \boldsymbol{\omega}_{en}^n\right)\times\mathbf{v}^n\).
-6. **Position** — forward-Euler step of the geodetic rates.
-
-The forward-Euler scheme is chosen deliberately to match the truth-side IMU
-derivation: feeding the truth \(\boldsymbol{\omega}_{ib}^b, \mathbf{f}^b\)
-back through the mechanization reproduces the truth trajectory (the
-zero-noise self-consistency check in `main.py`).
-
-## IMU stochastic error model
-
-*Module: `ins_sim/sensors/imu.py` (`generate_imu_samples`)*
-
-Each sensor triad's measurement is, per axis:
-
-$$
-\tilde{\mathbf{y}}_k = (\mathbf{I} + \mathbf{M})\,\mathbf{y}_k
-  + \mathbf{b}_{r} + \mathbf{b}_{d,k} + \boldsymbol{\eta}_k
-$$
-
-| Term | Model | Drawn |
-| ---- | ----- | ----- |
-| \(\mathbf{M}\) | Scale factor on the diagonal, six independent misalignment angles off-diagonal | once per trial |
-| \(\mathbf{b}_r\) | Turn-on bias repeatability, \(\mathcal{N}(0, \sigma_{BR}^2)\) | once per trial |
-| \(\mathbf{b}_{d,k}\) | Bias instability: first-order Gauss-Markov | every sample |
-| \(\boldsymbol{\eta}_k\) | ARW/VRW white noise | every sample |
-
-The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
-steady-state variance \(\sigma_{BI}^2\) independent of the sample rate. It
-starts from its stationary distribution, \(b_0 \sim \mathcal{N}(0,
-\sigma_{BI}^2)\), so its variance is \(\sigma_{BI}^2\) from the first sample.
-The spread is derived from the datasheet bias instability \(B\) as
-\(\sigma_{BI} = B/0.617\), so that the Allan deviation of the simulated bias
-peaks at \(B\) (see [Validation](../validation/index.md#allan-deviation)):
-
-$$
-b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,
-\qquad a = e^{-\Delta t/\tau}
-$$
-
-The white-noise standard deviation per sample is \(\sigma_\eta =
-\mathrm{ARW}/\sqrt{\Delta t}\) (VRW for the accelerometer), which makes the
-integrated angle (velocity) uncertainty grow as \(\mathrm{ARW}\cdot\sqrt{t}\)
-independent of the sample rate.
-
-Each trial also draws an **initial-alignment error**: NED tilt and azimuth
-misalignments applied to the truth attitude,
-\(\mathbf{R}_0 = \exp([\boldsymbol{\delta}\times])\,\mathbf{R}_{0,\text{true}}\)
-with \(\boldsymbol{\delta} = [\delta_N, \delta_E, \delta_D]\). Physically the
-tilts are limited by accelerometer bias over \(g\) and the azimuth by the
-gyrocompass limit, east-gyro bias over \(\omega_{ie}\cos\phi\).
-
-## INS error dynamics
-
-### Schuler oscillation
-
-Horizontal position/velocity/tilt errors are coupled through gravity and the
-Earth's curvature into the Schuler loop: a tilt error \(\delta\theta\)
-misresolves gravity into horizontal acceleration \(g\,\delta\theta\), while
-the resulting position error re-tilts the computed local level by
-\(\delta p / R\). The result is a bounded oscillation with
-
-$$
-\omega_s = \sqrt{\frac{g}{R}},
-\qquad
-T_s = 2\pi\sqrt{\frac{R}{g}} \approx 84.4~\text{min}
-$$
-
-visible as the dominant period in the North/East error channels:
-
-![Position errors with 3-sigma bands](../assets/plots/position_error.png)
-
-### Vertical channel { #vertical-channel }
-
-The vertical channel is **unstable** in a free-inertial mechanization.
-Perturbing the altitude equation through the free-air gravity gradient gives
-
-$$
-\delta\ddot{h} \approx \frac{2g}{R}\,\delta h + \delta a_D
-\quad\Longrightarrow\quad
-\lambda = \pm\sqrt{\frac{2g}{R}},
-$$
-
-an exponential divergence with e-folding time \(\sqrt{R/2g} \approx 570\) s
-(≈9.5 min). Uncheck *Baro altitude aiding* in the GUI to observe it.
-
-With aiding enabled, the INS-minus-baro altitude residual drives a
-**third-order damping loop** acting on altitude, vertical velocity, and an
-integral state that absorbs steady vertical accelerometer error:
-
-$$
-K_1 = \frac{3}{\tau}, \qquad
-K_2 = \frac{3}{\tau^2}, \qquad
-K_3 = \frac{1}{\tau^3}
-$$
-
-which places a triple pole at \(s = -1/\tau\) — characteristic polynomial
-\((s + 1/\tau)^3\) — with \(\tau = 100\) s by default: well-damped, no
-residual oscillation, and steady accelerometer bias rejected by the
-integrator.
-
-## Monte Carlo error characterization
-
-*Module: `ins_sim/evaluation/monte_carlo.py`*
-
-The simulator characterizes navigation error **empirically**: \(N\)
-independent trials each draw their own turn-on biases, scale
-factor/misalignment matrices, Gauss-Markov histories, white-noise streams,
-and initial-alignment error, run the full nonlinear mechanization, and the
-ensemble is summarized statistically:
-
-- **±3σ bands** (attitude/velocity/position tabs): the pointwise ensemble
-  mean and standard deviation of each error component — the diagonal of the
-  empirical covariance
-
-$$
-\mathbf{P}_{\text{emp}}(t) = \frac{1}{N-1}\sum_{i=1}^{N}
-  \left[\mathbf{x}_i(t) - \bar{\mathbf{x}}(t)\right]
-  \left[\mathbf{x}_i(t) - \bar{\mathbf{x}}(t)\right]^T
-$$
-
-- **Percentile envelopes**: the pointwise \(q\)-th percentile of radial error
-  across trials — the 95th percentile drives the 3D error tube and the map
-  envelope.
-- **CEP** (Circular Error Probable): the pointwise 50th percentile of
-  *horizontal* radial error, with a linear drift-rate fit over the first
-  hour.
-
-Ensemble statistics converge as \(1/\sqrt{N}\); the tails (95th percentile)
-converge more slowly than the median, so CEP stabilizes at lower trial
-counts than the error tube.
-
-![Attitude errors with 3-sigma bands](../assets/plots/attitude_error.png)
-
-!!! note "Not a linearized covariance analysis"
-    The simulator propagates **no** linearized error-state model — there is
-    no 15-state \(\dot{\delta\mathbf{x}} = \mathbf{F}\delta\mathbf{x} +
-    \mathbf{G}\mathbf{w}\) system or analytic covariance in the codebase.
-    Every statistic above comes from full nonlinear Monte Carlo trials.
-    Implementing the linearized model (and eventually Kalman-filter-based
-    aiding, e.g. GNSS/INS) and validating it against these empirical bounds
-    is natural future work.
+Each page starts with what its topic is and why it matters for navigation,
+then sums up its key results. A picture comes before any equation. The model
+follows, with every symbol defined where it is used, then the model as
+implemented, step by step, beside its code. A figure from the simulator
+shows the result, linked to the validation check that tests it. Each page
+then states its assumptions and limitations, and ends with the functions
+that implement it and an example that the test suite runs.

@@ -10,7 +10,8 @@ Those IMU outputs are derived as the exact inverse of the strapdown
 mechanization's update, so feeding them back through the navigator
 reproduces the truth to numerical precision. That zero-noise round trip
 checks the consistency of the two halves; it does not measure how
-accurately the mechanization integrates continuous motion.
+accurately the mechanization integrates continuous motion. See the
+[Truth trajectory & ideal IMU][truth-trajectory-ideal-imu] theory page.
 """
 
 from typing import NamedTuple
@@ -47,11 +48,13 @@ def _euler_from_velocity(v_eb_n, tau_i, g_ref):
         numpy.ndarray: Euler angles [phi_nb (roll), theta_nb (pitch),
             psi_nb (heading)], shape (M, 3) [rad].
     """
+    # --8<-- [start:attitude_from_velocity]
     psi   = np.unwrap(np.arctan2(v_eb_n[:, 1], v_eb_n[:, 0]))
     v_h   = np.linalg.norm(v_eb_n[:, :2], axis=1)
     theta = np.arctan2(-v_eb_n[:, 2], np.maximum(v_h, 1e-6))
     psi_dot = np.gradient(psi, tau_i)
     phi   = np.arctan2(v_h * psi_dot, g_ref)
+    # --8<-- [end:attitude_from_velocity]
     return np.column_stack([phi, theta, psi])
 
 
@@ -142,8 +145,10 @@ class TruthTrajectory:
         self.L_b, self.lambda_b, self.h_b = L_b, lambda_b, h_b
 
         # Body-to-NED attitude as a vectorized scipy Rotation stack
+        # --8<-- [start:attitude_from_euler]
         self.C_b_n = Rot.from_euler(
             'ZYX', np.column_stack([euler_nb[:, 2], euler_nb[:, 1], euler_nb[:, 0]]))
+        # --8<-- [end:attitude_from_euler]
         C_n_b = self.C_b_n.inv()
 
         # ---- Truth IMU outputs (exact discrete, vectorized) --------------
@@ -765,8 +770,10 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
 
     # Smooth velocity to eliminate C1 kinks at phase boundaries.
     # Sigma ~2 s → roll/pitch transitions over 4–6 s, matching transport-category dynamics.
+    # --8<-- [start:velocity_smoothing]
     _att_sigma = max(1, int(2.0 / tau_i))
     all_vel = gaussian_filter1d(all_vel, sigma=_att_sigma, axis=0)
+    # --8<-- [end:velocity_smoothing]
 
     g_ref = normal_gravity(np.deg2rad(lat0_deg), alt0_msl)
     euler = _euler_from_velocity(all_vel, tau_i, g_ref)

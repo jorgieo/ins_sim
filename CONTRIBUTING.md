@@ -86,14 +86,16 @@ navigation, and they follow the same structure:
    navigation error, and where its effect shows up in the GUI. No equations.
 2. **Key results**: an `!!! abstract "Key results"` box with two to four
    bullets for readers who skim.
-3. **Physical picture**: a figure or diagram before any equation.
+3. **Physical picture**: a figure or diagram before any equation. Flows
+   and loops are Mermaid diagrams; geometry is an inline SVG (see
+   [Figures](#figures)).
 4. **Continuous-time model**: every equation is introduced by a sentence
    and followed by a "where:" list that gives each new symbol's meaning and
    SI unit.
-5. **Discrete-time, as implemented**: numbered steps, each in
+5. **As implemented**: the steps the code takes, each in
    `=== "Equation"` / `=== "Code"` content tabs (see below). Where the code
    matches or deliberately differs from Groves, say so in a
-   `!!! note "Groves (2013) eq. X.Y"` box.
+   `!!! note "Compared with Groves (2013)"` box.
 6. **What it looks like**: a figure produced by the simulator, linked to
    the validation check that tests it.
 7. **Assumptions & limitations**: an `!!! warning` box.
@@ -150,8 +152,9 @@ The build fails if the file or the section does not exist.
 
 ### Citing Groves and other sources
 
-- Cite equation and section numbers from the **second edition (2013)**,
-  checked against the book. The first edition numbers them differently.
+- Cite Groves by chapter. Quote an equation or section number only after
+  checking it against the **second edition (2013)**; the first edition
+  numbers them differently.
 - Use the book's notation, but write every explanation, derivation, figure
   and table in your own words. Do not reproduce its text, figures or
   tables.
@@ -166,13 +169,26 @@ regenerated after a model change. `python tools/generate_doc_plots.py
 --validation` regenerates the Validation page: its figures and the results
 table in `includes/validation_results.md`, from the scenarios in
 `tools/validation_scenarios.py`, which `tests/validation/` also asserts.
+`python tools/generate_doc_plots.py --theory` regenerates the figures that
+only the Theory pages show (`tools/theory_figures.py`).
+
+Diagrams that are not simulator output, such as the frames on the Frames &
+attitude page, are inline SVG files in `includes/diagrams/`. A page
+includes one with a snippet line inside a `<figure class="ins-figure">`
+element. The SVG takes its colours from `docs/stylesheets/extra.css`, which
+maps them to the theme's colour variables, so the diagram follows the
+light and dark palettes.
 
 ### Examples
 
 Every code example in the documentation must run. Docstring examples are
 doctests, collected by `python -m pytest`. Longer examples live as scripts
 under `docs/examples/` and are included into pages with snippets, so the
-tested file is the one readers see.
+tested file is the one readers see. To show a script's output on a page,
+save it next to the script as a `.txt` file
+(`python docs/examples/<name>.py > docs/examples/<name>.txt`) and include
+that too: the test then checks that the script still prints exactly that
+output.
 
 ### Glossary and tooltips
 
