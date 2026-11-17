@@ -48,7 +48,7 @@ flowchart TD
     TRUTH -->|"true ω, specific force"| SENSOR
     SENSOR -->|"measured ω, f (+ noise)"| NAV
     NAV -->|"pos, vel, attitude"| EVAL
-    EARTH -.->|"ω_ie, ω_en, g, R_M/R_N"| TRUTH
+    EARTH -.->|"ω_ie, ω_en, g, R_N/R_E"| TRUTH
     EARTH -.-> NAV
 ```
 
@@ -67,4 +67,4 @@ flowchart TD
 - [Download & Install](download.md) — grab the prebuilt app for Windows
   (x86-64) or Linux (x86-64 / ARM64, including Raspberry Pi 4/5 on 64-bit OS).
 - [User Guide](guide.md) — configuring missions and reading the results.
-- [Theory & Math](theory.md) — the formulations behind the simulator.
+- [Theory & Math](theory/index.md) — the formulations behind the simulator.

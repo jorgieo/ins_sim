@@ -185,6 +185,9 @@ pip install ".[docs]"
 mkdocs serve
 ```
 
+See [CONTRIBUTING.md](CONTRIBUTING.md) for the notation, naming and
+documentation conventions.
+
 ## License
 
 This project's own source code is licensed under the [MIT License](LICENSE).

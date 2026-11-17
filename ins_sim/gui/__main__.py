@@ -1,3 +1,4 @@
 from ins_sim.gui.main_window import main
 
-main()
+if __name__ == "__main__":
+    main()

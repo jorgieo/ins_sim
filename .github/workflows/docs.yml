@@ -1,43 +1,61 @@
-# Documentation site deployment.
+# Versioned documentation site (mike).
 #
-# Every push to main rebuilds the MkDocs site and publishes it to the
-# gh-pages branch, which GitHub Pages serves at
-# https://jorgieo.github.io/ins_sim/
+# The gh-pages branch holds one directory per documentation version, served
+# by GitHub Pages at https://jorgieo.github.io/ins_sim/<version>/:
+#   - every push to main updates the "dev" version;
+#   - every vX.Y.Z tag publishes version "X.Y" and points the "latest" alias
+#     (the site's default) at it.
 
 name: Docs
 
 on:
   push:
     branches: [main]
+    tags: ["v*"]
   workflow_dispatch:
 
 permissions:
   contents: write
 
+# Deployments push commits to gh-pages, so run them one at a time and never
+# cancel one halfway (a tag deployment must not be cancelled by a later push).
 concurrency:
   group: docs-deploy
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # mike needs the gh-pages branch and tags
 
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
 
       - name: Install documentation dependencies
-        run: pip install mkdocs mkdocs-material
+        run: pip install ".[docs]"
 
-      # Strict build first: broken nav or links fail the run before
-      # anything is published.
+      # Strict build first: broken nav, links, anchors or snippets fail the
+      # run before anything is published.
       - name: Validate site
         run: mkdocs build --strict
 
-      - name: Deploy to GitHub Pages
+      - name: Configure git identity
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          mkdocs gh-deploy --force
+
+      - name: Deploy development version
+        if: github.ref == 'refs/heads/main'
+        run: mike deploy --push dev
+
+      - name: Deploy release version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          version="${GITHUB_REF_NAME#v}"   # v0.3.0 -> 0.3.0
+          minor="${version%.*}"             # 0.3.0  -> 0.3
+          mike deploy --push --update-aliases "$minor" latest
+          mike set-default --push latest

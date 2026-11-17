@@ -1,5 +1,12 @@
 # Theory & Math
 
+!!! note "Notation transition"
+    This page still uses the v0.2 symbols. In particular, \(R_N\) below is
+    the *transverse* radius of curvature and \(\phi\) is latitude. The
+    theory section is being rewritten in the notation of
+    [Groves (2013)](../reference/bibliography.md#groves2013); see
+    [Notation & conventions](notation.md) for the symbols it will use.
+
 This page documents the physics and mathematics **as implemented** in the
 simulator, with pointers to the modules that carry each formulation. Symbols:
 geodetic latitude \(\phi\), longitude \(\lambda\), altitude \(h\); NED
@@ -173,7 +180,7 @@ $$
 
 visible as the dominant period in the North/East error channels:
 
-![Position errors with 3-sigma bands](assets/plots/position_error.png)
+![Position errors with 3-sigma bands](../assets/plots/position_error.png)
 
 ### Vertical channel { #vertical-channel }
 
@@ -235,7 +242,7 @@ Ensemble statistics converge as \(1/\sqrt{N}\); the tails (95th percentile)
 converge more slowly than the median, so CEP stabilizes at lower trial
 counts than the error tube.
 
-![Attitude errors with 3-sigma bands](assets/plots/attitude_error.png)
+![Attitude errors with 3-sigma bands](../assets/plots/attitude_error.png)
 
 !!! note "Not a linearized covariance analysis"
     The simulator propagates **no** linearized error-state model — there is

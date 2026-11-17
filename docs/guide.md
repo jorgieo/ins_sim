@@ -25,7 +25,7 @@ visualization, and authoring your own mission and IMU configuration files.
 5. **Choose the vertical channel.** *Baro altitude aiding* (checked by
    default) runs the third-order baro-damped vertical loop. Uncheck it to see
    the free-inertial vertical channel diverge — the instability is real
-   physics, not a bug (see [Theory & Math](theory.md#vertical-channel)).
+   physics, not a bug (see [Theory & Math](theory/index.md#vertical-channel)).
 6. **Pick visualizations.** Each checked box becomes one tab after the run.
 7. **Run.** The simulation executes on a background thread — the log pane
    streams progress (per-trial completion, timing, final 95th-percentile

@@ -11,9 +11,13 @@ theme:
   features:
     - navigation.tabs
     - navigation.top
+    - navigation.indexes
     - search.suggest
     - search.highlight
     - content.code.copy
+    - content.tabs.link
+    - content.tooltips
+    - toc.follow
   palette:
     - media: "(prefers-color-scheme: light)"
       scheme: default
@@ -34,22 +38,54 @@ nav:
   - Home: index.md
   - Download & Install: download.md
   - User Guide: guide.md
-  - Theory & Math: theory.md
+  - Theory & Math:
+      - theory/index.md
+      - Notation & conventions: theory/notation.md
+  - Reference:
+      - Glossary: reference/glossary.md
+      - Bibliography: reference/bibliography.md
+
+plugins:
+  - search
+
+hooks:
+  - tools/mkdocs_hooks.py
+
+watch:
+  - includes
 
 markdown_extensions:
+  - abbr
   - admonition
   - attr_list
+  - def_list
+  - footnotes
   - md_in_html
   - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
   - pymdownx.highlight
   - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path: [".", "docs"]
+      check_paths: true
+      auto_append:
+        - includes/abbreviations.md
   - pymdownx.superfences:
       custom_fences:
         - name: mermaid
           class: mermaid
           format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
   - pymdownx.arithmatex:
       generic: true
 
+extra:
+  version:
+    provider: mike
+
 extra_javascript:
-  - https://unpkg.com/mathjax@3/es5/tex-mml-chtml.js
+  - javascripts/mathjax.js
+  - https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js

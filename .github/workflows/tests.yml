@@ -1,0 +1,35 @@
+# Test suite on every push to main and every pull request: unit tests,
+# docstring examples (doctests) and the documentation notation lint.
+
+name: Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  pytest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      # The Qt GUI modules are excluded from collection (conftest.py), so
+      # the optional gui extra is not needed here.
+      - name: Install package and test runner
+        run: pip install -e . pytest
+
+      - name: Run tests
+        run: python -m pytest -q
