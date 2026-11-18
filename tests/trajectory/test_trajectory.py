@@ -2,6 +2,7 @@ import os
 
 import numpy as np
 import pytest
+import yaml
 from scipy.spatial.transform import Rotation as Rot
 
 from ins_sim.trajectory.spline import NEDSplinePath
@@ -118,6 +119,67 @@ def test_build_trajectory_fixture_yaml_has_expected_attributes_and_shape():
 def test_build_trajectory_overrides_dt():
     truth, *_ = build_trajectory(FIXTURE_YAML, tau_i=0.25)
     assert truth.tau_i == 0.25
+
+
+FT = 0.3048
+
+
+def _mission(tmp_path, phases):
+    """Writes a mission YAML that departs like the fixture and flies `phases`."""
+    with open(FIXTURE_YAML) as fh:
+        cfg = yaml.safe_load(fh)
+    cfg["phases"] = phases
+    path = tmp_path / "mission.yaml"
+    path.write_text(yaml.safe_dump(cfg))
+    return str(path)
+
+
+ROLL_AND_TAKEOFF = [
+    {"type": "ground_roll", "heading_deg": 90.0, "run_length_m": 200.0,
+     "speed_final_kt": 100.0},
+    {"type": "takeoff", "heading_deg": 90.0, "pitch_deg": 5.0,
+     "speed_kt": 120.0, "duration_s": 5.0},
+    {"type": "climb", "pitch_deg": 8.0, "speed_kt": 150.0,
+     "to_altitude_ft": 3000.0},
+]
+
+
+def test_waypoint_leg_descends_to_the_waypoint_altitude(tmp_path):
+    path = _mission(tmp_path, ROLL_AND_TAKEOFF + [
+        {"type": "waypoint", "lat_deg": 18.50, "lon_deg": -66.95,
+         "alt_ft": 1000.0, "speed_kt": 150.0}])
+    truth, *_ = build_trajectory(path, tau_i=0.5)
+    assert truth.h_b.max() == pytest.approx(3000.0 * FT, abs=20.0)
+    assert truth.h_b[-1] == pytest.approx(1000.0 * FT, abs=20.0)
+    assert np.all(truth.v_eb_n[-50:, 2] > 0.0)      # still descending at the end
+
+
+@pytest.mark.parametrize("pitch_deg", [5.0, -5.0])
+def test_climb_phase_descends_to_a_lower_target(tmp_path, pitch_deg):
+    path = _mission(tmp_path, ROLL_AND_TAKEOFF + [
+        {"type": "climb", "pitch_deg": pitch_deg, "speed_kt": 150.0,
+         "to_altitude_ft": 1500.0}])
+    truth, *_ = build_trajectory(path, tau_i=0.5)
+    assert truth.h_b[-1] == pytest.approx(1500.0 * FT, abs=20.0)
+
+
+def test_first_phase_must_be_a_ground_roll(tmp_path):
+    path = _mission(tmp_path, ROLL_AND_TAKEOFF[1:])
+    with pytest.raises(ValueError, match="first phase must be a 'ground_roll'"):
+        build_trajectory(path, tau_i=0.5)
+
+
+def test_only_the_first_phase_can_be_a_ground_roll(tmp_path):
+    path = _mission(tmp_path, ROLL_AND_TAKEOFF + ROLL_AND_TAKEOFF[:1])
+    with pytest.raises(ValueError, match="Only the first phase"):
+        build_trajectory(path, tau_i=0.5)
+
+
+def test_mach_speed_ramp_needs_an_altitude(tmp_path):
+    path = _mission(tmp_path, ROLL_AND_TAKEOFF[:2] + [
+        {"type": "speed_ramp", "speed_end_mach": 0.3, "duration_s": 10.0}])
+    with pytest.raises(ValueError, match="speed_end_mach needs an earlier"):
+        build_trajectory(path, tau_i=0.5)
 
 
 # =========================================================================

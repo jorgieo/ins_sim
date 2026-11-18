@@ -267,24 +267,30 @@ def _ground_roll(hdg_deg, v_final, run_len, dt):
 def _climb(entry, hdg_deg, speed, alt_ned_start, alt_ned_end, pitch_deg=10.0, dt=0.1):
     """Generates a constant-pitch, constant-speed climb (or descent) segment.
 
+    The segment climbs or descends toward alt_ned_end, whichever way it
+    lies, at a flight-path angle of |pitch_deg|.
+
     Args:
         entry: Entry NED position, shape (3,) [m].
         hdg_deg: Ground-track heading [deg].
         speed: Airspeed along the climb path [m/s].
         alt_ned_start: Starting NED Down coordinate [m].
         alt_ned_end: Ending NED Down coordinate [m].
-        pitch_deg: Pitch angle γ [deg]. Defaults to 10.0.
+        pitch_deg: Flight-path angle γ [deg]; only its magnitude is
+            used. Defaults to 10.0.
         dt: Sample interval [s]. Defaults to 0.1.
 
     Returns:
         tuple[numpy.ndarray, numpy.ndarray]: (pos, vel), NED position
             and velocity arrays, each shape (N, 3). The Down component
-            of velocity is negative while climbing.
+            of velocity is negative while climbing and positive while
+            descending.
     """
     hdg   = np.deg2rad(hdg_deg)
-    gamma = np.deg2rad(pitch_deg)
+    gamma = np.deg2rad(abs(pitch_deg))
     v_h   = speed * np.cos(gamma)
-    v_d   = -speed * np.sin(gamma)   # Down < 0 while climbing
+    # Down < 0 while climbing, > 0 while descending
+    v_d   = np.sign(alt_ned_end - alt_ned_start) * speed * np.sin(gamma)
     dur   = abs(alt_ned_end - alt_ned_start) / (speed * np.sin(gamma))
     N     = max(2, int(dur / dt) + 1)
     t_    = np.arange(N) * dt
@@ -588,9 +594,10 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
             positionally as ``truth, v_sprint, R_turn = build_trajectory(...)``.
 
     Raises:
-        ValueError: If a phase has an unrecognized `type`, or if a
-            `speed_end_mach` speed_ramp phase appears before any
-            `climb` phase.
+        ValueError: If the first phase is not a `ground_roll` or a later
+            phase is one, if a phase has an unrecognized `type`, or if a
+            `speed_end_mach` speed_ramp phase comes before any `climb` or
+            `waypoint` phase has set the altitude.
 
     Examples:
         The packaged mission at coarse 5 s steps (each phase is sampled on
@@ -613,6 +620,15 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
     dep    = cfg["departure"]
     sim    = cfg["simulation_time"]
     phases = cfg["phases"]
+
+    # Every mission starts from rest on the runway at the departure point,
+    # and only a ground roll starts from rest.
+    phase_types = [phase.get("type") for phase in phases]
+    if not phase_types or phase_types[0] != "ground_roll":
+        raise ValueError("The first phase must be a 'ground_roll': a mission "
+                         "starts from rest at the departure point")
+    if "ground_roll" in phase_types[1:]:
+        raise ValueError("Only the first phase can be a 'ground_roll'")
 
     lat0_deg     = float(dep["lat_deg"])
     lon0_deg     = float(dep["lon_deg"])
@@ -739,7 +755,9 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
             if "speed_end_mach" in phase:
                 if ALT_CRUISE is None:
                     raise ValueError(
-                        "speed_end_mach requires a prior 'climb' phase")
+                        "speed_end_mach needs an earlier 'climb' or "
+                        "'waypoint' phase to set the altitude that fixes "
+                        "the speed of sound")
                 v_end_val = _isa_speed(float(phase["speed_end_mach"]), ALT_CRUISE)
                 v_sprint = v_end_val
             else:
