@@ -94,6 +94,13 @@ jobs:
           QT_QPA_PLATFORM: offscreen
         run: dist/ins_sim/ins_sim
 
+      # Every compiled file in the bundle must be one that
+      # THIRD-PARTY-NOTICES.txt credits: the check fails on any file that
+      # .github/bundle-inventory.txt does not list, and the log lists them
+      # all, so a new library cannot ship without a notice.
+      - name: Check the bundle against the notices
+        run: python tools/check_bundle.py dist/ins_sim --list
+
       # Branch refs contain slashes (release/foo) — sanitize for filenames.
       - name: Compute version label
         shell: bash

@@ -1,0 +1,51 @@
+# The compiled files the downloadable app may contain, and the component of
+# THIRD-PARTY-NOTICES.txt that credits each.
+#
+# After building, the release workflow runs tools/check_bundle.py, which
+# fails if any compiled file in the bundle (an executable, a shared library
+# or a Python extension module) matches no line here. Add a line only once
+# the notices credit the file, and check its license first: for Qt, that
+# The Qt Company offers the module under the LGPL-3.0.
+#
+# Each line: the component, as the notices name it, then a pattern for the
+# file's path inside the bundle folder (ins_sim/). Patterns match without
+# regard to case; * stays within one folder, ** spans folders, {a,b} lists
+# alternatives. The first matching line wins.
+
+# The launcher: PyInstaller's bootloader
+PyInstaller  ins_sim{,.exe}
+
+# Qt, by module. These are the modules the app needs (with the platform
+# libraries Qt loads on Linux), all offered under the LGPL-3.0. Qt Charts,
+# Data Visualization, Graphs, Quick 3D, Quick Timeline, Virtual Keyboard and
+# Wayland Compositor are offered only under the GPL-3.0 and must not ship.
+Qt  _internal/PySide6/Qt6{Core,Gui,Network,OpenGL,Pdf,Positioning,PrintSupport,Qml,QmlMeta,QmlModels,QmlWorkerScript,Quick,QuickWidgets,Svg,WebChannel,WebEngineCore,WebEngineWidgets,Widgets}.dll
+Qt  _internal/PySide6/Qt/lib/libQt6{Core,DBus,EglFSDeviceIntegration,EglFsKmsSupport,Gui,Network,OpenGL,Pdf,Positioning,PrintSupport,Qml,QmlMeta,QmlModels,QmlWorkerScript,Quick,QuickWidgets,Svg,WaylandClient,WebChannel,WebEngineCore,WebEngineWidgets,Widgets,WlShellIntegration,XcbQpa}.so.6
+# Plugins, by type; the input-method folder also holds the virtual keyboard.
+Qt  _internal/PySide6/{plugins,Qt/plugins}/{egldeviceintegrations,generic,iconengines,imageformats,networkinformation,platforms,platformthemes,printsupport,styles,wayland-decoration-client,wayland-graphics-integration-client,wayland-shell-integration,xcbglintegrations}/*
+Qt  _internal/PySide6/Qt/plugins/platforminputcontexts/lib{compose,ibus}platforminputcontextplugin.so
+# WebEngine's helper process, and Mesa's software OpenGL for Windows
+Qt  _internal/PySide6/{QtWebEngineProcess.exe,Qt/libexec/QtWebEngineProcess,opengl32sw.dll}
+# Qt for Python: the bindings and their runtime
+Qt  _internal/PySide6/{Qt*.pyd,Qt*.abi3.so,pyside6.abi3.dll,libpyside6.abi3.so.*}
+Qt  _internal/shiboken6/{Shiboken.pyd,Shiboken.abi3.so,shiboken6.abi3.dll,libshiboken6.abi3.so.*}
+
+# ICU, which Qt uses on Linux (from the PySide6 wheels)
+ICU  _internal/PySide6/Qt/lib/libicu{data,i18n,uc}.so.73
+
+# Microsoft's C and C++ runtime (Windows)
+Microsoft  _internal/{,PySide6/,shiboken6/}{vcruntime140,vcruntime140_1,msvcp140,msvcp140_1,msvcp140_2,ucrtbase}.dll
+Microsoft  _internal/api-ms-win-*.dll
+
+# The Python runtime: interpreter, standard-library extension modules, and
+# the OpenSSL and libffi of the Windows build
+Python  _internal/{python3,python312}.dll
+Python  _internal/libpython3.12.so.1.0
+Python  _internal/*.pyd
+Python  _internal/python3.12/lib-dynload/*.so
+Python  _internal/{libcrypto-3,libssl-3,libffi-8}.dll
+
+# Python packages, with the libraries their wheels include
+NumPy  _internal/{numpy,numpy.libs}/**
+SciPy  _internal/{scipy,scipy.libs}/**
+PyYAML  _internal/yaml/*

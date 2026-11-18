@@ -32,6 +32,9 @@ Architecture invariants (why this spec looks the way it does):
 - The release smoke test (INS_SIM_SMOKE=1) runs a real Monte Carlo in
   the frozen bundle and requires Qt WebEngine to draw a plotly figure —
   it guards every assumption above on each release build.
+- THIRD-PARTY-NOTICES.txt must credit every compiled file the bundle
+  holds: after the build, tools/check_bundle.py fails on any file that
+  .github/bundle-inventory.txt does not list.
 """
 
 import sys
