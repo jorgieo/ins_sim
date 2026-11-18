@@ -65,7 +65,8 @@ def _run_tutorial(out_dir: Path) -> None:
     tabs = window.visualization_panel
 
     def save(name: str) -> None:
-        window.grab().save(str(out_dir / name))
+        if not window.grab().save(str(out_dir / name)):
+            raise OSError(f"could not write {out_dir / name}")
         print(f"  {name}", flush=True)
 
     def select_tab(title: str) -> None:
@@ -93,13 +94,37 @@ def _run_tutorial(out_dir: Path) -> None:
         save("free_inertial.png")
 
     sequence = steps()
+    outcome = {"finished": False, "error": None}
 
     def advance() -> None:
         try:
-            QTimer.singleShot(next(sequence), advance)
+            delay = next(sequence)
         except StopIteration:
+            outcome["finished"] = True
             app.quit()
+        except Exception as error:  # a step failed: stop, and raise it below
+            outcome["error"] = error
+            app.quit()
+        else:
+            QTimer.singleShot(delay, advance)
 
     QTimer.singleShot(0, advance)
     QTimer.singleShot(TIMEOUT_MS, app.quit)
     app.exec()
+
+    # A simulation still running at the deadline cannot be cancelled: let it
+    # finish, so that its thread is not destroyed while it runs. The thread
+    # normally stops on a request queued to the event loop that has just
+    # quit, so ask it to stop directly first.
+    thread = window._thread
+    if thread is not None:
+        thread.quit()
+        thread.wait()
+
+    # Stopping early must not look like success, or the screenshots would
+    # silently stay as they were.
+    if outcome["error"] is not None:
+        raise RuntimeError("Taking the screenshots failed") from outcome["error"]
+    if not outcome["finished"]:
+        raise TimeoutError(
+            f"The screenshots were not finished within {TIMEOUT_MS // 1000} s")

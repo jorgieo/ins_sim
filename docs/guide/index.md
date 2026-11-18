@@ -90,8 +90,9 @@ time with the final 95th-percentile error. If a file has a mistake, a
 common ones.
 
 Every run uses the same random seed, 42, so the same files and settings
-always give the same results. Changing a setting changes the results only
-through that setting: see [Recipes](recipes.md#compare-two-imus-fairly).
+always give the same results. On the same mission and time step, changing
+the IMU spec changes the results only through that change: see
+[Recipes](recipes.md#compare-two-imus-fairly).
 
 ## Offline use
 

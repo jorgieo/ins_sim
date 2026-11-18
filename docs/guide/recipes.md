@@ -49,8 +49,13 @@ between them comes from the specs, not from luck. This makes the
 *difference* between two specs much more precise than either result on its
 own, even with few trials.
 
-The same holds for any other setting, such as the alignment block or the
-mission. In a script, pass the same `seed` to `run_monte_carlo`.
+The same holds for any other change to the IMU spec, such as the
+alignment block, as long as the mission and the time step stay the same.
+Changing either of those changes the number of samples, and with it the
+noise: each trial keeps its turn-on biases, scale factors, misalignments
+and alignment errors, but its noise is drawn afresh. Comparisons between
+missions therefore need more trials. In a script, pass the same `seed` to
+`run_monte_carlo`.
 
 ## Find the dominant error source
 

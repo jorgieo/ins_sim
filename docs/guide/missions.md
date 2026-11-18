@@ -76,9 +76,11 @@ For the training flight it prints:
 
 The aircraft passes right over the first waypoint, where its holding
 pattern starts, and within a kilometre of the last one. It misses the
-second by 3 km, for a reason the next section explains. The altitudes are
-30 ft high because of the 1 s time step; at 0.1 s they are within a few
-feet.
+second by 3 km, for a reason the next section explains, and so passes it
+at 3,433 ft, still descending: its closest point to the waypoint comes
+before the end of the leg, which reaches 3,000 ft later. At the other two
+waypoints the altitudes are 30–40 ft high because of the 1 s time step;
+at 0.1 s they are within a few feet.
 
 ## How the simulator flies a plan
 

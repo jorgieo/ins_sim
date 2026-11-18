@@ -112,10 +112,13 @@ and the bias instability the *in-run bias stability*.
 
 A scale-factor error is a gain error: the sensor reads 100 ppm high, say.
 A misalignment means the sensor's axes are not exactly at right angles to
-each other and to the body. Both errors are proportional to the motion, so
-they matter most in turns and accelerations, and vanish when the vehicle
-is still. Each trial draws a scale factor per axis and six independent
-misalignment angles, two for each pair of axes.
+each other and to the body. Both errors are proportional to what the
+sensors measure, so they never vanish. At rest the accelerometers still
+measure gravity, and a misaligned one reads part of it along a horizontal
+axis: the packaged spec's 50 µrad reads 50 µg, as much as a bias. In
+flight the errors grow with the turn rates and accelerations, so they
+matter most in manoeuvres. Each trial draws a scale factor per axis and
+six independent misalignment angles, two for each pair of axes.
 
 ## The alignment block
 

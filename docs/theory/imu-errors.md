@@ -36,7 +36,9 @@ The error terms behave very differently:
 - **Scale factor and misalignment.** A sensor's gain is slightly wrong, by
   parts per million, and its axes are not exactly orthogonal or exactly
   along the body axes, by microradians. These errors are proportional to
-  the motion: invisible at rest, largest in turns and accelerations.
+  what the sensor measures, so they are present even at rest, where the
+  accelerometers measure gravity and the gyros the Earth's rotation, and
+  largest in turns and accelerations.
 - **Static bias.** Every time the IMU is switched on, each bias settles at a
   slightly different value, then stays there for the run. Datasheets call
   its spread the turn-on bias repeatability.
