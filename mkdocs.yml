@@ -74,6 +74,7 @@ nav:
       - Glossary: reference/glossary.md
       - Bibliography: reference/bibliography.md
   - Project:
+      - Changelog: project/changelog.md
       - Migrating from 0.2: project/migrating-from-0.2.md
 
 plugins:
@@ -105,6 +106,7 @@ hooks:
 watch:
   - includes
   - ins_sim
+  - CHANGELOG.md
 
 markdown_extensions:
   - abbr
