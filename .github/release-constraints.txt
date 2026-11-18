@@ -1,0 +1,21 @@
+# Exact versions of the third-party packages bundled in the downloadable app.
+#
+# THIRD-PARTY-NOTICES.txt names these versions and licenses/ holds their
+# license texts, so the notices shipped with every release must describe
+# exactly what is bundled: change a version here, in the notices and in
+# licenses/ together. tests/test_release_constraints.py checks that the
+# three agree. Used only by .github/workflows/release.yml.
+
+# Qt for Python, LGPL-3.0 (PySide6 is a meta-package for the other two)
+PySide6==6.11.1
+PySide6_Essentials==6.11.1
+PySide6_Addons==6.11.1
+shiboken6==6.11.1
+
+# Permissively licensed libraries
+numpy==1.26.3
+scipy==1.12.0
+PyYAML==6.0.2
+plotly==6.3.0
+narwhals==2.3.0
+packaging==26.3

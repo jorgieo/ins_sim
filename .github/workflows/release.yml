@@ -48,8 +48,13 @@ jobs:
         with:
           python-version: "3.12"
 
+      # The bundled third-party packages are pinned to the versions that
+      # THIRD-PARTY-NOTICES.txt names and whose license texts are in
+      # licenses/, so the notices shipped with the app describe exactly
+      # what it contains. Upgrade a package by changing its pin, its notice
+      # entry and its license text together.
       - name: Install dependencies
-        run: pip install ".[gui]" pyinstaller pytest
+        run: pip install ".[gui]" pyinstaller pytest -c .github/release-constraints.txt
 
       # python -m puts the repo root on sys.path, which
       # tests/test_integration.py needs to import the root main.py
