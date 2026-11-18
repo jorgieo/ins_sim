@@ -55,6 +55,8 @@
     
       <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -500,6 +502,22 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -567,6 +585,230 @@
     
   
     Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
   
 
     
@@ -1339,7 +1581,8 @@ velocity and attitude at every sample, plus the outputs a perfect gyro
 mechanization's update, so feeding them back through the navigator
 reproduces the truth to numerical precision. That zero-noise round trip
 checks the consistency of the two halves; it does not measure how
-accurately the mechanization integrates continuous motion.</p>
+accurately the mechanization integrates continuous motion. See the
+<a class="autorefs autorefs-internal" title="Truth trajectory &amp; ideal " href="../../../theory/truth-kinematics/#truth-trajectory-ideal-imu">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a> theory page.</p>
 
 
 
@@ -1592,10 +1835,7 @@ position (see class docstring).</p>
 
                   <details class="mkdocstrings-source">
                     <summary>Source code in <code>ins_sim/trajectory/kinematics.py</code></summary>
-                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">102</span>
 <span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
@@ -1679,7 +1919,12 @@ position (see class docstring).</p>
 <span class="normal">183</span>
 <span class="normal">184</span>
 <span class="normal">185</span>
-<span class="normal">186</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos_profile</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos_profile</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
              <span class="n">euler_nb</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
              <span class="n">L_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">38.97</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.49</span><span class="p">,</span>
              <span class="n">h_b0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">):</span>
@@ -1725,8 +1970,10 @@ position (see class docstring).</p>
     <span class="bp">self</span><span class="o">.</span><span class="n">L_b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_b</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">,</span> <span class="n">lambda_b</span><span class="p">,</span> <span class="n">h_b</span>
 
     <span class="c1"># Body-to-NED attitude as a vectorized scipy Rotation stack</span>
+    <span class="c1"># --8&lt;-- [start:attitude_from_euler]</span>
     <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span> <span class="o">=</span> <span class="n">Rot</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span>
         <span class="s1">'ZYX'</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]))</span>
+    <span class="c1"># --8&lt;-- [end:attitude_from_euler]</span>
     <span class="n">C_n_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span>
 
     <span class="c1"># ---- Truth IMU outputs (exact discrete, vectorized) --------------</span>
@@ -1887,12 +2134,7 @@ position (see class docstring).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/trajectory/kinematics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">188</span>
-<span class="normal">189</span>
-<span class="normal">190</span>
-<span class="normal">191</span>
-<span class="normal">192</span>
-<span class="normal">193</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">193</span>
 <span class="normal">194</span>
 <span class="normal">195</span>
 <span class="normal">196</span>
@@ -1925,7 +2167,12 @@ position (see class docstring).</p>
 <span class="normal">223</span>
 <span class="normal">224</span>
 <span class="normal">225</span>
-<span class="normal">226</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">from_spline</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">NEDSplinePath</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                  <span class="n">L_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">38.97</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.49</span><span class="p">,</span>
                  <span class="n">h_b0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"TruthTrajectory"</span><span class="p">:</span>
@@ -2141,12 +2388,7 @@ whole steps, so coarse sampling shortens it slightly):</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/trajectory/kinematics.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">569</span>
-<span class="normal">570</span>
-<span class="normal">571</span>
-<span class="normal">572</span>
-<span class="normal">573</span>
-<span class="normal">574</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">574</span>
 <span class="normal">575</span>
 <span class="normal">576</span>
 <span class="normal">577</span>
@@ -2351,7 +2593,14 @@ whole steps, so coarse sampling shortens it slightly):</p>
 <span class="normal">776</span>
 <span class="normal">777</span>
 <span class="normal">778</span>
-<span class="normal">779</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_trajectory</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MissionTrajectory</span><span class="p">:</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_trajectory</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MissionTrajectory</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Builds a phase-by-phase truth trajectory from a YAML mission definition.</span>
 
 <span class="sd">    Each phase in the YAML maps to a helper function; fields omitted</span>
@@ -2550,8 +2799,10 @@ whole steps, so coarse sampling shortens it slightly):</p>
 
     <span class="c1"># Smooth velocity to eliminate C1 kinks at phase boundaries.</span>
     <span class="c1"># Sigma ~2 s → roll/pitch transitions over 4–6 s, matching transport-category dynamics.</span>
+    <span class="c1"># --8&lt;-- [start:velocity_smoothing]</span>
     <span class="n">_att_sigma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">tau_i</span><span class="p">))</span>
     <span class="n">all_vel</span> <span class="o">=</span> <span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">all_vel</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">_att_sigma</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># --8&lt;-- [end:velocity_smoothing]</span>
 
     <span class="n">g_ref</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat0_deg</span><span class="p">),</span> <span class="n">alt0_msl</span><span class="p">)</span>
     <span class="n">euler</span> <span class="o">=</span> <span class="n">_euler_from_velocity</span><span class="p">(</span><span class="n">all_vel</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">g_ref</span><span class="p">)</span>

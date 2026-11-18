@@ -55,6 +55,8 @@
     
       <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -500,6 +502,22 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -567,6 +585,230 @@
     
   
     Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
   
 
     
@@ -1388,7 +1630,8 @@ of the command-line tool.</p>
 navigation for a number of trials and collects every trial's estimates and
 attitude error. The spread across trials is the simulator's measure of
 navigation performance; <code>percentile_envelope</code> summarizes it as a
-position-error percentile over time.</p>
+position-error percentile over time. See the
+<a class="autorefs autorefs-internal" href="../../../theory/monte-carlo/#monte-carlo-evaluation">Monte Carlo evaluation</a> theory page.</p>
 
 
 
@@ -1651,8 +1894,7 @@ diverges. Defaults to True.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/evaluation/monte_carlo.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 57</span>
-<span class="normal"> 58</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 58</span>
 <span class="normal"> 59</span>
 <span class="normal"> 60</span>
 <span class="normal"> 61</span>
@@ -1732,7 +1974,10 @@ diverges. Defaults to True.</p>
 <span class="normal">135</span>
 <span class="normal">136</span>
 <span class="normal">137</span>
-<span class="normal">138</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_monte_carlo</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_monte_carlo</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
                     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                     <span class="n">progress_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">baro_aiding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonteCarloResult</span><span class="p">:</span>
@@ -1781,6 +2026,7 @@ diverges. Defaults to True.</p>
     <span class="n">est_h_b</span>        <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">M</span><span class="p">))</span>
     <span class="n">delta_psi_nb_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">n_trials</span><span class="p">,</span> <span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
 
+    <span class="c1"># --8&lt;-- [start:trial]</span>
     <span class="n">trial_rngs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="n">seed</span><span class="p">)</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="n">n_trials</span><span class="p">)</span>
     <span class="n">C_b_n0</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
@@ -1800,6 +2046,7 @@ diverges. Defaults to True.</p>
         <span class="n">nav</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span>
             <span class="n">meas_omega_ib_b</span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">,</span> <span class="n">init_state</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">tau_i</span><span class="p">,</span>
             <span class="n">meas_h_b</span><span class="o">=</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span> <span class="k">if</span> <span class="n">baro_aiding</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="c1"># --8&lt;-- [end:trial]</span>
         <span class="n">est_r_lb_l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>   <span class="o">=</span> <span class="n">nav</span><span class="o">.</span><span class="n">r_lb_l</span>
         <span class="n">est_L_b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>      <span class="o">=</span> <span class="n">nav</span><span class="o">.</span><span class="n">L_b</span>
         <span class="n">est_lambda_b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">nav</span><span class="o">.</span><span class="n">lambda_b</span>
@@ -1887,10 +2134,7 @@ trials at each time step, shape (M,) [m].</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/evaluation/monte_carlo.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
 <span class="normal">145</span>
 <span class="normal">146</span>
 <span class="normal">147</span>
@@ -1910,7 +2154,11 @@ trials at each time step, shape (M,) [m].</p>
 <span class="normal">161</span>
 <span class="normal">162</span>
 <span class="normal">163</span>
-<span class="normal">164</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">percentile_envelope</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">percentile_envelope</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Computes the per-time-step q-th percentile of 3D position error magnitude.</span>
 
 <span class="sd">    Args:</span>
@@ -1933,6 +2181,7 @@ trials at each time step, shape (M,) [m].</p>
 <span class="sd">        &gt;&gt;&gt; [float(x) for x in percentile_envelope(delta_r, q=50)]</span>
 <span class="sd">        [3.0, 3.0]</span>
 <span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:percentile]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">percentile</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">2</span><span class="p">),</span> <span class="n">q</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2082,7 +2331,8 @@ or stacked).</p>
 <span class="normal">41</span>
 <span class="normal">42</span>
 <span class="normal">43</span>
-<span class="normal">44</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">attitude_error</span><span class="p">(</span><span class="n">est_C_b_n</span><span class="p">:</span> <span class="n">Rotation</span><span class="p">,</span> <span class="n">C_b_n</span><span class="p">:</span> <span class="n">Rotation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">attitude_error</span><span class="p">(</span><span class="n">est_C_b_n</span><span class="p">:</span> <span class="n">Rotation</span><span class="p">,</span> <span class="n">C_b_n</span><span class="p">:</span> <span class="n">Rotation</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Computes the attitude error delta_psi_nb^n.</span>
 
 <span class="sd">    The small rotation that takes the true attitude to the estimated one:</span>
@@ -2109,6 +2359,7 @@ or stacked).</p>
 <span class="sd">        &gt;&gt;&gt; [round(float(x), 6) for x in attitude_error(est_C_b_n, C_b_n)]</span>
 <span class="sd">        [0.0, 0.0, 0.001]</span>
 <span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:attitude_error]</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">est_C_b_n</span> <span class="o">*</span> <span class="n">C_b_n</span><span class="o">.</span><span class="n">inv</span><span class="p">())</span><span class="o">.</span><span class="n">as_rotvec</span><span class="p">()</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2219,9 +2470,7 @@ estimate 10 m too high is a −10 m Down error:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/evaluation/errors.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
-<span class="normal">48</span>
-<span class="normal">49</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">49</span>
 <span class="normal">50</span>
 <span class="normal">51</span>
 <span class="normal">52</span>
@@ -2268,7 +2517,10 @@ estimate 10 m too high is a −10 m Down error:</p>
 <span class="normal">93</span>
 <span class="normal">94</span>
 <span class="normal">95</span>
-<span class="normal">96</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">position_error</span><span class="p">(</span><span class="n">est_L_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">est_lambda_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span>
+<span class="normal">96</span>
+<span class="normal">97</span>
+<span class="normal">98</span>
+<span class="normal">99</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">position_error</span><span class="p">(</span><span class="n">est_L_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">est_lambda_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span>
                    <span class="n">est_h_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">L_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span>
                    <span class="n">lambda_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">h_b</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Computes the position error delta_r_eb^n, resolved in NED at the true position.</span>
@@ -2313,6 +2565,7 @@ estimate 10 m too high is a −10 m Down error:</p>
     <span class="n">delta_lambda_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mod</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">est_lambda_b</span><span class="p">)</span> <span class="o">-</span> <span class="n">lambda_b</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">,</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span>
     <span class="n">delta_h_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">est_h_b</span><span class="p">)</span> <span class="o">-</span> <span class="n">h_b</span>
     <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span>
+    <span class="c1"># --8&lt;-- [start:position_error]</span>
     <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
         <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_L_b</span><span class="p">,</span>
         <span class="p">(</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span> <span class="o">*</span> <span class="n">delta_lambda_b</span><span class="p">,</span>
@@ -2376,18 +2629,18 @@ estimate 10 m too high is a −10 m Down error:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/evaluation/errors.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">103</span>
 <span class="normal">104</span>
 <span class="normal">105</span>
 <span class="normal">106</span>
 <span class="normal">107</span>
 <span class="normal">108</span>
 <span class="normal">109</span>
-<span class="normal">110</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">velocity_error</span><span class="p">(</span><span class="n">est_v_eb_n</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">velocity_error</span><span class="p">(</span><span class="n">est_v_eb_n</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Computes the velocity error delta_v_eb^n.</span>
 
 <span class="sd">    Args:</span>

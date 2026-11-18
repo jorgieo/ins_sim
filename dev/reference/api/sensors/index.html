@@ -55,6 +55,8 @@
     
       <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
     <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -500,6 +502,22 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -567,6 +585,230 @@
     
   
     Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
   
 
     
@@ -891,6 +1133,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#ins_sim.sensors.imu.GM_ALLAN_PEAK" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GM_ALLAN_PEAK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ins_sim.sensors.imu.IMUSpec" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1181,6 +1434,17 @@
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
+  <a href="#ins_sim.sensors.imu.GM_ALLAN_PEAK" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-attribute"></code>&nbsp;GM_ALLAN_PEAK
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ins_sim.sensors.imu.IMUSpec" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1313,7 +1577,8 @@ meas_omega_ib_b = b_g + (I + M_g)·omega_ib_b + w_g
 </code></pre></div>
 <p><code>generate_imu_samples</code> draws one realization of these errors along a truth
 trajectory, and <code>draw_initial_misalignment</code> draws the initial alignment
-error. The terms are described on <a class="autorefs autorefs-internal" href="../../../theory/notation/#imu-errors">Notation &amp; conventions</a>.</p>
+error. The model is explained on the <a class="autorefs autorefs-internal" href="../../../theory/imu-errors/#imu-error-model"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a>
+theory page, and its symbols on <a class="autorefs autorefs-internal" href="../../../theory/notation/#imu-errors">Notation &amp; conventions</a>.</p>
 
 
 
@@ -1331,6 +1596,34 @@ error. The terms are described on <a class="autorefs autorefs-internal" href="..
 
 
 
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h3 id="ins_sim.sensors.imu.GM_ALLAN_PEAK" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <span class="doc doc-object-name doc-attribute-name">GM_ALLAN_PEAK</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-module-attribute"><code>module-attribute</code></small>
+  </span>
+
+<a href="#ins_sim.sensors.imu.GM_ALLAN_PEAK" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="n">GM_ALLAN_PEAK</span> <span class="o">=</span> <span class="mf">0.6173642831</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Peak of the Allan deviation of a first-order Gauss-Markov process, per unit of its spread.</p>
+<p>The peak occurs at an averaging time of 1.8926 correlation times.
+ins_sim models bias instability with such a process and sets its
+steady-state spread σ = B / GM_ALLAN_PEAK, so that the simulated bias's
+Allan deviation peaks at the datasheet bias instability B.</p>
+
+    </div>
+
+</div>
 
 
 
@@ -1751,10 +2044,7 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/sensors/imu.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
 <span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
@@ -1790,7 +2080,11 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
 <span class="normal">180</span>
 <span class="normal">181</span>
 <span class="normal">182</span>
-<span class="normal">183</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_imu_spec</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IMUSpec</span><span class="p">:</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_imu_spec</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IMUSpec</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Loads an IMUSpec from a YAML file expressed in datasheet units.</span>
 
 <span class="sd">    Args:</span>
@@ -1813,6 +2107,7 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
     <span class="n">g</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"gyro"</span><span class="p">]</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"accel"</span><span class="p">]</span>
     <span class="n">al</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alignment"</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="c1"># --8&lt;-- [start:datasheet_units]</span>
     <span class="n">DEG_HR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span>
     <span class="k">return</span> <span class="n">IMUSpec</span><span class="p">(</span>
         <span class="n">gyro_arw</span>     <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="s2">"arw_deg_per_rt_hr"</span><span class="p">]</span>          <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
@@ -1913,12 +2208,7 @@ align_heading_std).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/sensors/imu.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">208</span>
-<span class="normal">209</span>
-<span class="normal">210</span>
-<span class="normal">211</span>
-<span class="normal">212</span>
-<span class="normal">213</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
 <span class="normal">214</span>
 <span class="normal">215</span>
 <span class="normal">216</span>
@@ -1941,7 +2231,13 @@ align_heading_std).</p>
 <span class="normal">233</span>
 <span class="normal">234</span>
 <span class="normal">235</span>
-<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">draw_initial_misalignment</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">draw_initial_misalignment</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
                               <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Draws a per-run initial-alignment attitude error delta_psi_nb^n.</span>
 
@@ -1967,6 +2263,7 @@ align_heading_std).</p>
 <span class="sd">        &gt;&gt;&gt; draw_initial_misalignment(spec, np.random.default_rng(0)).shape</span>
 <span class="sd">        (3,)</span>
 <span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:initial_misalignment]</span>
     <span class="k">return</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="p">[</span><span class="n">spec</span><span class="o">.</span><span class="n">align_tilt_std</span><span class="p">,</span>
                             <span class="n">spec</span><span class="o">.</span><span class="n">align_tilt_std</span><span class="p">,</span>
                             <span class="n">spec</span><span class="o">.</span><span class="n">align_heading_std</span><span class="p">])</span>
@@ -2078,14 +2375,7 @@ accelerometer outputs, each shape (M, 3).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/sensors/imu.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">305</span>
-<span class="normal">306</span>
-<span class="normal">307</span>
-<span class="normal">308</span>
-<span class="normal">309</span>
-<span class="normal">310</span>
-<span class="normal">311</span>
-<span class="normal">312</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
 <span class="normal">313</span>
 <span class="normal">314</span>
 <span class="normal">315</span>
@@ -2130,7 +2420,14 @@ accelerometer outputs, each shape (M, 3).</p>
 <span class="normal">354</span>
 <span class="normal">355</span>
 <span class="normal">356</span>
-<span class="normal">357</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_imu_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_imu_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
                          <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IMUSamples</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Generates noisy IMU samples from a truth trajectory and an error spec.</span>
 

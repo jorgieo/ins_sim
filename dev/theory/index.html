@@ -55,6 +55,8 @@
     
       <link rel="stylesheet" href="../assets/_mkdocstrings.css">
     
+      <link rel="stylesheet" href="../stylesheets/extra.css">
+    
     <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
     
       
@@ -500,6 +502,22 @@
       
         
       
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
     
     
     
@@ -570,6 +588,230 @@
     
   
     Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
   
 
     
@@ -1018,10 +1260,10 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
-  <a href="#wgs-84-earth-model" class="md-nav__link">
+  <a href="#how-the-simulator-fits-together" class="md-nav__link">
     <span class="md-ellipsis">
       
-        WGS-84 Earth model
+        How the simulator fits together
       
     </span>
   </a>
@@ -1029,10 +1271,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#gravity" class="md-nav__link">
+  <a href="#reading-paths" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Gravity
+        Reading paths
       
     </span>
   </a>
@@ -1040,71 +1282,10 @@
 </li>
       
         <li class="md-nav__item">
-  <a href="#strapdown-mechanization" class="md-nav__link">
+  <a href="#how-the-pages-are-organized" class="md-nav__link">
     <span class="md-ellipsis">
       
-        Strapdown mechanization
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#imu-stochastic-error-model" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        IMU stochastic error model
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#ins-error-dynamics" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        INS error dynamics
-      
-    </span>
-  </a>
-  
-    <nav class="md-nav" aria-label="INS error dynamics">
-      <ul class="md-nav__list">
-        
-          <li class="md-nav__item">
-  <a href="#schuler-oscillation" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Schuler oscillation
-      
-    </span>
-  </a>
-  
-</li>
-        
-          <li class="md-nav__item">
-  <a href="#vertical-channel" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Vertical channel
-      
-    </span>
-  </a>
-  
-</li>
-        
-      </ul>
-    </nav>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#monte-carlo-error-characterization" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Monte Carlo error characterization
+        How the pages are organized
       
     </span>
   </a>
@@ -1132,272 +1313,108 @@
 
 
 <h1 id="theory-math">Theory &amp; Math<a class="headerlink" href="#theory-math" title="Permanent link">&para;</a></h1>
-<div class="admonition note">
-<p class="admonition-title">Notation transition</p>
-<p>This page still uses the v0.2 symbols. In particular, <span class="arithmatex">\(R_N\)</span> below is
-the <em>transverse</em> radius of curvature and <span class="arithmatex">\(\phi\)</span> is latitude. The
-theory section is being rewritten in the notation of
-<a href="../reference/bibliography/#groves2013">Groves (2013)</a>; see
-<a href="notation/">Notation &amp; conventions</a> for the symbols it will use.</p>
-</div>
-<p>This page documents the physics and mathematics <strong>as implemented</strong> in the
-simulator, with pointers to the modules that carry each formulation. Symbols:
-geodetic latitude <span class="arithmatex">\(\phi\)</span>, longitude <span class="arithmatex">\(\lambda\)</span>, altitude <span class="arithmatex">\(h\)</span>; <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>
-navigation frame <span class="arithmatex">\(n\)</span>; body frame <span class="arithmatex">\(b\)</span>; body-to-<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> rotation
-<span class="arithmatex">\(\mathbf{C}_b^n\)</span>.</p>
-<h2 id="wgs-84-earth-model"><abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> Earth model<a class="headerlink" href="#wgs-84-earth-model" title="Permanent link">&para;</a></h2>
-<p><em>Module: <code>ins_sim/core/earth_model.py</code></em></p>
+<p>These pages explain how ins_sim works: the physics it simulates and the
+mathematics it uses, exactly as implemented. Each equation appears next to
+the lines of code that evaluate it, pulled from the source when the site is
+built, so the two cannot drift apart. The symbols are those of
+<a href="../reference/bibliography/#groves2013">Groves (2013)</a>, defined once on
+<a href="notation/">Notation &amp; conventions</a>.</p>
+<h2 id="how-the-simulator-fits-together">How the simulator fits together<a class="headerlink" href="#how-the-simulator-fits-together" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    MIS["Mission YAML"] --&gt; TRUTH["Truth trajectory&lt;br/&gt;&amp; ideal IMU"]
+    TRUTH --&gt; IMU["IMU error model"]
+    IMU --&gt; NAV["Strapdown&lt;br/&gt;mechanization"]
+    NAV --&gt; MC["Monte Carlo&lt;br/&gt;statistics"]
+    EARTH(["Earth &amp; gravity"]) -.-&gt; TRUTH
+    EARTH -.-&gt; NAV</code></pre>
+<p>A run starts from a mission. The simulator builds the truth trajectory and
+works out what a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> would measure along it. It corrupts those
+measurements with the errors of a real <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, feeds them to a strapdown
+navigator, and compares the navigator's answer with the truth. Repeating
+that many times, with fresh errors each time, gives the error statistics
+that the GUI plots. The Earth model supplies the shape, rotation and
+gravity of the Earth to both the truth and the navigator.</p>
+<p>Each part has its own page:</p>
 <table>
 <thead>
 <tr>
-<th>Constant</th>
-<th>Symbol</th>
-<th>Value</th>
+<th>Page</th>
+<th>The question it answers</th>
+<th>Code</th>
 </tr>
 </thead>
 <tbody>
 <tr>
-<td>Semi-major axis</td>
-<td><span class="arithmatex">\(a\)</span></td>
-<td>6 378 137.0 m</td>
+<td><a href="notation/">Notation &amp; conventions</a></td>
+<td>What does each symbol mean?</td>
+<td>–</td>
 </tr>
 <tr>
-<td>Flattening</td>
-<td><span class="arithmatex">\(f\)</span></td>
-<td>1 / 298.257223563</td>
+<td><a href="frames-attitude/">Frames &amp; attitude</a></td>
+<td>Which reference frames are involved, and how is attitude described?</td>
+<td><code>scipy.spatial.transform</code></td>
 </tr>
 <tr>
-<td>First eccentricity²</td>
-<td><span class="arithmatex">\(e^2 = f(2-f)\)</span></td>
-<td>6.694379990e−3</td>
+<td><a href="earth-gravity/">Earth &amp; gravity</a></td>
+<td>How do latitude and longitude become metres, how fast does the Earth turn, and how strong is gravity?</td>
+<td><code>ins_sim.core.earth_model</code></td>
 </tr>
 <tr>
-<td>Earth rotation rate</td>
-<td><span class="arithmatex">\(\omega_{ie}\)</span></td>
-<td>7.2921151467e−5 rad/s</td>
+<td><a href="truth-kinematics/">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a></td>
+<td>How is the reference motion built, and what would a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> measure?</td>
+<td><code>ins_sim.trajectory</code></td>
+</tr>
+<tr>
+<td><a href="imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a></td>
+<td>How do real gyros and accelerometers differ from perfect ones?</td>
+<td><code>ins_sim.sensors.imu</code></td>
+</tr>
+<tr>
+<td><a href="mechanization/">Strapdown mechanization</a></td>
+<td>How does the navigator turn sensor outputs into position, velocity and attitude?</td>
+<td><code>ins_sim.navigation.strapdown</code></td>
+</tr>
+<tr>
+<td><a href="vertical-channel/">Vertical channel</a></td>
+<td>Why does height diverge, and how does the barometer hold it?</td>
+<td><code>ins_sim.navigation.strapdown</code></td>
+</tr>
+<tr>
+<td><a href="error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a></td>
+<td>Why do navigation errors grow the way they do?</td>
+<td>–</td>
+</tr>
+<tr>
+<td><a href="monte-carlo/">Monte Carlo evaluation</a></td>
+<td>How do many runs become error statistics?</td>
+<td><code>ins_sim.evaluation</code></td>
 </tr>
 </tbody>
 </table>
-<p>The radii of curvature at latitude <span class="arithmatex">\(\phi\)</span>:</p>
-<div class="arithmatex">\[
-R_N = \frac{a}{\sqrt{1 - e^2\sin^2\phi}},
-\qquad
-R_M = \frac{a\,(1 - e^2)}{\left(1 - e^2\sin^2\phi\right)^{3/2}}
-\]</div>
-<p>where <span class="arithmatex">\(R_N\)</span> (prime-vertical) governs east-west motion and <span class="arithmatex">\(R_M\)</span>
-(meridian) governs north-south motion.</p>
-<p>Earth rate and transport (craft) rate resolved in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>, both evaluated at the
-current state on every integration step:</p>
-<div class="arithmatex">\[
-\boldsymbol{\omega}_{ie}^n =
-\begin{bmatrix} \omega_{ie}\cos\phi \\ 0 \\ -\omega_{ie}\sin\phi \end{bmatrix},
-\qquad
-\boldsymbol{\omega}_{en}^n =
-\begin{bmatrix}
-  \dfrac{v_E}{R_N + h} \\[2ex]
-  \dfrac{-v_N}{R_M + h} \\[2ex]
-  \dfrac{-v_E\tan\phi}{R_N + h}
-\end{bmatrix}
-\]</div>
-<h2 id="gravity">Gravity<a class="headerlink" href="#gravity" title="Permanent link">&para;</a></h2>
-<p>Normal gravity on the ellipsoid follows the Somigliana formula,</p>
-<div class="arithmatex">\[
-g_0(\phi) = g_e\,\frac{1 + k\sin^2\phi}{\sqrt{1 - e^2\sin^2\phi}},
-\qquad
-g_e = 9.7803253359~\text{m/s}^2,\quad k = 1.93185265241\times10^{-3},
-\]</div>
-<p>with a <strong>linear free-air altitude correction</strong> as implemented:</p>
-<div class="arithmatex">\[
-g(\phi, h) = g_0(\phi)\left(1 - \frac{2h}{a}\right)
-\]</div>
-<p>This first-order correction (<span class="arithmatex">\(\partial g/\partial h \approx -2g/a\)</span>) omits
-the <span class="arithmatex">\(f\)</span>, <span class="arithmatex">\(m\)</span> and <span class="arithmatex">\(h^2\)</span> terms of the full <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> formula. Against the
-full formula it overstates gravity by about 2 µg per kilometre of height at
-low latitudes: about 7 µg at the packaged mission's 15,000 ft cruise
-altitude (18.5° N) and up to 14 µg at 10 km, comparable to a
-navigation-grade accelerometer's bias. The truth generator and the
-navigator share this model, so the approximation does not affect the
-simulated navigation errors. The local gravity vector is
-<span class="arithmatex">\(\mathbf{g}^n = [0,\, 0,\, +g(\phi,h)]^T\)</span> (Down positive).</p>
-<h2 id="strapdown-mechanization">Strapdown mechanization<a class="headerlink" href="#strapdown-mechanization" title="Permanent link">&para;</a></h2>
-<p><em>Module: <code>ins_sim/navigation/strapdown.py</code> (<code>strapdown_navgrade</code>)</em></p>
-<p>The mechanization integrates the classic <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> navigation equations. In
-continuous form:</p>
-<div class="arithmatex">\[
-\dot{\mathbf{C}}_b^n = \mathbf{C}_b^n\,\boldsymbol{\Omega}_{ib}^b
-                     - \boldsymbol{\Omega}_{in}^n\,\mathbf{C}_b^n,
-\qquad
-\boldsymbol{\Omega} = [\boldsymbol{\omega}\times]
-\]</div>
-<div class="arithmatex">\[
-\dot{\mathbf{v}}^n = \mathbf{C}_b^n\,\mathbf{f}^b
-  - \left(2\boldsymbol{\omega}_{ie}^n + \boldsymbol{\omega}_{en}^n\right)
-    \times \mathbf{v}^n + \mathbf{g}^n
-\]</div>
-<div class="arithmatex">\[
-\dot{\phi} = \frac{v_N}{R_M + h}, \qquad
-\dot{\lambda} = \frac{v_E}{(R_N + h)\cos\phi}, \qquad
-\dot{h} = -v_D
-\]</div>
-<p>Discretely, each step <span class="arithmatex">\(k \to k+1\)</span> performs:</p>
-<ol>
-<li>Evaluate <span class="arithmatex">\(\boldsymbol{\omega}_{ie}^n\)</span>, <span class="arithmatex">\(\boldsymbol{\omega}_{en}^n\)</span>,
-   and <span class="arithmatex">\(g(\phi,h)\)</span> at the current state.</li>
-<li>Form the body rate relative to the navigation frame:
-   <span class="arithmatex">\(\boldsymbol{\omega}_{nb}^b =
-   \boldsymbol{\omega}_{ib}^b -
-   \mathbf{C}_n^b\left(\boldsymbol{\omega}_{ie}^n +
-   \boldsymbol{\omega}_{en}^n\right)\)</span>.</li>
-<li><strong>Attitude</strong> — advance by the <em>exact</em> rotation-vector exponential rather
-   than a first-order DCM update: the implementation stores attitude as a
-   scalar-last quaternion and right-multiplies by
-   <span class="arithmatex">\(\exp\!\left([\boldsymbol{\omega}_{nb}^b\,\Delta t\,\times]\right)\)</span>, which
-   is exactly the solution of the DCM differential equation above for a
-   constant rate over the step.</li>
-<li>Resolve specific force into <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>: <span class="arithmatex">\(\mathbf{f}^n = \mathbf{C}_b^n\mathbf{f}^b\)</span>.</li>
-<li><strong>Velocity</strong> — forward-Euler step of the velocity equation, including the
-   Coriolis term <span class="arithmatex">\(\left(2\boldsymbol{\omega}_{ie}^n +
-   \boldsymbol{\omega}_{en}^n\right)\times\mathbf{v}^n\)</span>.</li>
-<li><strong>Position</strong> — forward-Euler step of the geodetic rates.</li>
-</ol>
-<p>The forward-Euler scheme is chosen deliberately to match the truth-side <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>
-derivation: feeding the truth <span class="arithmatex">\(\boldsymbol{\omega}_{ib}^b, \mathbf{f}^b\)</span>
-back through the mechanization reproduces the truth trajectory (the
-zero-noise self-consistency check in <code>main.py</code>).</p>
-<h2 id="imu-stochastic-error-model"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> stochastic error model<a class="headerlink" href="#imu-stochastic-error-model" title="Permanent link">&para;</a></h2>
-<p><em>Module: <code>ins_sim/sensors/imu.py</code> (<code>generate_imu_samples</code>)</em></p>
-<p>Each sensor triad's measurement is, per axis:</p>
-<div class="arithmatex">\[
-\tilde{\mathbf{y}}_k = (\mathbf{I} + \mathbf{M})\,\mathbf{y}_k
-  + \mathbf{b}_{r} + \mathbf{b}_{d,k} + \boldsymbol{\eta}_k
-\]</div>
-<table>
-<thead>
-<tr>
-<th>Term</th>
-<th>Model</th>
-<th>Drawn</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><span class="arithmatex">\(\mathbf{M}\)</span></td>
-<td>Scale factor on the diagonal, six independent misalignment angles off-diagonal</td>
-<td>once per trial</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(\mathbf{b}_r\)</span></td>
-<td>Turn-on bias repeatability, <span class="arithmatex">\(\mathcal{N}(0, \sigma_{BR}^2)\)</span></td>
-<td>once per trial</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(\mathbf{b}_{d,k}\)</span></td>
-<td>Bias instability: first-order Gauss-Markov</td>
-<td>every sample</td>
-</tr>
-<tr>
-<td><span class="arithmatex">\(\boldsymbol{\eta}_k\)</span></td>
-<td><abbr title="Angle random walk: gyro white noise. Integrated angle uncertainty grows as ARW·√t; datasheets quote it in °/√h.">ARW</abbr>/<abbr title="Velocity random walk: accelerometer white noise. Integrated velocity uncertainty grows as VRW·√t; datasheets quote it in m/s/√h.">VRW</abbr> white noise</td>
-<td>every sample</td>
-</tr>
-</tbody>
-</table>
-<p>The Gauss-Markov drift uses the exact discrete AR(1) form, which keeps the
-steady-state variance <span class="arithmatex">\(\sigma_{BI}^2\)</span> independent of the sample rate. It
-starts from its stationary distribution, <span class="arithmatex">\(b_0 \sim \mathcal{N}(0,
-\sigma_{BI}^2)\)</span>, so its variance is <span class="arithmatex">\(\sigma_{BI}^2\)</span> from the first sample.
-The spread is derived from the datasheet bias instability <span class="arithmatex">\(B\)</span> as
-<span class="arithmatex">\(\sigma_{BI} = B/0.617\)</span>, so that the Allan deviation of the simulated bias
-peaks at <span class="arithmatex">\(B\)</span> (see <a href="../validation/#allan-deviation">Validation</a>):</p>
-<div class="arithmatex">\[
-b_{k+1} = a\,b_k + \sqrt{1 - a^2}\,\sigma_{BI}\,w_k,
-\qquad a = e^{-\Delta t/\tau}
-\]</div>
-<p>The white-noise standard deviation per sample is <span class="arithmatex">\(\sigma_\eta =
-\mathrm{ARW}/\sqrt{\Delta t}\)</span> (<abbr title="Velocity random walk: accelerometer white noise. Integrated velocity uncertainty grows as VRW·√t; datasheets quote it in m/s/√h.">VRW</abbr> for the accelerometer), which makes the
-integrated angle (velocity) uncertainty grow as <span class="arithmatex">\(\mathrm{ARW}\cdot\sqrt{t}\)</span>
-independent of the sample rate.</p>
-<p>Each trial also draws an <strong>initial-alignment error</strong>: <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> tilt and azimuth
-misalignments applied to the truth attitude,
-<span class="arithmatex">\(\mathbf{R}_0 = \exp([\boldsymbol{\delta}\times])\,\mathbf{R}_{0,\text{true}}\)</span>
-with <span class="arithmatex">\(\boldsymbol{\delta} = [\delta_N, \delta_E, \delta_D]\)</span>. Physically the
-tilts are limited by accelerometer bias over <span class="arithmatex">\(g\)</span> and the azimuth by the
-gyrocompass limit, east-gyro bias over <span class="arithmatex">\(\omega_{ie}\cos\phi\)</span>.</p>
-<h2 id="ins-error-dynamics"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error dynamics<a class="headerlink" href="#ins-error-dynamics" title="Permanent link">&para;</a></h2>
-<h3 id="schuler-oscillation">Schuler oscillation<a class="headerlink" href="#schuler-oscillation" title="Permanent link">&para;</a></h3>
-<p>Horizontal position/velocity/tilt errors are coupled through gravity and the
-Earth's curvature into the Schuler loop: a tilt error <span class="arithmatex">\(\delta\theta\)</span>
-misresolves gravity into horizontal acceleration <span class="arithmatex">\(g\,\delta\theta\)</span>, while
-the resulting position error re-tilts the computed local level by
-<span class="arithmatex">\(\delta p / R\)</span>. The result is a bounded oscillation with</p>
-<div class="arithmatex">\[
-\omega_s = \sqrt{\frac{g}{R}},
-\qquad
-T_s = 2\pi\sqrt{\frac{R}{g}} \approx 84.4~\text{min}
-\]</div>
-<p>visible as the dominant period in the North/East error channels:</p>
-<p><img alt="Position errors with 3-sigma bands" src="../assets/plots/position_error.png" /></p>
-<h3 id="vertical-channel">Vertical channel<a class="headerlink" href="#vertical-channel" title="Permanent link">&para;</a></h3>
-<p>The vertical channel is <strong>unstable</strong> in a free-inertial mechanization.
-Perturbing the altitude equation through the free-air gravity gradient gives</p>
-<div class="arithmatex">\[
-\delta\ddot{h} \approx \frac{2g}{R}\,\delta h + \delta a_D
-\quad\Longrightarrow\quad
-\lambda = \pm\sqrt{\frac{2g}{R}},
-\]</div>
-<p>an exponential divergence with e-folding time <span class="arithmatex">\(\sqrt{R/2g} \approx 570\)</span> s
-(≈9.5 min). Uncheck <em>Baro altitude aiding</em> in the GUI to observe it.</p>
-<p>With aiding enabled, the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>-minus-baro altitude residual drives a
-<strong>third-order damping loop</strong> acting on altitude, vertical velocity, and an
-integral state that absorbs steady vertical accelerometer error:</p>
-<div class="arithmatex">\[
-K_1 = \frac{3}{\tau}, \qquad
-K_2 = \frac{3}{\tau^2}, \qquad
-K_3 = \frac{1}{\tau^3}
-\]</div>
-<p>which places a triple pole at <span class="arithmatex">\(s = -1/\tau\)</span> — characteristic polynomial
-<span class="arithmatex">\((s + 1/\tau)^3\)</span> — with <span class="arithmatex">\(\tau = 100\)</span> s by default: well-damped, no
-residual oscillation, and steady accelerometer bias rejected by the
-integrator.</p>
-<h2 id="monte-carlo-error-characterization">Monte Carlo error characterization<a class="headerlink" href="#monte-carlo-error-characterization" title="Permanent link">&para;</a></h2>
-<p><em>Module: <code>ins_sim/evaluation/monte_carlo.py</code></em></p>
-<p>The simulator characterizes navigation error <strong>empirically</strong>: <span class="arithmatex">\(N\)</span>
-independent trials each draw their own turn-on biases, scale
-factor/misalignment matrices, Gauss-Markov histories, white-noise streams,
-and initial-alignment error, run the full nonlinear mechanization, and the
-ensemble is summarized statistically:</p>
+<h2 id="reading-paths">Reading paths<a class="headerlink" href="#reading-paths" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>±3σ bands</strong> (attitude/velocity/position tabs): the pointwise ensemble
-  mean and standard deviation of each error component — the diagonal of the
-  empirical covariance</li>
+<li><strong>New to inertial navigation:</strong> <a href="frames-attitude/">Frames &amp; attitude</a>,
+  then <a href="earth-gravity/">Earth &amp; gravity</a>,
+  <a href="mechanization/">Strapdown mechanization</a> and the
+  <a href="error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a>. The <a href="../validation/">Validation</a>
+  page then shows the simulator reproducing each prediction.</li>
+<li><strong>Choosing or comparing IMUs:</strong> the <a href="imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a>, the
+  <a href="error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a> and
+  <a href="monte-carlo/">Monte Carlo evaluation</a>.</li>
+<li><strong>Reading or extending the code:</strong> <a href="notation/">Notation &amp; conventions</a>,
+  <a href="truth-kinematics/">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a> and
+  <a href="mechanization/">Strapdown mechanization</a>. Every page ends with an
+  <em>In the code</em> table that links each equation to its function in the
+  <a href="../reference/api/">Python API</a>.</li>
 </ul>
-<div class="arithmatex">\[
-\mathbf{P}_{\text{emp}}(t) = \frac{1}{N-1}\sum_{i=1}^{N}
-  \left[\mathbf{x}_i(t) - \bar{\mathbf{x}}(t)\right]
-  \left[\mathbf{x}_i(t) - \bar{\mathbf{x}}(t)\right]^T
-\]</div>
-<ul>
-<li><strong>Percentile envelopes</strong>: the pointwise <span class="arithmatex">\(q\)</span>-th percentile of radial error
-  across trials — the 95th percentile drives the 3D error tube and the map
-  envelope.</li>
-<li><strong><abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr></strong> (Circular Error Probable): the pointwise 50th percentile of
-  <em>horizontal</em> radial error, with a linear drift-rate fit over the first
-  hour.</li>
-</ul>
-<p>Ensemble statistics converge as <span class="arithmatex">\(1/\sqrt{N}\)</span>; the tails (95th percentile)
-converge more slowly than the median, so <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> stabilizes at lower trial
-counts than the error tube.</p>
-<p><img alt="Attitude errors with 3-sigma bands" src="../assets/plots/attitude_error.png" /></p>
-<div class="admonition note">
-<p class="admonition-title">Not a linearized covariance analysis</p>
-<p>The simulator propagates <strong>no</strong> linearized error-state model — there is
-no 15-state <span class="arithmatex">\(\dot{\delta\mathbf{x}} = \mathbf{F}\delta\mathbf{x} +
-\mathbf{G}\mathbf{w}\)</span> system or analytic covariance in the codebase.
-Every statistic above comes from full nonlinear Monte Carlo trials.
-Implementing the linearized model (and eventually Kalman-filter-based
-aiding, e.g. <abbr title="Global navigation satellite system (GPS, Galileo, GLONASS, BeiDou).">GNSS</abbr>/<abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>) and validating it against these empirical bounds
-is natural future work.</p>
-</div>
+<h2 id="how-the-pages-are-organized">How the pages are organized<a class="headerlink" href="#how-the-pages-are-organized" title="Permanent link">&para;</a></h2>
+<p>Each page starts with what its topic is and why it matters for navigation,
+then sums up its key results. A picture comes before any equation. The model
+follows, with every symbol defined where it is used, then the model as
+implemented, step by step, beside its code. A figure from the simulator
+shows the result, linked to the validation check that tests it. Each page
+then states its assumptions and limitations, and ends with the functions
+that implement it and an example that the test suite runs.</p>
 
 
 
