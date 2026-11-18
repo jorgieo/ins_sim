@@ -28,6 +28,9 @@ LEGACY_PAGES: set[str] = set()
 # applies to it.
 NOTATION_PAGE = "theory/notation.md"
 
+# The migration guide names v0.2's R_M on purpose, in its rename table.
+MIGRATION_PAGE = "project/migrating-from-0.2.md"
+
 RAW_FRAME_SYMBOL = re.compile(
     r"\\mathbf\{[CfvrgqW]\}\s*_"
     r"|\\boldsymbol\{\\(?:omega|Omega|alpha|upsilon|psi)\}\s*_"
@@ -43,12 +46,11 @@ def _pages():
 def _violations(rel_path: str) -> list[str]:
     text = (DOCS / rel_path).read_text(encoding="utf-8")
     rules = [(TIMES_SKEW, r"write skew-symmetric matrices as \skew{x}, not [x \times]")]
+    if rel_path not in (NOTATION_PAGE, MIGRATION_PAGE):
+        rules.append((LEGACY_RADIUS, "use R_N (meridian) / R_E (transverse), not R_M"))
     if rel_path != NOTATION_PAGE:
-        rules += [
-            (LEGACY_RADIUS, "use R_N (meridian) / R_E (transverse), not R_M"),
-            (RAW_FRAME_SYMBOL,
-             r"use the notation macros (\Cmat, \wvec, \fvec, ...) for frame-indexed symbols"),
-        ]
+        rules.append((RAW_FRAME_SYMBOL,
+                      r"use the notation macros (\Cmat, \wvec, \fvec, ...) for frame-indexed symbols"))
     found = []
     for lineno, line in enumerate(text.splitlines(), start=1):
         for pattern, message in rules:
@@ -65,5 +67,6 @@ def test_page_uses_groves_notation(rel_path):
 
 def test_legacy_list_is_current():
     """Every exempt page must still exist, so the list cannot go stale."""
-    missing = sorted(p for p in LEGACY_PAGES if not (DOCS / p).exists())
-    assert not missing, f"remove these from LEGACY_PAGES: {missing}"
+    missing = sorted(p for p in LEGACY_PAGES | {NOTATION_PAGE, MIGRATION_PAGE}
+                     if not (DOCS / p).exists())
+    assert not missing, f"these exempt pages no longer exist: {missing}"

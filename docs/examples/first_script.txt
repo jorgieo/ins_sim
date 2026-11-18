@@ -1,0 +1,4 @@
+Mission: 79.8 min, 4791 samples
+Gyro bias instability: 0.010 deg/h
+CEP after 1 h: 0.90 nmi
+Saved first_script.png

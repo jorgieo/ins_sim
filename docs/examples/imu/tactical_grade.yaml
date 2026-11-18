@@ -1,0 +1,29 @@
+name: Tactical-Grade IMU
+
+# Illustrative values for a tactical-grade IMU, such as a fibre-optic-gyro
+# unit on a missile or a large drone: about 100 times less stable than the
+# packaged navigation-grade spec. All values in datasheet units;
+# load_imu_spec() converts them to SI.
+
+gyro:
+  arw_deg_per_rt_hr:        0.05    # Angular Random Walk [°/√hr]
+  bias_instab_deg_per_hr:   0.5     # Bias instability, datasheet Allan-deviation floor [°/hr]
+  bias_tau_s:               300.0   # Correlation time of the Gauss-Markov bias model [s]
+  repeatability_deg_per_hr: 1.0     # Turn-on bias repeatability [°/hr]
+  scale_factor_ppm:         100.0   # Scale-factor error 1σ, per axis [ppm]
+  misalignment_urad:        100.0   # Axis misalignment 1σ, per element [µrad]
+
+accel:
+  vrw_m_per_s_per_rt_hr:    0.05    # Velocity Random Walk [m/s/√hr]
+  bias_instab_ug:           50.0    # Bias instability, datasheet Allan-deviation floor [µg]
+  bias_tau_s:               300.0   # Correlation time of the Gauss-Markov bias model [s]
+  repeatability_ug:         500.0   # Turn-on bias repeatability [µg]
+  scale_factor_ppm:         300.0   # Scale-factor error 1σ, per axis [ppm]
+  misalignment_urad:        100.0   # Axis misalignment 1σ, per element [µrad]
+
+# Tilt ≈ accel repeatability / g = 0.03°. Gyrocompassing with 1 °/hr gyros
+# would leave about 4° of heading error at 18.5° N, so a tactical system
+# takes its initial heading from elsewhere instead, here to 0.5°.
+alignment:
+  tilt_std_deg:    0.03    # N/E tilt misalignment 1σ [°]
+  heading_std_deg: 0.5     # Azimuth misalignment 1σ [°]

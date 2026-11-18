@@ -171,6 +171,10 @@ table in `includes/validation_results.md`, from the scenarios in
 `tools/validation_scenarios.py`, which `tests/validation/` also asserts.
 `python tools/generate_doc_plots.py --theory` regenerates the figures that
 only the Theory pages show (`tools/theory_figures.py`).
+`python tools/generate_doc_plots.py --guide` retakes the screenshots of the
+app in `docs/assets/gui/` (`tools/gui_screenshots.py`, which opens the app
+on screen and needs an internet connection for the map tiles) and the
+figure of the "Your first script" tutorial.
 
 Diagrams that are not simulator output, such as the frames on the Frames &
 attitude page, are inline SVG files in `includes/diagrams/`. A page
@@ -189,6 +193,13 @@ save it next to the script as a `.txt` file
 (`python docs/examples/<name>.py > docs/examples/<name>.txt`) and include
 that too: the test then checks that the script still prints exactly that
 output.
+
+The tests run each script in an empty temporary folder, so a script must
+find its data files relative to itself (`Path(__file__).parent`), and any
+file it saves stays out of the repository. Keep scripts quick, a few
+seconds where possible: they run on every test run. Example IMU specs in
+`docs/examples/imu/` and missions in `docs/examples/missions/` are tested
+too: every spec must load and every mission must build.
 
 ### Glossary and tooltips
 

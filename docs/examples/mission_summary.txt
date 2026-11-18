@@ -1,0 +1,9 @@
+Duration              27.0 min
+Distance flown       112.7 nmi
+Highest altitude      8030 ft
+Top speed              280 kt
+Steepest bank         25.0 deg
+Steepest pitch         8.9 deg
+Waypoint 1: passes  0.1 km away at 14.6 min, at  8030 ft (planned 8000 ft)
+Waypoint 2: passes  3.0 km away at 21.2 min, at  3433 ft (planned 3000 ft)
+Waypoint 3: passes  0.8 km away at 26.9 min, at  3037 ft (planned 3000 ft)

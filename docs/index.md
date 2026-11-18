@@ -65,10 +65,16 @@ flowchart TD
 
 ## Where next
 
-- [Download & Install](download.md) — grab the prebuilt app for Windows
+- [Download & install](download.md) — grab the prebuilt app for Windows
   (x86-64) or Linux (x86-64 / ARM64, including Raspberry Pi 4/5 on 64-bit OS).
-- [User Guide](guide.md) — configuring missions and reading the results.
+- [Your first simulation](get-started/first-run.md) — a ten-minute tour of
+  the app, from the first run to the results; or
+  [Your first script](get-started/first-script.md) for the same in Python.
+- [User guide](guide/index.md) — reading the results, writing missions,
+  modelling an IMU from its datasheet, and recipes.
 - [Theory & Math](theory/index.md) — the formulations behind the simulator.
 - [Validation](validation/index.md) — the simulator checked against textbook
   results: the Schuler period, bias responses, the vertical channel and the
   sensor noise statistics.
+- [Migrating from 0.2](project/migrating-from-0.2.md) — what changed in
+  version 0.3.

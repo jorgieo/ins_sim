@@ -22,10 +22,12 @@ for a navigation estimate, `delta_` for an error.
 
 ## A complete run
 
-This script runs ten Monte Carlo trials on the packaged mission and prints
-the 95th-percentile position error after one hour. It is the same file the
-test suite runs, so it stays in step with the code.
+This script runs ten Monte Carlo trials on the packaged mission, prints the
+CEP after one hour and plots every trial's horizontal error. It is the same
+file the test suite runs, so it stays in step with the code, and the
+[Your first script](../../get-started/first-script.md) tutorial goes
+through it step by step.
 
 ```python
---8<-- "docs/examples/quickstart.py"
+--8<-- "docs/examples/first_script.py"
 ```

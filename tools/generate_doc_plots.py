@@ -10,17 +10,23 @@ figure or model changes so docs never drift:
     python tools/generate_doc_plots.py --trials 5 --dt 1.0  # quick pass
     python tools/generate_doc_plots.py --validation         # Validation page
     python tools/generate_doc_plots.py --theory             # Theory pages
+    python tools/generate_doc_plots.py --guide              # Get started and guide
 
 With --validation it instead runs the scenarios in validation_scenarios.py,
 writes their figures to docs/assets/validation/, and writes the results
 table (includes/validation_results.md) that the Validation page includes.
 With --theory it draws the Theory pages' own figures (theory_figures.py)
-into docs/assets/theory/.
+into docs/assets/theory/. With --guide it takes the screenshots of the app
+(gui_screenshots.py, which needs the gui extra, a display and an internet
+connection for the map tiles) into docs/assets/gui/, and runs the "Your
+first script" tutorial in docs/assets/get-started/ to save its figure there.
 
 Requires kaleido (dev extra) for plotly PNG export.
 """
 
 import argparse
+import os
+import runpy
 import sys
 from pathlib import Path
 from types import SimpleNamespace
@@ -40,6 +46,9 @@ PLOTS_DIR = REPO_ROOT / "docs" / "assets" / "plots"
 VALIDATION_DIR = REPO_ROOT / "docs" / "assets" / "validation"
 VALIDATION_TABLE = REPO_ROOT / "includes" / "validation_results.md"
 THEORY_DIR = REPO_ROOT / "docs" / "assets" / "theory"
+GUI_DIR = REPO_ROOT / "docs" / "assets" / "gui"
+GET_STARTED_DIR = REPO_ROOT / "docs" / "assets" / "get-started"
+FIRST_SCRIPT = REPO_ROOT / "docs" / "examples" / "first_script.py"
 
 # 1400x900 logical px at scale 3 ≈ 300 DPI for a 14-inch-wide figure.
 EXPORT_KW = dict(width=1400, height=900, scale=3)
@@ -69,6 +78,21 @@ def run_baseline(trials: int, dt: float, seed: int) -> SimpleNamespace:
     return SimpleNamespace(truth=truth, **mc._asdict(), r95=r95, n_trials=trials)
 
 
+def build_guide_images() -> None:
+    """Takes the app screenshots and saves the first-script tutorial's figure."""
+    import gui_screenshots  # noqa: E402 (needs PySide6, so imported only here)
+
+    GUI_DIR.mkdir(parents=True, exist_ok=True)
+    print(f"Screenshots into {GUI_DIR.relative_to(REPO_ROOT)}:", flush=True)
+    gui_screenshots.take_screenshots(GUI_DIR)
+
+    # The tutorial script saves its figure in the current folder, so the
+    # image on its page is exactly what readers get by running it.
+    GET_STARTED_DIR.mkdir(parents=True, exist_ok=True)
+    os.chdir(GET_STARTED_DIR)
+    runpy.run_path(str(FIRST_SCRIPT), run_name="__main__")
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(
         description="Generate the documentation figure assets.")
@@ -82,6 +106,8 @@ def main() -> int:
                         help="Generate the Validation page figures and results table instead")
     parser.add_argument("--theory", action="store_true",
                         help="Generate the Theory pages' figures instead")
+    parser.add_argument("--guide", action="store_true",
+                        help="Take the app screenshots and the tutorial figure instead")
     args = parser.parse_args()
 
     if args.validation:
@@ -91,6 +117,9 @@ def main() -> int:
     if args.theory:
         import theory_figures  # noqa: E402 (tools/ is on sys.path as the script's folder)
         theory_figures.build_all(THEORY_DIR)
+        return 0
+    if args.guide:
+        build_guide_images()
         return 0
 
     PLOTS_DIR.mkdir(parents=True, exist_ok=True)

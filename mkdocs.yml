@@ -36,8 +36,17 @@ theme:
 
 nav:
   - Home: index.md
-  - Download & Install: download.md
-  - User Guide: guide.md
+  - Get started:
+      - Download & install: download.md
+      - Your first simulation: get-started/first-run.md
+      - Your first script: get-started/first-script.md
+  - User guide:
+      - guide/index.md
+      - Reading the results: guide/results.md
+      - Writing a mission: guide/missions.md
+      - Modelling an IMU: guide/imu-specs.md
+      - Command-line runs: guide/cli.md
+      - Recipes: guide/recipes.md
   - Theory & Math:
       - theory/index.md
       - Notation & conventions: theory/notation.md
@@ -59,8 +68,13 @@ nav:
           - Navigation: reference/api/navigation.md
           - Evaluation: reference/api/evaluation.md
           - Configuration: reference/api/config.md
+      - Mission YAML: reference/mission-yaml.md
+      - IMU spec YAML: reference/imu-yaml.md
+      - Units & constants: reference/units-constants.md
       - Glossary: reference/glossary.md
       - Bibliography: reference/bibliography.md
+  - Project:
+      - Migrating from 0.2: project/migrating-from-0.2.md
 
 plugins:
   - search
