@@ -71,6 +71,9 @@ guide lists every change.
 - The stated accuracy of the gravity model's height correction.
 - The downloadable app leaves out the Qt modules it does not use, some of
   which Qt offers only under the GPL-3.0, so the downloads are smaller.
+- The license notices in the downloadable app also credit the Python
+  runtime, PyInstaller's launcher, Microsoft's runtime libraries
+  (Windows), ICU (Linux), and the GCC libraries in NumPy and SciPy.
 
 ## [0.2.0] - 2026-07-22
 

@@ -10,7 +10,9 @@ directory (in a source checkout) and under `_internal/licenses/` in the
 frozen release bundle. Each component remains the property of its
 respective copyright holders and is used under the terms stated here.
 
-The full text of every referenced license accompanies this notice.
+The full text of every referenced license accompanies this notice. Some
+components ship only in the Windows download or only in the Linux
+downloads; their sections say so.
 
 
 -------------------------------------------------------------------------
@@ -30,6 +32,11 @@ License    : GNU Lesser General Public License, version 3 (LGPL-3.0-only).
              A pointer to the alternative commercial terms is retained in
              licenses/Qt-Commercial-reference.txt for completeness; ins_sim
              does NOT rely on the commercial license.
+
+Only Qt modules that The Qt Company offers under the LGPL-3.0 are
+included. Modules it offers only under the GPL-3.0 or a commercial
+license, such as Qt Charts, Qt Quick 3D and Qt Virtual Keyboard, are left
+out, and the release build checks that none of them ships.
 
 LGPL v3 compliance notes for this distribution:
 
@@ -65,14 +72,20 @@ LGPL v3 compliance notes for this distribution:
      These attributions apply to the Qt WebEngine binaries shipped in this
      bundle and are incorporated here by reference.
 
+  e. OTHER CODE IN QT. The Qt libraries and plugins also contain
+     third-party code that Qt builds in, which The Qt Company lists with
+     its licenses at the second address above. The list includes
+     opengl32sw.dll in the Windows download: Qt's build of the Mesa
+     llvmpipe software renderer (MIT License).
+
 
 -------------------------------------------------------------------------
-2. Permissively licensed Python libraries (bundled in releases)
+2. Python libraries
 -------------------------------------------------------------------------
 
-The following are redistributed in the frozen release bundle. Each is a
-permissive, non-copyleft license fully compatible with the MIT-licensed
-application. Full texts are in the `licenses/` directory.
+The following are redistributed in the frozen release bundle, each under a
+permissive license compatible with the MIT-licensed application. Full
+texts are in the `licenses/` directory.
 
   NumPy 1.26.3           BSD 3-Clause      licenses/numpy-1.26.3.LICENSE.txt
   SciPy 1.12.0           BSD 3-Clause      licenses/scipy-1.12.0.LICENSE.txt
@@ -84,19 +97,85 @@ application. Full texts are in the `licenses/` directory.
 (Plotly imports narwhals and packaging. packaging is offered under either
 of its two licenses, and its file carries both texts.)
 
+NumPy's and SciPy's builds include further libraries, which their license
+files also cover: OpenBLAS and LAPACK (BSD-3-Clause), the GCC Fortran
+runtime libgfortran (GPL-3.0 with the GCC Runtime Library Exception) and
+libquadmath (LGPL-2.1-or-later). In the Windows download these are built
+into the OpenBLAS DLLs in numpy.libs/ and scipy.libs/; in the Linux
+downloads they are separate files there (libquadmath on x86-64 only). The
+license files give the Windows file names, and where to get the source of
+libgfortran and libquadmath, which are part of GCC.
+
 
 -------------------------------------------------------------------------
-3. Components used at build time only (NOT redistributed)
+3. The Python runtime
 -------------------------------------------------------------------------
 
-These are development / packaging tools. They are not part of the shipped
-application and impose no obligations on the distributed binaries.
+Components : Python 3.12.10 (Windows download) and Python 3.12.16 (Linux
+             downloads): the interpreter, the parts of its standard
+             library that the app uses, and the libraries Python
+             incorporates, such as OpenSSL, libffi, expat, zlib and
+             libmpdec.
+Copyright  : (c) 2001 Python Software Foundation; All Rights Reserved,
+             and the other copyright holders named in the license files.
+License    : Python Software Foundation License Version 2, and the
+             licenses of the software Python incorporates.
+             licenses/Python-3.12.LICENSE.txt is Python's "History and
+             License", which gives all of them.
+             licenses/Python-3.12.10-Windows.LICENSE.txt is the license
+             file python.org ships with the Windows build; it adds bzip2,
+             and the conditions on Microsoft's runtime (section 4).
 
-  PyInstaller    GPL-2.0-or-later WITH a Bootloader Exception. The
-                 exception explicitly permits the resulting frozen
-                 application to be distributed under any license,
-                 including MIT; PyInstaller does not impose GPL terms on
-                 ins_sim. https://pyinstaller.org/en/stable/license.html
+
+-------------------------------------------------------------------------
+4. Microsoft C and C++ runtime libraries (Windows download only)
+-------------------------------------------------------------------------
+
+Components : vcruntime140.dll, vcruntime140_1.dll, msvcp140.dll,
+             msvcp140_1.dll, msvcp140_2.dll, ucrtbase.dll and the
+             api-ms-win-*.dll files, which Python and Qt need.
+Copyright  : (c) Microsoft Corporation.
+License    : Redistributed unmodified as Microsoft "Distributable Code".
+             You may not use these files on a platform other than
+             Microsoft's operating systems, or in malicious, deceptive or
+             unlawful programs; see "Additional Conditions for this Windows
+             binary build" in licenses/Python-3.12.10-Windows.LICENSE.txt.
+
+
+-------------------------------------------------------------------------
+5. ICU (Linux downloads only)
+-------------------------------------------------------------------------
+
+Components : ICU 73.2 (libicudata, libicui18n and libicuuc), which the Qt
+             libraries in the PySide6 6.11.1 wheels use on Linux.
+Copyright  : (c) Unicode, Inc. and others.
+License    : Unicode, Inc. License Agreement - Data Files and Software
+             (Unicode-DFS-2016), with the third-party terms ICU lists after
+             it: licenses/ICU-73.2.LICENSE.txt.
+
+
+-------------------------------------------------------------------------
+6. PyInstaller
+-------------------------------------------------------------------------
+
+Components : PyInstaller 6.22.3: the launcher (ins_sim.exe or ins_sim),
+             which is PyInstaller's bootloader, and the start-up code it
+             runs before the app.
+Copyright  : (c) 2010-2023, PyInstaller Development Team; (c) 2005-2009,
+             Giovanni Bajo; (c) 2002 McMillan Enterprises, Inc.
+License    : The bootloader is GPL-2.0-or-later with the Bootloader
+             Exception, which permits the frozen application to be
+             distributed under any license, including MIT. The start-up
+             code (PyInstaller's run-time hooks and loader modules) is
+             Apache-2.0. Both texts: licenses/PyInstaller-6.22.3.LICENSE.txt.
+
+
+-------------------------------------------------------------------------
+7. Components used at build time only (NOT redistributed)
+-------------------------------------------------------------------------
+
+These are development tools. They are not part of the shipped application
+and impose no obligations on the distributed binaries.
 
   Matplotlib     Matplotlib License (BSD-style / PSF-based). Used by the
   Seaborn        CLI summary figure only; both are EXCLUDED from the
@@ -111,8 +190,14 @@ application and impose no obligations on the distributed binaries.
 Summary
 -------------------------------------------------------------------------
 
-ins_sim's own source code is licensed MIT. The only copyleft obligation in
-the distributed product arises from the LGPL-3.0 Qt / PySide6 stack, and
-those obligations are satisfied by (i) this notice, (ii) dynamic linking
-with replaceable shared libraries, (iii) the source pointers above, and
-(iv) the bundled license texts. All other bundled libraries are permissive.
+ins_sim's own source code is licensed MIT. The copyleft components in the
+distributed product are the Qt libraries (LGPL-3.0), libquadmath
+(LGPL-2.1-or-later, in NumPy and SciPy) and the GCC Fortran runtime
+libgfortran (GPL-3.0 with the GCC Runtime Library Exception, which lets
+programs that use it be distributed under any terms). This notice, the
+bundled license texts and the source pointers (above for Qt, in the NumPy
+and SciPy license files for the GCC libraries) cover them, and the Qt
+libraries are dynamically linked and replaceable (section 1b). PyInstaller's
+bootloader is GPL-2.0-or-later with an exception that leaves the
+application's license free. The other components are under permissive
+licenses, and Microsoft's runtime libraries under the terms in section 4.

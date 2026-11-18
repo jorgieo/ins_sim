@@ -4,7 +4,8 @@
 # license texts, so the notices shipped with every release must describe
 # exactly what is bundled: change a version here, in the notices and in
 # licenses/ together. tests/test_release_constraints.py checks that the
-# three agree. Used only by .github/workflows/release.yml.
+# three agree. Used only by .github/workflows/release.yml, which also pins
+# the Python version each download bundles.
 
 # Qt for Python, LGPL-3.0 (PySide6 is a meta-package for the other two)
 PySide6==6.11.1
@@ -19,3 +20,6 @@ PyYAML==6.0.2
 plotly==6.3.0
 narwhals==2.3.0
 packaging==26.3
+
+# The build tool, whose launcher and start-up code ship in the app
+PyInstaller==6.22.3
