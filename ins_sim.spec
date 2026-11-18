@@ -22,6 +22,10 @@ Architecture invariants (why this spec looks the way it does):
   The Qt Quick, QML and Positioning bindings are excluded, and unused
   Qt plugins filtered out, so the bundle holds only the Qt the app uses
   (see the comments at excludes and _unused_qt_plugin).
+- On Linux the bundle holds only the Python runtime and the pinned
+  packages: the system libraries PyInstaller would copy from the build
+  machine are left out, and the app uses the user's own, as other
+  desktop apps do (see _system_library).
 - The mission/IMU YAMLs are bundled at ins_sim/config/ so the app's
   importlib.resources lookups resolve identically when frozen (onedir
   places them under _internal/, which is on sys.path).
@@ -30,6 +34,7 @@ Architecture invariants (why this spec looks the way it does):
   it guards every assumption above on each release build.
 """
 
+import sys
 from pathlib import Path
 
 # Anchor to the spec's own directory (SPECPATH is provided by
@@ -68,6 +73,8 @@ a = Analysis(
     # matplotlib/seaborn are CLI-only; IPython/pandas/PIL are plotly
     # soft imports; pytest/jupyter live in the CI build env but must
     # never ship. PyQt5/PyQt6 must never be collected alongside PySide6.
+    # readline serves interactive prompts, which the app never shows (on
+    # Linux it would also need the system's GNU readline, GPL-3.0).
     #
     # The app imports only the Qt Core, Gui, Widgets and WebEngineWidgets
     # bindings (which load Network, PrintSupport, WebChannel and
@@ -82,6 +89,7 @@ a = Analysis(
         "PyQt5", "PyQt6",
         "PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtQuickWidgets",
         "PySide6.QtPositioning",
+        "readline",
         "IPython", "jupyter", "notebook", "pandas", "PIL",
         "pytest", "_pytest", "py",
     ],
@@ -105,6 +113,32 @@ def _unused_qt_plugin(dest_name):
 
 
 a.binaries = [entry for entry in a.binaries if not _unused_qt_plugin(entry[0])]
+
+
+def _system_library(entry):
+    """Whether a collected Linux binary is a library from the build machine.
+
+    PyInstaller copies every shared library the bundled code links against,
+    including the system's graphics, font, sound, D-Bus, NSS and C++
+    libraries, and puts them at the top of the _internal folder. Nothing
+    else lands there as a plain binary except the Python runtime itself:
+    the libraries the wheels include stay in their packages' folders, with
+    symbolic links at the top.
+    """
+    dest_name, _source, typecode = entry
+    return (typecode == "BINARY" and "/" not in dest_name.replace("\\", "/")
+            and not dest_name.startswith("libpython"))
+
+
+# On Linux, leave the build machine's system libraries out: the app uses the
+# user's own, as other desktop apps do, so the bundle holds only the Python
+# runtime and the pinned packages that THIRD-PARTY-NOTICES.txt credits. (On
+# Windows, the system's DLLs are never collected.)
+if sys.platform.startswith("linux"):
+    system_libraries = sorted(entry[0] for entry in a.binaries if _system_library(entry))
+    print(f"ins_sim.spec: leaving out {len(system_libraries)} system libraries: "
+          + " ".join(system_libraries))
+    a.binaries = [entry for entry in a.binaries if not _system_library(entry)]
 
 pyz = PYZ(a.pure)
 

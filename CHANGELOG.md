@@ -48,6 +48,9 @@ guide lists every change.
   0.2.
 - The ±3σ bands use the sample standard deviation (dividing by N − 1).
 - ins_sim requires NumPy 1.25 or later.
+- The Linux downloads use the system's own libraries for graphics, fonts,
+  sound and encryption, like other desktop apps, instead of copies from
+  the machine that built them.
 
 ### Added
 

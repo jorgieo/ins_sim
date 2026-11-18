@@ -49,8 +49,12 @@ tar xzf ins_sim-vX.Y.Z-linux-aarch64.tar.gz
 
 !!! note "Runtime requirements"
     Bundles are built on Ubuntu 24.04, so a similarly recent glibc is
-    required. Minimal installations may also need the Qt WebEngine system
-    libraries:
+    required. Like other desktop apps, ins_sim uses your system's own
+    libraries for graphics, fonts, sound and encryption, which a desktop
+    installation already has. If the app stops with
+    `error while loading shared libraries`, install the package that
+    provides the library it names. Minimal installations usually need the
+    Qt WebEngine system libraries:
 
 ```bash
 sudo apt-get install libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64

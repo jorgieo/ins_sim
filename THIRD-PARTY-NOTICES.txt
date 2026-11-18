@@ -12,7 +12,9 @@ respective copyright holders and is used under the terms stated here.
 
 The full text of every referenced license accompanies this notice. Some
 components ship only in the Windows download or only in the Linux
-downloads; their sections say so.
+downloads; their sections say so. The Linux downloads use the system's own
+libraries for graphics, fonts, sound and encryption, as other desktop apps
+do; those are not distributed with the application.
 
 
 -------------------------------------------------------------------------
