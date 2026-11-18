@@ -19,12 +19,15 @@ Architecture invariants (why this spec looks the way it does):
 - PySide6/QtWebEngine (Chromium runtime, platform plugins qwindows/
   qoffscreen/qxcb/wayland, resources) and plotly package data are
   handled by PyInstaller's bundled hooks; binaries=[] stays empty.
+  The Qt Quick, QML and Positioning bindings are excluded, and unused
+  Qt plugins filtered out, so the bundle holds only the Qt the app uses
+  (see the comments at excludes and _unused_qt_plugin).
 - The mission/IMU YAMLs are bundled at ins_sim/config/ so the app's
   importlib.resources lookups resolve identically when frozen (onedir
   places them under _internal/, which is on sys.path).
 - The release smoke test (INS_SIM_SMOKE=1) runs a real Monte Carlo in
-  the frozen bundle and requires the plotly tabs to render — it guards
-  every assumption above on each release build.
+  the frozen bundle and requires Qt WebEngine to draw a plotly figure —
+  it guards every assumption above on each release build.
 """
 
 from pathlib import Path
@@ -65,14 +68,43 @@ a = Analysis(
     # matplotlib/seaborn are CLI-only; IPython/pandas/PIL are plotly
     # soft imports; pytest/jupyter live in the CI build env but must
     # never ship. PyQt5/PyQt6 must never be collected alongside PySide6.
+    #
+    # The app imports only the Qt Core, Gui, Widgets and WebEngineWidgets
+    # bindings (which load Network, PrintSupport, WebChannel and
+    # WebEngineCore). PyInstaller would also add the Qt Quick, QML and
+    # Positioning bindings, because Qt WebEngine links against those
+    # libraries, and then collect every QML plugin and every Qt module
+    # they use, some of which Qt licenses only under the GPL-3.0. Leaving
+    # the bindings out keeps the libraries WebEngine links against and
+    # drops the rest.
     excludes=[
         "matplotlib", "seaborn", "tkinter",
         "PyQt5", "PyQt6",
+        "PySide6.QtQml", "PySide6.QtQuick", "PySide6.QtQuickWidgets",
+        "PySide6.QtPositioning",
         "IPython", "jupyter", "notebook", "pandas", "PIL",
         "pytest", "_pytest", "py",
     ],
     noarchive=False,
 )
+
+
+def _unused_qt_plugin(dest_name):
+    """Qt plugins the app never loads, with the files only they need.
+
+    - The TLS backends, and the OpenSSL copy PyInstaller finds for them on
+      PATH: the app makes no TLS connections through Qt (Qt WebEngine has
+      its own TLS).
+    - The virtual keyboard input method, which Qt licenses only under the
+      GPL-3.0.
+    """
+    dest = dest_name.replace("\\", "/").lower()
+    return ("/plugins/tls/" in dest
+            or "virtualkeyboard" in dest
+            or dest.split("/")[-1] in ("libssl-3-x64.dll", "libcrypto-3-x64.dll"))
+
+
+a.binaries = [entry for entry in a.binaries if not _unused_qt_plugin(entry[0])]
 
 pyz = PYZ(a.pure)
 

@@ -69,6 +69,8 @@ guide lists every change.
 - A mission whose first phase is not a `ground_roll` fails with a clear
   message instead of `cannot convert float NaN to integer`.
 - The stated accuracy of the gravity model's height correction.
+- The downloadable app leaves out the Qt modules it does not use, some of
+  which Qt offers only under the GPL-3.0, so the downloads are smaller.
 
 ## [0.2.0] - 2026-07-22
 
