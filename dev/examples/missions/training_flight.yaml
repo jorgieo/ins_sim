@@ -1,0 +1,56 @@
+name: BQN Training Flight
+
+# A half-hour flight from Rafael Hernández Airport (BQN), Puerto Rico: climb
+# to 8,000 ft, two turns in a holding pattern off the north coast, then a
+# descent to 3,000 ft and a low-level leg east along the coast.
+
+departure:
+  lat_deg:  18.4949
+  lon_deg: -67.1294
+  alt_ft:   237.0              # runway elevation
+  nav_bank_angle_deg: 25.0     # bank angle for the turns onto each leg
+
+simulation_time:
+  dt_s: 0.1                    # used only when a script gives no time step
+
+phases:
+
+  - type:           ground_roll  # from rest to lift-off speed
+    heading_deg:    82.0
+    run_length_m:   1800.0
+    speed_final_kt: 150.0
+
+  - type:        takeoff         # rotate to 10° pitch while accelerating
+    heading_deg: 82.0
+    pitch_deg:   10.0
+    speed_kt:    220.0
+    duration_s:  20.0
+
+  - type:           climb        # straight ahead to cruise altitude
+    pitch_deg:      8.0
+    speed_kt:       220.0
+    to_altitude_ft: 8000.0
+
+  - type:     waypoint           # hold off the north coast
+    lat_deg:  18.80
+    lon_deg:  -66.70
+    alt_ft:   8000.0
+    speed_kt: 240.0
+    loiter:
+      n_turns:        2
+      bank_angle_deg: 25.0
+      direction:      left
+
+  - type:         speed_ramp
+    speed_end_kt: 280.0
+    duration_s:   30.0
+
+  - type:     waypoint           # descend to 3,000 ft on the way
+    lat_deg:  18.75
+    lon_deg:  -66.20
+    alt_ft:   3000.0
+
+  - type:     waypoint           # low-level leg east along the coast
+    lat_deg:  18.55
+    lon_deg:  -65.80
+    alt_ft:   3000.0

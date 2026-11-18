@@ -1,3 +1,12 @@
+/* Material lets inline code break anywhere, which splits YAML keys and
+   Python names in narrow table columns (ground_rol|l). Keep each name
+   whole: lines still break at spaces, and a table too wide for the page
+   scrolls sideways. */
+.md-typeset td code {
+  word-break: normal;
+  overflow-wrap: normal;
+}
+
 /* Diagrams drawn as inline SVG (includes/diagrams/*.svg, included into a
    page inside a <figure class="ins-figure">). They take their colours from
    the Material theme's variables, so they follow the light and dark

@@ -9,7 +9,39 @@
          <lastmod>2026-11-18</lastmod>
     </url>
     <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/get-started/first-run/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/get-started/first-script/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/guide/cli/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/guide/imu-specs/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/guide/missions/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/guide/recipes/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/guide/results/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/project/migrating-from-0.2/</loc>
          <lastmod>2026-11-18</lastmod>
     </url>
     <url>
@@ -18,6 +50,18 @@
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/glossary/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/reference/imu-yaml/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/reference/mission-yaml/</loc>
+         <lastmod>2026-11-18</lastmod>
+    </url>
+    <url>
+         <loc>https://jorgieo.github.io/ins_sim/dev/reference/units-constants/</loc>
          <lastmod>2026-11-18</lastmod>
     </url>
     <url>
