@@ -5,7 +5,7 @@ All notable changes to ins_sim. The format follows
 numbers [Semantic Versioning](https://semver.org/): before 1.0, a new minor
 version may change the API.
 
-## [0.3.0] - 2026-11-18
+## [0.3.0] - 2026-11-19
 
 Version 0.3.0 adopts the notation of Groves, *Principles of GNSS, Inertial,
 and Multisensor Integrated Navigation Systems* (2nd ed., 2013), in the code
