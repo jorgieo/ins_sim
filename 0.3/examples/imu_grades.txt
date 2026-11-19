@@ -1,0 +1,5 @@
+CEP of 10 trials on the training flight
+IMU grade        1 min     5 min    10 min    25 min
+Navigation         2 m      31 m     120 m     685 m
+Tactical          22 m     534 m    2.9 km   27.6 km
+MEMS             189 m    8.5 km   50.3 km  457.8 km

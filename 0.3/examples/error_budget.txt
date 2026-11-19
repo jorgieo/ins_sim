@@ -1,0 +1,8 @@
+CEP after 27 min, each source on its own
+  Initial alignment                        428 m
+  Gyro biases                              487 m
+  Gyro scale factor and misalignment       233 m
+  Accelerometer biases                     120 m
+  Accel. scale factor and misalignment     168 m
+  Sensor noise (ARW and VRW)               136 m
+  All sources together                     799 m

@@ -1,0 +1,2646 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source desktop simulation engine for IMU trajectory generation and Monte Carlo navigation error evaluation">
+      
+      
+      
+        <link rel="canonical" href="https://jorgieo.github.io/ins_sim/0.3/theory/earth-gravity/">
+      
+      
+        <link rel="prev" href="../frames-attitude/">
+      
+      
+        <link rel="next" href="../truth-kinematics/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Earth & gravity - Inertial Navigation Simulation & GUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#earth-gravity" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-header__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Inertial Navigation Simulation & GUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Earth & gravity
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../download/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Theory & Math
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../validation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Validation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-nav__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Inertial Navigation Simulation & GUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading the results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing a mission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/imu-specs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelling an IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-line runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory & Math
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-ellipsoid-and-the-radii-of-curvature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The ellipsoid and the radii of curvature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#earth-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Earth rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transport-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gravity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gravity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/earth-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/trajectory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/sensors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/mission-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mission YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/imu-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU spec YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/units-constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Units & constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/bibliography/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bibliography
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/migrating-from-0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-ellipsoid-and-the-radii-of-curvature" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The ellipsoid and the radii of curvature
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#earth-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Earth rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#transport-rate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Transport rate
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#gravity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Gravity
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="earth-gravity">Earth &amp; gravity<a class="headerlink" href="#earth-gravity" title="Permanent link">&para;</a></h1>
+<p>The navigator works on a rotating, slightly flattened Earth. Three of the
+Earth's properties enter the navigation equations:</p>
+<ul>
+<li>its <strong>shape</strong>, which sets how many metres a change in latitude or
+  longitude is;</li>
+<li>its <strong>rotation</strong>, which the gyros sense and the navigator must remove;</li>
+<li>its <strong>gravity</strong>, which accelerometers cannot sense, so the navigator must
+  add it back.</li>
+</ul>
+<p>ins_sim takes all three from the <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> model. Gravity matters most: to the
+navigator, an error in the gravity model looks exactly like an accelerometer
+bias.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Key results</p>
+<ul>
+<li>Position is curvilinear: latitude <span class="arithmatex">\(L_b\)</span>, longitude <span class="arithmatex">\(\lambda_b\)</span> and
+  height <span class="arithmatex">\(h_b\)</span>. Two radii of curvature turn their rates into metres:
+  the meridian radius <span class="arithmatex">\(R_N\)</span> for north-south motion and the transverse
+  radius <span class="arithmatex">\(R_E\)</span> for east-west motion.</li>
+<li>Earth rate (15.04 °/h) and the transport rate of an aircraft
+  (8 °/h at 250 m/s) are of the same size, and the navigator accounts
+  for both every step.</li>
+<li>Gravity is Somigliana normal gravity with a linear height correction.
+  Below 10 km it is within 14 µg of the full <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> formula.</li>
+<li>Gravity weakens by about 314 µg for every kilometre of height. That
+  gradient is what makes the <a href="../vertical-channel/">vertical channel</a>
+  unstable.</li>
+</ul>
+</div>
+<h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
+<figure class="ins-figure">
+<svg viewBox="0 0 620 380" role="img" aria-labelledby="ellipsoid-title" xmlns="http://www.w3.org/2000/svg">
+<title id="ellipsoid-title">A meridian section of the ellipsoid, showing geodetic latitude, height and the transverse radius of curvature</title>
+<ellipse class="body-fill" cx="240" cy="200" rx="170" ry="140"/>
+<text class="muted" x="52" y="96">Ellipsoid</text>
+<line class="stroke-thin" x1="240" y1="40" x2="240" y2="365"/>
+<text class="muted" x="248" y="52">Polar axis</text>
+<line class="stroke-thin dashed" x1="50" y1="200" x2="440" y2="200"/>
+<text class="muted" x="448" y="205">Equatorial plane</text>
+<circle class="dot" cx="240" cy="200" r="2.5"/>
+<line class="stroke" x1="371.2" y1="111" x2="240" y2="242.2"/>
+<circle class="dot" cx="240" cy="242.2" r="3"/>
+<text x="292" y="165" text-anchor="end">R<tspan dy="4" font-size="11">E</tspan></text>
+<path class="stroke-accent" d="M 310.2 200 A 28 28 0 0 0 302 180.2"/>
+<text class="accent" x="316" y="191">L<tspan dy="4" font-size="11">b</tspan></text>
+<line class="stroke-accent" x1="399.5" y1="82.7" x2="371.2" y2="111"/>
+<text class="accent" x="397" y="113">h<tspan dy="4" font-size="11">b</tspan></text>
+<circle class="dot" cx="371.2" cy="111" r="3"/>
+<circle class="dot" cx="399.5" cy="82.7" r="5"/>
+<text x="410" y="80">body, b</text>
+</svg>
+
+<figcaption>A meridian section of the ellipsoid, with the flattening exaggerated. The geodetic latitude L<sub>b</sub> is the angle between the equatorial plane and the normal to the ellipsoid, and the height h<sub>b</sub> is measured along that normal. The normal meets the polar axis a distance R<sub>E</sub> from the surface.</figcaption>
+</figure>
+
+<p>The Earth is modelled as an ellipsoid of revolution whose equatorial radius
+is 21 km longer than its polar radius. Position on it is <strong>curvilinear</strong>: the
+geodetic latitude is the angle the local vertical, the normal to the
+ellipsoid, makes with the equatorial plane. That normal misses the Earth's
+centre except at the equator and the poles, so geodetic latitude differs
+slightly from the angle seen from the centre.</p>
+<p>Because the surface is curved differently in different directions, a metre
+of northward travel and a metre of eastward travel change latitude and
+longitude by different amounts. Two <strong>radii of curvature</strong> capture this:</p>
+<ul>
+<li>the <strong>meridian</strong> radius <span class="arithmatex">\(R_N\)</span> is the radius of the circle that best fits
+  the north-south meridian at that point;</li>
+<li>the <strong>transverse</strong> radius <span class="arithmatex">\(R_E\)</span>, at right angles to it, is the distance
+  along the normal from the surface to the polar axis, as drawn above.</li>
+</ul>
+<p>From the equator to the poles <span class="arithmatex">\(R_N\)</span> grows by 1% and <span class="arithmatex">\(R_E\)</span> by 0.3%,
+until the two are equal at the poles.</p>
+<h2 id="continuous-time-model">Continuous-time model<a class="headerlink" href="#continuous-time-model" title="Permanent link">&para;</a></h2>
+<h3 id="the-ellipsoid-and-the-radii-of-curvature">The ellipsoid and the radii of curvature<a class="headerlink" href="#the-ellipsoid-and-the-radii-of-curvature" title="Permanent link">&para;</a></h3>
+<table>
+<thead>
+<tr>
+<th>Constant</th>
+<th>Symbol</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Equatorial radius (semi-major axis)</td>
+<td><span class="arithmatex">\(R_0\)</span></td>
+<td>6,378,137.0 m</td>
+</tr>
+<tr>
+<td>Flattening</td>
+<td><span class="arithmatex">\(f\)</span></td>
+<td>1 / 298.257223563</td>
+</tr>
+<tr>
+<td>Eccentricity squared</td>
+<td><span class="arithmatex">\(e^2 = f\,(2 - f)\)</span></td>
+<td>6.69437999 × 10⁻³</td>
+</tr>
+<tr>
+<td>Earth rotation rate</td>
+<td><span class="arithmatex">\(\omega_{ie}\)</span></td>
+<td>7.2921151467 × 10⁻⁵ rad/s</td>
+</tr>
+</tbody>
+</table>
+<div class="arithmatex">\[
+R_N = \frac{R_0\,(1 - e^2)}{\left(1 - e^2\sin^2 L_b\right)^{3/2}},
+\qquad
+R_E = \frac{R_0}{\sqrt{1 - e^2\sin^2 L_b}}
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(R_N\)</span> and <span class="arithmatex">\(R_E\)</span> are the meridian and transverse radii of curvature [m];</li>
+<li><span class="arithmatex">\(L_b\)</span> is the geodetic latitude of the body [rad].</li>
+</ul>
+<p>The curvilinear position then changes with the velocity
+<span class="arithmatex">\(\vvec{eb}{n} = (v_N, v_E, v_D)\)</span> as</p>
+<div class="arithmatex">\[
+\dot L_b = \frac{v_N}{R_N + h_b},
+\qquad
+\dot\lambda_b = \frac{v_E}{(R_E + h_b)\cos L_b},
+\qquad
+\dot h_b = -v_D
+\]</div>
+<p>where <span class="arithmatex">\(\lambda_b\)</span> is the longitude [rad], <span class="arithmatex">\(h_b\)</span> the height above the
+ellipsoid [m], and <span class="arithmatex">\(v_N\)</span>, <span class="arithmatex">\(v_E\)</span>, <span class="arithmatex">\(v_D\)</span> the North, East and Down
+velocity [m/s].</p>
+<h3 id="earth-rate">Earth rate<a class="headerlink" href="#earth-rate" title="Permanent link">&para;</a></h3>
+<p>The Earth's rotation, seen from the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame, points along the polar axis:
+north and up.</p>
+<div class="arithmatex">\[
+\wvec{ie}{n} = \omega_{ie}
+\begin{bmatrix} \cos L_b \\ 0 \\ -\sin L_b \end{bmatrix}
+\]</div>
+<p>where <span class="arithmatex">\(\wvec{ie}{n}\)</span> is the angular rate of the Earth frame relative to
+inertial space, resolved in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> [rad/s]. At the equator it lies along North;
+at the poles it is vertical.</p>
+<h3 id="transport-rate">Transport rate<a class="headerlink" href="#transport-rate" title="Permanent link">&para;</a></h3>
+<p>To stay level and pointing north while the vehicle moves over the curved
+Earth, the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame has to turn. Its angular rate relative to the Earth is
+the <strong>transport rate</strong>:</p>
+<div class="arithmatex">\[
+\wvec{en}{n} =
+\begin{bmatrix}
+\dfrac{v_E}{R_E + h_b} \\[2ex]
+\dfrac{-v_N}{R_N + h_b} \\[2ex]
+\dfrac{-v_E\tan L_b}{R_E + h_b}
+\end{bmatrix}
+\]</div>
+<p>where <span class="arithmatex">\(\wvec{en}{n}\)</span> is the angular rate of the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame relative to the
+Earth frame, resolved in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> [rad/s]. Flying north pitches the frame
+nose-down about East. Flying east rolls it about North and also turns it
+about Down, because the meridians converge towards the poles. An aircraft
+flying east at 250 m/s at 45° N turns its <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame at 8.1 °/h about North
+and about Down, nearly as fast as the Earth's rotation turns it (10.6 °/h
+about each).</p>
+<h3 id="gravity">Gravity<a class="headerlink" href="#gravity" title="Permanent link">&para;</a></h3>
+<p>An accelerometer measures <strong>specific force</strong>: its acceleration relative to
+inertial space, minus the gravitational acceleration it is falling under. At
+rest on the ground it reads 1 g upwards: the push of the ground holding it
+up. The navigator recovers acceleration by adding back the
+<strong>acceleration due to gravity</strong> <span class="arithmatex">\(\gvec{b}{n}\)</span>: gravitation combined with
+the centrifugal effect of the Earth's rotation, which is what a plumb line
+feels. For the <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> ellipsoid this <em>normal</em> gravity points along the
+normal, so in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> it has a Down component only.</p>
+<p>At the surface, the Somigliana formula gives its magnitude:</p>
+<div class="arithmatex">\[
+g_0(L_b) = g_e\,\frac{1 + k\sin^2 L_b}{\sqrt{1 - e^2\sin^2 L_b}}
+\]</div>
+<p>and ins_sim reduces it with height by the linear free-air correction:</p>
+<div class="arithmatex">\[
+g(L_b, h_b) = g_0(L_b)\left(1 - \frac{2h_b}{R_0}\right),
+\qquad
+\gvec{b}{n} = \begin{bmatrix} 0 \\ 0 \\ g(L_b, h_b) \end{bmatrix}
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(g_e = 9.7803253359\)</span> m/s² is normal gravity at the equator;</li>
+<li><span class="arithmatex">\(k = 1.93185265241 \times 10^{-3}\)</span> is the Somigliana constant of <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr>;</li>
+<li><span class="arithmatex">\(g(L_b, h_b)\)</span> is the magnitude of gravity at the body [m/s²], from
+  9.780 m/s² at the equator to 9.832 m/s² at the poles at sea level.</li>
+</ul>
+<p>The height correction implies a gravity gradient of</p>
+<div class="arithmatex">\[
+\frac{\partial g}{\partial h_b} \approx -\frac{2g}{R_0}
+\approx -3.08 \times 10^{-6}~\text{s}^{-2},
+\]</div>
+<p>about 314 µg weaker for every kilometre of height. A navigator that thinks
+it is too high therefore computes too little gravity, which pushes it higher
+still: the instability of the <a href="../vertical-channel/">vertical channel</a>.</p>
+<h2 id="as-implemented">As implemented<a class="headerlink" href="#as-implemented" title="Permanent link">&para;</a></h2>
+<p><strong>Radii of curvature.</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Equation</label><label for="__tabbed_1_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+R_N = \frac{R_0\,(1 - e^2)}{\left(1 - e^2\sin^2 L_b\right)^{3/2}},
+\qquad
+R_E = \frac{R_0}{\sqrt{1 - e^2\sin^2 L_b}}
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">sin2_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="n">den</span>    <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">WGS84_E2</span> <span class="o">*</span> <span class="n">sin2_L</span><span class="p">)</span>
+<span class="n">R_E</span>    <span class="o">=</span> <span class="n">WGS84_A</span> <span class="o">/</span> <span class="n">den</span>                                    <span class="c1"># transverse radius</span>
+<span class="n">R_N</span>    <span class="o">=</span> <span class="n">WGS84_A</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">WGS84_E2</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">den</span> <span class="o">**</span> <span class="mi">3</span><span class="p">)</span>          <span class="c1"># meridian radius</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>Earth rate.</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Equation</label><label for="__tabbed_2_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\wvec{ie}{n} = \omega_{ie}\begin{bmatrix} \cos L_b &amp; 0 &amp; -\sin L_b \end{bmatrix}^{\mathsf T}
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">(</span>
+    <span class="p">[</span><span class="n">WGS84_OMEGA</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">),</span> <span class="n">zeros</span><span class="p">,</span> <span class="o">-</span><span class="n">WGS84_OMEGA</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">L_b</span><span class="p">)],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>Transport rate.</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Equation</label><label for="__tabbed_3_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\wvec{en}{n} =
+\begin{bmatrix}
+\dfrac{v_E}{R_E + h_b} &amp; \dfrac{-v_N}{R_N + h_b} &amp; \dfrac{-v_E\tan L_b}{R_E + h_b}
+\end{bmatrix}^{\mathsf T}
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">stack</span><span class="p">([</span>
+     <span class="n">v_E</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">),</span>
+    <span class="o">-</span><span class="n">v_N</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">),</span>
+    <span class="o">-</span><span class="n">v_E</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">),</span>
+<span class="p">],</span> <span class="n">axis</span><span class="o">=-</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>Gravity.</strong></p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Equation</label><label for="__tabbed_4_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+g(L_b, h_b) = g_e\,\frac{1 + k\sin^2 L_b}{\sqrt{1 - e^2\sin^2 L_b}}
+\left(1 - \frac{2h_b}{R_0}\right)
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">sin2_L</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span> <span class="o">**</span> <span class="mi">2</span>
+<span class="n">g0</span>  <span class="o">=</span> <span class="n">g_e</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">+</span> <span class="n">k</span> <span class="o">*</span> <span class="n">sin2_L</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">WGS84_E2</span> <span class="o">*</span> <span class="n">sin2_L</span><span class="p">)</span>
+<span class="c1"># Linear free-air correction: dg/dh ≈ −2g/R_0 near the surface</span>
+<span class="k">return</span> <span class="n">g0</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="mf">2.0</span> <span class="o">*</span> <span class="n">h_b</span> <span class="o">/</span> <span class="n">WGS84_A</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Compared with Groves (2013)</p>
+<p>The radii of curvature, Earth rate, transport rate and the Somigliana
+surface gravity are the same as in Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup>. Groves' <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> gravity
+model keeps the full height dependence, including terms in the
+flattening and the Earth's rotation, and a small North component that
+grows with height, under 1 µg per kilometre. ins_sim keeps only the
+linear height term, and the Down component.</p>
+</div>
+<h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
+<p><img alt="Gravity error of the linear free-air model against the full WGS-84 formula, from 0 to 15 km at 0°, 45° and 90° latitude" src="../../assets/theory/gravity_model.png" /></p>
+<p>The difference between ins_sim's gravity and the full <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> normal-gravity
+formula, which adds the flattening and rotation terms and a
+second-order height term. At 10 km it ranges from +14 µg at the equator
+to −7 µg at the poles. At the packaged mission's cruise height, 15,000 ft
+at 18.5° N, it is about +7 µg: comparable to the bias of a
+navigation-grade accelerometer. The truth generator and the navigator use
+the same model, though, so the approximation has no effect on the simulated
+navigation errors. It would matter only when comparing against real data or
+another simulator.</p>
+<p>Two checks on the <a href="../../validation/">Validation</a> page depend on this
+model: the <a href="../../validation/#schuler-oscillation">Schuler period</a>,
+set by <span class="arithmatex">\(g\)</span> and <span class="arithmatex">\(R_E\)</span>, and the
+<a href="../../validation/#vertical-channel">vertical-channel time constant</a>,
+set by the gravity gradient.</p>
+<h2 id="assumptions-limitations">Assumptions &amp; limitations<a class="headerlink" href="#assumptions-limitations" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Assumptions &amp; limitations</p>
+<ul>
+<li><strong>Normal gravity only.</strong> Real gravity departs from the ellipsoid's
+  normal gravity: typically by tens of µg in magnitude, and by a few
+  arcseconds in direction (the deflection of the vertical), more over
+  mountains. A real <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> that uses a normal-gravity model sees these
+  departures as accelerometer-bias errors. ins_sim's truth uses the
+  same model as its navigator, so they never appear.</li>
+<li><strong>Linear height correction</strong>, as in the figure above, and no North
+  component of gravity.</li>
+<li><strong>No geoid.</strong> Heights are above the ellipsoid; mission altitudes
+  given above mean sea level are used as ellipsoidal height (see
+  <a href="../notation/#position-earth-shape-and-gravity">Notation &amp; conventions</a>).</li>
+<li><strong>Not over the poles.</strong> The transport rate contains <span class="arithmatex">\(\tan L_b\)</span>, and
+  the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame is undefined at the poles. Navigators that cross them use
+  other frames, such as wander-azimuth axes, which ins_sim does not
+  implement.</li>
+<li>The Earth rotation rate is the value of the GPS interface
+  specification, 7.2921151467 × 10⁻⁵ rad/s. The <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> standard rounds it
+  to 7.292115 × 10⁻⁵ rad/s; the difference is negligible.</li>
+</ul>
+</div>
+<h2 id="in-the-code">In the code<a class="headerlink" href="#in-the-code" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Equation</th>
+<th>Implemented in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ellipsoid constants</td>
+<td><span class="arithmatex">\(R_0\)</span>, <span class="arithmatex">\(f\)</span>, <span class="arithmatex">\(e^2\)</span>, <span class="arithmatex">\(\omega_{ie}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;WGS84_A&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.WGS84_A"><code>WGS84_A</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;WGS84_F&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.WGS84_F"><code>WGS84_F</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;WGS84_E2&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.WGS84_E2"><code>WGS84_E2</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;WGS84_OMEGA&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.WGS84_OMEGA"><code>WGS84_OMEGA</code></a></td>
+</tr>
+<tr>
+<td>Radii of curvature</td>
+<td><span class="arithmatex">\(R_N\)</span>, <span class="arithmatex">\(R_E\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;wgs84_radii&lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.wgs84_radii"><code>wgs84_radii</code></a></td>
+</tr>
+<tr>
+<td>Earth rate</td>
+<td><span class="arithmatex">\(\wvec{ie}{n}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;earth_rate_n&lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.earth_rate_n"><code>earth_rate_n</code></a></td>
+</tr>
+<tr>
+<td>Transport rate</td>
+<td><span class="arithmatex">\(\wvec{en}{n}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;transport_rate_n&lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.transport_rate_n"><code>transport_rate_n</code></a></td>
+</tr>
+<tr>
+<td>Gravity</td>
+<td><span class="arithmatex">\(g(L_b, h_b)\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;normal_gravity&lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.normal_gravity"><code>normal_gravity</code></a></td>
+</tr>
+<tr>
+<td>Curvilinear position rates</td>
+<td><span class="arithmatex">\(\dot L_b\)</span>, <span class="arithmatex">\(\dot\lambda_b\)</span>, <span class="arithmatex">\(\dot h_b\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;strapdown_navgrade&lt;/span&gt;" href="../../reference/api/navigation/#ins_sim.navigation.strapdown.strapdown_navgrade"><code>strapdown_navgrade</code></a> and <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory"><code>TruthTrajectory</code></a>, integrated each step</td>
+</tr>
+</tbody>
+</table>
+<p>This example tabulates the radii and surface gravity from the equator to the
+pole, the gravity gradient, and the Earth and transport rates of an aircraft
+at 45° N:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Script</label><label for="__tabbed_5_2">Output</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="sd">"""The WGS-84 Earth model: radii of curvature, gravity, Earth rate and transport rate."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.core.earth_model</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span><span class="n">earth_rate_n</span><span class="p">,</span> <span class="n">normal_gravity</span><span class="p">,</span>
+                                      <span class="n">transport_rate_n</span><span class="p">,</span> <span class="n">wgs84_radii</span><span class="p">)</span>
+
+<span class="n">DEG_PER_HOUR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">*</span> <span class="mf">3600.0</span>     <span class="c1"># converts rad/s to °/h</span>
+<span class="n">MICRO_G</span> <span class="o">=</span> <span class="mf">9.80665e-6</span>                        <span class="c1"># 1 µg in m/s²</span>
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">floatmode</span><span class="o">=</span><span class="s2">"fixed"</span><span class="p">)</span>
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Latitude   R_N [km]   R_E [km]   g at h_b = 0 [m/s²]"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">lat_deg</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">30</span><span class="p">,</span> <span class="mi">45</span><span class="p">,</span> <span class="mi">60</span><span class="p">,</span> <span class="mi">90</span><span class="p">):</span>
+    <span class="n">L_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat_deg</span><span class="p">)</span>
+    <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">lat_deg</span><span class="si">:</span><span class="s2">7d</span><span class="si">}</span><span class="s2">°  </span><span class="si">{</span><span class="n">R_N</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e3</span><span class="si">:</span><span class="s2">9.3f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">R_E</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mf">1e3</span><span class="si">:</span><span class="s2">9.3f</span><span class="si">}</span><span class="s2">  </span><span class="si">{</span><span class="n">normal_gravity</span><span class="p">(</span><span class="n">L_b</span><span class="p">,</span><span class="w"> </span><span class="mf">0.0</span><span class="p">)</span><span class="si">:</span><span class="s2">12.6f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+<span class="c1"># Gravity weakens with height, by about 2g/R_0 per metre.</span>
+<span class="n">L_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mf">45.0</span><span class="p">)</span>
+<span class="n">weaker</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">L_b</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">L_b</span><span class="p">,</span> <span class="mf">1000.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="se">\n</span><span class="s2">At 45° N, gravity 1 km up is </span><span class="si">{</span><span class="n">weaker</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">MICRO_G</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> µg weaker"</span><span class="p">)</span>
+
+<span class="c1"># Earth rate, and the transport rate of an aircraft flying east at 250 m/s</span>
+<span class="c1"># and 4572 m: the two are of the same size.</span>
+<span class="n">omega_ie_n</span> <span class="o">=</span> <span class="n">earth_rate_n</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span>
+<span class="n">omega_en_n</span> <span class="o">=</span> <span class="n">transport_rate_n</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">250.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="n">L_b</span><span class="p">,</span> <span class="mf">4572.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"At 45° N, in °/h:"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"  Earth rate omega_ie^n                "</span><span class="p">,</span> <span class="p">(</span><span class="n">omega_ie_n</span> <span class="o">*</span> <span class="n">DEG_PER_HOUR</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"  transport rate omega_en^n, 250 m/s E "</span><span class="p">,</span> <span class="p">(</span><span class="n">omega_en_n</span> <span class="o">*</span> <span class="n">DEG_PER_HOUR</span><span class="p">)</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.0</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Latitude   R_N [km]   R_E [km]   g at h_b = 0 [m/s²]
+      0°   6335.439   6378.137      9.780325
+     30°   6351.377   6383.481      9.793247
+     45°   6367.382   6388.838      9.806198
+     60°   6383.454   6394.209      9.819177
+     90°   6399.594   6399.594      9.832185
+
+At 45° N, gravity 1 km up is 314 µg weaker
+At 45° N, in °/h:
+  Earth rate omega_ie^n                 [ 10.636   0.000 -10.636]
+  transport rate omega_en^n, 250 m/s E  [ 8.066  0.000 -8.066]
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:groves">
+<p><a href="../../reference/bibliography/#groves2013">Groves (2013)</a>, Chapter 2,
+for the ellipsoid, curvilinear position, Earth rotation and gravity
+models. The <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> constants are defined in
+<a href="../../reference/bibliography/#nga2014">NGA (2014)</a>.&#160;<a class="footnote-backref" href="#fnref:groves" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

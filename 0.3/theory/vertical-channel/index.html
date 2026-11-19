@@ -1,0 +1,2465 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source desktop simulation engine for IMU trajectory generation and Monte Carlo navigation error evaluation">
+      
+      
+      
+        <link rel="canonical" href="https://jorgieo.github.io/ins_sim/0.3/theory/vertical-channel/">
+      
+      
+        <link rel="prev" href="../mechanization/">
+      
+      
+        <link rel="next" href="../error-model/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+    
+    
+      
+        <title>Vertical channel - Inertial Navigation Simulation & GUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#vertical-channel" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-header__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Inertial Navigation Simulation & GUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Vertical channel
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../download/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Theory & Math
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../validation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Validation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-nav__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Inertial Navigation Simulation & GUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading the results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing a mission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/imu-specs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelling an IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-line runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory & Math
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-free-inertial-instability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The free-inertial instability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-barometric-damping-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The barometric damping loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/earth-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/trajectory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/sensors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/mission-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mission YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/imu-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU spec YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/units-constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Units & constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/bibliography/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bibliography
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/migrating-from-0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-free-inertial-instability" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The free-inertial instability
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-barometric-damping-loop" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The barometric damping loop
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="vertical-channel">Vertical channel<a class="headerlink" href="#vertical-channel" title="Permanent link">&para;</a></h1>
+<p>Height is the one direction in which an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> cannot navigate on its own for
+long. Gravity weakens with height, so a navigator that believes it is
+higher than it is computes too little gravity. The resulting acceleration
+error pushes it higher still, and the error grows exponentially, with a
+time constant of under ten minutes. Every practical <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> therefore blends in
+a height measurement, usually from a barometric altimeter. ins_sim does
+this with a third-order damping loop, which is on by default. Untick
+<em>Baro altitude aiding</em> in the GUI to watch the free-inertial vertical
+channel diverge.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Key results</p>
+<ul>
+<li>Free-inertial, a height error grows as <span class="arithmatex">\(\sinh(t/\tau_v)\)</span>, with
+  <span class="arithmatex">\(\tau_v\)</span> = 573 s at the equator. A 1 m/s vertical-velocity error
+  becomes 6.6 km of height error in 30 minutes.</li>
+<li>The barometric loop places all three of its poles at <span class="arithmatex">\(-1/\tau\)</span>, with
+  <span class="arithmatex">\(\tau\)</span> = 100 s. The same 1 m/s error then causes a 23 m transient
+  that dies away within about 20 minutes.</li>
+<li>The loop's integrator cancels a constant vertical accelerometer bias.</li>
+<li>The barometer in ins_sim is ideal: it reports the true height. Aided
+  vertical errors are therefore optimistic.</li>
+</ul>
+</div>
+<h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    BARO["Barometric height&lt;br/&gt;h̃&lt;sub&gt;b&lt;/sub&gt;"] --&gt; SUM(("−"))
+    INS["INS height&lt;br/&gt;h&lt;sub&gt;b&lt;/sub&gt;"] --&gt; SUM
+    SUM --&gt;|"residual"| K1["K&lt;sub&gt;1&lt;/sub&gt;: correct the height"]
+    SUM --&gt; K2["K&lt;sub&gt;2&lt;/sub&gt;: correct the vertical velocity"]
+    SUM --&gt; K3["K&lt;sub&gt;3&lt;/sub&gt;: integrate into a&lt;br/&gt;vertical-acceleration correction"]</code></pre>
+<p>Without a height reference, the vertical channel is a positive feedback
+loop. A height error <span class="arithmatex">\(\delta h_b\)</span> makes the computed gravity wrong by the
+free-air gradient, <span class="arithmatex">\(-(2g/R_0)\,\delta h_b\)</span>: too weak if the navigator is
+too high. Too little gravity means a computed upward acceleration, which
+makes the height error grow faster.</p>
+<p>With a barometric altimeter, the navigator compares its height with the
+barometer's and feeds the difference back into three places: the height
+itself, the vertical velocity, and an integrator that learns any steady
+vertical-acceleration error, such as an accelerometer bias.</p>
+<h2 id="continuous-time-model">Continuous-time model<a class="headerlink" href="#continuous-time-model" title="Permanent link">&para;</a></h2>
+<h3 id="the-free-inertial-instability">The free-inertial instability<a class="headerlink" href="#the-free-inertial-instability" title="Permanent link">&para;</a></h3>
+<p>Linearizing the vertical velocity equation about the true trajectory gives
+the height error's dynamics:</p>
+<div class="arithmatex">\[
+\delta\ddot h_b = \left(\frac{2g}{R_0} - 4\,\omega_{ie}^2\cos^2 L_b\right)\delta h_b - \delta f_D
+= \frac{\delta h_b}{\tau_v^2} - \delta f_D
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(\delta h_b\)</span> is the height error [m] and <span class="arithmatex">\(\delta f_D\)</span> the error in the
+  Down specific force [m/s²];</li>
+<li><span class="arithmatex">\(R_0\)</span> is the equatorial radius [m] and <span class="arithmatex">\(\omega_{ie}\)</span> the Earth rotation
+  rate [rad/s];</li>
+<li><span class="arithmatex">\(\tau_v\)</span> is the time constant of the divergence [s].</li>
+</ul>
+<p>The first term is the gravity gradient. The second, much smaller, is
+Coriolis coupling: a vertical velocity error causes an East velocity error
+through the Earth's rotation, which in turn feeds back into the vertical.
+From a vertical velocity error <span class="arithmatex">\(\delta v_D(0)\)</span> and no other error,</p>
+<div class="arithmatex">\[
+\delta h_b(t) = -\delta v_D(0)\,\tau_v\sinh\frac{t}{\tau_v},
+\qquad
+\tau_v = \left(\frac{2g}{R_0} - 4\,\omega_{ie}^2\cos^2 L_b\right)^{-1/2}
+\approx 573~\text{s}
+\]</div>
+<p>and from a constant Down accelerometer bias <span class="arithmatex">\(b_D\)</span>,
+<span class="arithmatex">\(\delta h_b(t) = -b_D\,\tau_v^2\left(\cosh(t/\tau_v) - 1\right)\)</span>. Both
+grow by a factor of <span class="arithmatex">\(e\)</span> every 9.5 minutes.</p>
+<h3 id="the-barometric-damping-loop">The barometric damping loop<a class="headerlink" href="#the-barometric-damping-loop" title="Permanent link">&para;</a></h3>
+<p>Writing <span class="arithmatex">\(\tilde h_b\)</span> for the barometric height, the loop adds three
+corrections, driven by the residual <span class="arithmatex">\(r = h_b - \tilde h_b\)</span>:</p>
+<div class="arithmatex">\[
+\dot h_b = -v_D - K_1\,r,
+\qquad
+\dot v_D = \left(\dot v_D\right)_\text{inertial} + K_2\,r + a_c,
+\qquad
+\dot a_c = K_3\,r
+\]</div>
+<div class="arithmatex">\[
+K_1 = \frac{3}{\tau}, \qquad K_2 = \frac{3}{\tau^2}, \qquad K_3 = \frac{1}{\tau^3}
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(r\)</span> is the residual, <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height minus barometric height [m];</li>
+<li><span class="arithmatex">\(\left(\dot v_D\right)_\text{inertial}\)</span> is the Down component of the
+  velocity equation on <a href="../mechanization/">Strapdown mechanization</a> [m/s²];</li>
+<li><span class="arithmatex">\(a_c\)</span> is the integrator's vertical-acceleration correction [m/s²];</li>
+<li><span class="arithmatex">\(\tau\)</span> is the loop's time constant, 100 s by default [s].</li>
+</ul>
+<p>If the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> is too high (<span class="arithmatex">\(r &gt; 0\)</span>), the loop lowers its height directly
+through <span class="arithmatex">\(K_1\)</span>, commands a descent through <span class="arithmatex">\(K_2\)</span>, and slowly builds up a
+downward acceleration through <span class="arithmatex">\(K_3\)</span>. With an ideal barometer the
+residual is the height error itself, and the closed loop's error dynamics
+have the characteristic polynomial</p>
+<div class="arithmatex">\[
+s^3 + K_1 s^2 + \left(K_2 - \frac{2g}{R_0}\right)s + K_3 \approx \left(s + \frac{1}{\tau}\right)^3
+\]</div>
+<p>The gravity gradient <span class="arithmatex">\(2g/R_0\)</span> is only 1% of <span class="arithmatex">\(K_2\)</span> at <span class="arithmatex">\(\tau\)</span> = 100 s,
+so the three poles sit very close to <span class="arithmatex">\(-1/\tau\)</span>: critically damped, without
+oscillation. For a vertical velocity error <span class="arithmatex">\(\delta v_D(0)\)</span> the height
+error is then</p>
+<div class="arithmatex">\[
+\delta h_b(t) \approx -\delta v_D(0)\,t\,e^{-t/\tau}\left(1 - \frac{t}{2\tau}\right)
+\]</div>
+<p>which reaches <span class="arithmatex">\(-0.23\,\delta v_D(0)\,\tau\)</span> at <span class="arithmatex">\(t = 0.59\,\tau\)</span>, changes
+sign at <span class="arithmatex">\(t = 2\tau\)</span>, and overshoots by <span class="arithmatex">\(+0.08\,\delta v_D(0)\,\tau\)</span> at
+<span class="arithmatex">\(t = 3.4\,\tau\)</span>. A constant accelerometer bias leaves no steady height
+error: the integrator settles at <span class="arithmatex">\(a_c = -b_D\)</span>.</p>
+<h2 id="as-implemented">As implemented<a class="headerlink" href="#as-implemented" title="Permanent link">&para;</a></h2>
+<p><strong>1. Gains</strong>, set once from <code>baro_tau</code>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Equation</label><label for="__tabbed_1_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+K_1 = \frac{3}{\tau}, \qquad K_2 = \frac{3}{\tau^2}, \qquad K_3 = \frac{1}{\tau^3}
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># Third-order baro-damping gains: triple pole at -1/baro_tau for the</span>
+<span class="c1"># (height error, vertical-velocity error, accel-error integrator) loop.</span>
+<span class="k">if</span> <span class="n">meas_h_b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">K1</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="n">baro_tau</span>
+    <span class="n">K2</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="n">baro_tau</span> <span class="o">**</span> <span class="mi">2</span>
+    <span class="n">K3</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">baro_tau</span> <span class="o">**</span> <span class="mi">3</span>
+    <span class="n">acc_corr</span> <span class="o">=</span> <span class="mf">0.0</span>                 <span class="c1"># integral state [m/s²], → -δa_D</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>2. Vertical velocity and integrator.</strong> Inside the velocity update, the
+residual corrects the Down acceleration through <span class="arithmatex">\(K_2\)</span> and the
+integrator, and the integrator accumulates <span class="arithmatex">\(K_3\,r\)</span>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Equation</label><label for="__tabbed_2_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+v_{D,k+1} = v_{D,k} + \left[\left(\dot v_D\right)_\text{inertial} + K_2\,r_k + a_{c,k}\right]\tau_i,
+\qquad
+a_{c,k+1} = a_{c,k} + K_3\,r_k\,\tau_i
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># --- 5. Rotating-frame velocity update ------------------------</span>
+<span class="n">coriolis</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="n">v_eb_n_dot</span> <span class="o">=</span> <span class="n">f_ib_n</span> <span class="o">-</span> <span class="n">coriolis</span> <span class="o">+</span> <span class="n">g_b_n</span>
+<span class="c1"># Baro damping: the height residual corrects vertical velocity</span>
+<span class="c1"># (K2) and updates the accel-error integrator (K3); a positive</span>
+<span class="c1"># residual (INS high) commands positive Down velocity.</span>
+<span class="k">if</span> <span class="n">meas_h_b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">baro_residual</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">meas_h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+    <span class="n">v_eb_n_dot</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="n">K2</span> <span class="o">*</span> <span class="n">baro_residual</span> <span class="o">+</span> <span class="n">acc_corr</span>
+    <span class="n">acc_corr</span> <span class="o">+=</span> <span class="n">K3</span> <span class="o">*</span> <span class="n">baro_residual</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_eb_n_dot</span> <span class="o">*</span> <span class="n">tau_i</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>3. Height.</strong> Inside the position update, the residual corrects the height
+through <span class="arithmatex">\(K_1\)</span>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Equation</label><label for="__tabbed_3_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+h_{b,k+1} = h_{b,k} - v_{D,k}\,\tau_i - K_1\,r_k\,\tau_i
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># --- 6. Curvilinear position (forward Euler — matches truth) --</span>
+<span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span>
+                               <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">][</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="k">if</span> <span class="n">meas_h_b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">K1</span> <span class="o">*</span> <span class="n">baro_residual</span> <span class="o">*</span> <span class="n">tau_i</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Compared with Groves (2013)</p>
+<p>Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup> explains the vertical channel's instability and
+barometric height measurement, and combines sensors with Kalman
+filters. ins_sim instead uses a classical fixed-gain, third-order
+baro-inertial loop<sup id="fnref:tw"><a class="footnote-ref" href="#fn:tw">2</a></sup>, with its gains chosen to place a triple pole.</p>
+</div>
+<h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
+<p><img alt="Height error after a 1 m/s Down-velocity error, free-inertial and with an ideal barometer" src="../../assets/validation/vertical_channel.png" /></p>
+<p>A level <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> at rest at the equator, with a 1 m/s Down-velocity error and no
+other error. Free-inertial, the height error follows the <span class="arithmatex">\(\sinh\)</span>
+prediction, reaching 6.6 km after 30 minutes; its fitted time constant is
+within 0.1% of <span class="arithmatex">\(\tau_v\)</span>. With the barometric loop it peaks at 23 m and
+decays, as the closed form above predicts. Both are checks on the
+<a href="../../validation/#vertical-channel">Validation</a> page.</p>
+<h2 id="assumptions-limitations">Assumptions &amp; limitations<a class="headerlink" href="#assumptions-limitations" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Assumptions &amp; limitations</p>
+<ul>
+<li><strong>An ideal barometer.</strong> The aiding height is the true height, with no
+  noise, bias or lag. A real barometric altimeter's errors, from the
+  pressure setting and from non-standard temperature, typically amount
+  to tens of metres and would pass straight into the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height. The
+  aided vertical errors in ins_sim are therefore optimistic.</li>
+<li><strong>Fixed gains.</strong> The loop does not adapt to the quality of the
+  barometer; <span class="arithmatex">\(\tau\)</span> is fixed at 100 s in the GUI. The Python API
+  accepts other values through <code>baro_tau</code>.</li>
+<li><strong>Coupling neglected in the closed forms.</strong> The pole placement ignores
+  the gravity gradient and the Coriolis coupling with the East channel.
+  The simulation includes both, which is why it departs from the
+  closed form by about 1%.</li>
+</ul>
+</div>
+<h2 id="in-the-code">In the code<a class="headerlink" href="#in-the-code" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Equation</th>
+<th>Implemented in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Loop gains and corrections</td>
+<td><span class="arithmatex">\(K_1\)</span>, <span class="arithmatex">\(K_2\)</span>, <span class="arithmatex">\(K_3\)</span>, <span class="arithmatex">\(a_c\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;strapdown_navgrade&lt;/span&gt;" href="../../reference/api/navigation/#ins_sim.navigation.strapdown.strapdown_navgrade"><code>strapdown_navgrade</code></a>, arguments <code>meas_h_b</code> and <code>baro_tau</code></td>
+</tr>
+<tr>
+<td>Barometric height</td>
+<td><span class="arithmatex">\(\tilde h_b\)</span>, the true height</td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;run_monte_carlo&lt;/span&gt;" href="../../reference/api/evaluation/#ins_sim.evaluation.monte_carlo.run_monte_carlo"><code>run_monte_carlo</code></a>, argument <code>baro_aiding</code></td>
+</tr>
+<tr>
+<td>Gravity gradient</td>
+<td><span class="arithmatex">\(-2g/R_0\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;normal_gravity&lt;/span&gt;" href="../../reference/api/earth-model/#ins_sim.core.earth_model.normal_gravity"><code>normal_gravity</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>This example applies a 1 m/s Down-velocity error to a level <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> at rest at
+the equator and compares the simulated height error with both closed forms:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Script</label><label for="__tabbed_4_2">Output</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="sd">"""A 1 m/s Down-velocity error, free-inertial and with an ideal barometer."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.core.earth_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">WGS84_A</span><span class="p">,</span> <span class="n">WGS84_OMEGA</span><span class="p">,</span> <span class="n">earth_rate_n</span><span class="p">,</span> <span class="n">normal_gravity</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.navigation.strapdown</span><span class="w"> </span><span class="kn">import</span> <span class="n">NavState</span><span class="p">,</span> <span class="n">strapdown_navgrade</span>
+
+<span class="n">L_b</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">M</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mi">1801</span>                       <span class="c1"># 30 minutes at the equator</span>
+<span class="n">g</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">L_b</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+<span class="n">omega_ib_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">earth_rate_n</span><span class="p">(</span><span class="n">L_b</span><span class="p">),</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>      <span class="c1"># a level IMU at rest</span>
+<span class="n">f_ib_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">tile</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="o">-</span><span class="n">g</span><span class="p">],</span> <span class="p">(</span><span class="n">M</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">NavState</span><span class="p">(</span><span class="n">L_b</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">]),</span>   <span class="c1"># v_D wrong by 1 m/s</span>
+                 <span class="n">Rotation</span><span class="o">.</span><span class="n">identity</span><span class="p">()</span><span class="o">.</span><span class="n">as_quat</span><span class="p">())</span>
+
+<span class="n">free</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span><span class="n">omega_ib_b</span><span class="p">,</span> <span class="n">f_ib_b</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">)</span><span class="o">.</span><span class="n">h_b</span>
+<span class="n">aided</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span><span class="n">omega_ib_b</span><span class="p">,</span> <span class="n">f_ib_b</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">meas_h_b</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">))</span><span class="o">.</span><span class="n">h_b</span>
+
+<span class="n">tau_v</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">g</span> <span class="o">/</span> <span class="n">WGS84_A</span> <span class="o">-</span> <span class="mf">4.0</span> <span class="o">*</span> <span class="n">WGS84_OMEGA</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>   <span class="c1"># free-inertial</span>
+<span class="n">tau</span> <span class="o">=</span> <span class="mf">100.0</span>                                                       <span class="c1"># baro loop</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Free-inertial time constant tau_v = </span><span class="si">{</span><span class="n">tau_v</span><span class="si">:</span><span class="s2">.1f</span><span class="si">}</span><span class="s2"> s"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Height error [m]  free-inertial           baro-aided"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"t [min]           simulated  predicted    simulated  predicted"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">minutes</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">5</span><span class="p">,</span> <span class="mi">10</span><span class="p">,</span> <span class="mi">20</span><span class="p">,</span> <span class="mi">30</span><span class="p">):</span>
+    <span class="n">t</span> <span class="o">=</span> <span class="n">minutes</span> <span class="o">*</span> <span class="mf">60.0</span>
+    <span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">tau_i</span><span class="p">)</span>
+    <span class="n">predicted_free</span> <span class="o">=</span> <span class="o">-</span><span class="n">tau_v</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sinh</span><span class="p">(</span><span class="n">t</span> <span class="o">/</span> <span class="n">tau_v</span><span class="p">)</span>
+    <span class="n">predicted_aided</span> <span class="o">=</span> <span class="o">-</span><span class="n">t</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">t</span> <span class="o">/</span> <span class="n">tau</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">t</span> <span class="o">/</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">tau</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">minutes</span><span class="si">:</span><span class="s2">7d</span><span class="si">}</span><span class="s2">         </span><span class="si">{</span><span class="n">free</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="si">:</span><span class="s2">10.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">predicted_free</span><span class="si">:</span><span class="s2">10.1f</span><span class="si">}</span><span class="s2">"</span>
+          <span class="sa">f</span><span class="s2">"   </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">aided</span><span class="p">[</span><span class="n">k</span><span class="p">],</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.0</span><span class="si">:</span><span class="s2">10.1f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="nb">round</span><span class="p">(</span><span class="n">predicted_aided</span><span class="p">,</span><span class="w"> </span><span class="mi">1</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.0</span><span class="si">:</span><span class="s2">10.1f</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Free-inertial time constant tau_v = 573.0 s
+Height error [m]  free-inertial           baro-aided
+t [min]           simulated  predicted    simulated  predicted
+      2             -120.9     -120.9        -14.6      -14.5
+      5             -313.8     -313.9          7.6        7.5
+     10             -715.2     -715.8          3.0        3.0
+     20            -2287.4    -2290.8          0.0        0.0
+     30            -6604.7    -6615.5          0.0        0.0
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:groves">
+<p><a href="../../reference/bibliography/#groves2013">Groves (2013)</a>, Chapter 5
+for the instability of the vertical channel, and Chapter 6 for
+barometric height measurement.&#160;<a class="footnote-backref" href="#fnref:groves" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+<li id="fn:tw">
+<p><a href="../../reference/bibliography/#titterton2004">Titterton &amp; Weston (2004)</a>.&#160;<a class="footnote-backref" href="#fnref:tw" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>
