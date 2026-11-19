@@ -373,7 +373,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../project/migrating-from-0.2/" class="md-tabs__link">
+        <a href="../project/changelog/" class="md-tabs__link">
           
   
   
@@ -1804,6 +1804,8 @@
       
         
       
+        
+      
     
     
     
@@ -1846,6 +1848,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2072,10 +2102,15 @@ tar<span class="w"> </span>xzf<span class="w"> </span>ins_sim-vX.Y.Z-linux-aarch
 <div class="admonition note">
 <p class="admonition-title">Runtime requirements</p>
 <p>Bundles are built on Ubuntu 24.04, so a similarly recent glibc is
-required. Minimal installations may also need the Qt WebEngine system
-libraries:</p>
+required. Like other desktop apps, ins_sim uses your system's own
+libraries for graphics, fonts, sound and encryption, which a desktop
+installation already has. If the app stops with
+<code>error while loading shared libraries</code>, or the result tabs say a
+library failed to load, install the package that provides the library
+it names. Minimal installations, the ARM64 bundle and X11 sessions
+usually need these:</p>
 </div>
-<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libegl1<span class="w"> </span>libgl1<span class="w"> </span>libxkbcommon0<span class="w"> </span>libnss3<span class="w"> </span>libasound2t64
+<div class="highlight"><pre><span></span><code>sudo<span class="w"> </span>apt-get<span class="w"> </span>install<span class="w"> </span>libegl1<span class="w"> </span>libgl1<span class="w"> </span>libxkbcommon0<span class="w"> </span>libnss3<span class="w"> </span>libasound2t64<span class="w"> </span>libopus0<span class="w"> </span>libminizip1t64<span class="w"> </span>libsnappy1v5<span class="w"> </span>libxcb-cursor0
 </code></pre></div>
 <h3 id="raspberry-pi">Raspberry Pi<a class="headerlink" href="#raspberry-pi" title="Permanent link">&para;</a></h3>
 <p>The <strong>ARM64</strong> bundle (<code>ins_sim-vX.Y.Z-linux-aarch64.tar.gz</code>) is the one for a

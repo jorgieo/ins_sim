@@ -373,7 +373,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../project/migrating-from-0.2/" class="md-tabs__link">
+        <a href="../project/changelog/" class="md-tabs__link">
           
   
   
@@ -1679,6 +1679,8 @@
       
         
       
+        
+      
     
     
     
@@ -1721,6 +1723,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1988,8 +2018,9 @@ time with the final 95th-percentile error. If a file has a mistake, a
 <a href="missions/#when-a-mission-fails-to-load">Writing a mission</a> for the
 common ones.</p>
 <p>Every run uses the same random seed, 42, so the same files and settings
-always give the same results. Changing a setting changes the results only
-through that setting: see <a href="recipes/#compare-two-imus-fairly">Recipes</a>.</p>
+always give the same results. On the same mission and time step, changing
+the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec changes the results only through that change: see
+<a href="recipes/#compare-two-imus-fairly">Recipes</a>.</p>
 <h2 id="offline-use">Offline use<a class="headerlink" href="#offline-use" title="Permanent link">&para;</a></h2>
 <p>The app needs no network connection, except for the background tiles of
 the <strong>Map</strong> tab, which come from OpenStreetMap. Without a connection the

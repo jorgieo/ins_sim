@@ -17,9 +17,10 @@ k = int(np.searchsorted(truth.t, 75 * 60.0))
 print(f"t = {truth.t[k] / 60:2.0f} min, roll {np.rad2deg(roll[k]):4.1f}°: "
       f"f_ib^b = {truth.f_ib_b[k].round(3) + 0.0} m/s²")
 
-# In the most steeply banked turn the specific force tilts with the
-# aircraft, so it stays on the body z axis and grows to g / cos(roll).
-k = int(np.argmax(np.abs(roll)))
+# An hour in, the aircraft is in its most steeply banked turn. The specific
+# force tilts with the aircraft, so it stays on the body z axis and grows
+# to g / cos(roll).
+k = int(np.searchsorted(truth.t, 60 * 60.0))
 print(f"t = {truth.t[k] / 60:2.0f} min, roll {np.rad2deg(roll[k]):4.1f}°: "
       f"f_ib^b = {truth.f_ib_b[k].round(3) + 0.0} m/s²")
 print(f"g / cos(roll) = {truth.g[k] / np.cos(roll[k]):.3f} m/s²")

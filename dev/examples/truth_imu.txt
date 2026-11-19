@@ -1,4 +1,4 @@
 t = 75 min, roll  0.0°: f_ib^b = [ 0.000 -0.008 -9.782] m/s²
-t = 60 min, roll 30.0°: f_ib^b = [ -0.104   0.012 -11.260] m/s²
+t = 60 min, roll 30.0°: f_ib^b = [ -0.104   0.012 -11.259] m/s²
 g / cos(roll) = 11.281 m/s²
 Round trip reproduces the truth to within a micrometre: True

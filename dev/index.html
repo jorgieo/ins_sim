@@ -371,7 +371,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="project/migrating-from-0.2/" class="md-tabs__link">
+        <a href="project/changelog/" class="md-tabs__link">
           
   
   
@@ -497,6 +497,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#pick-your-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pick your path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -523,17 +534,6 @@
     <span class="md-ellipsis">
       
         Conventions in brief
-      
-    </span>
-  </a>
-  
-</li>
-      
-        <li class="md-nav__item">
-  <a href="#where-next" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Where next
       
     </span>
   </a>
@@ -1763,6 +1763,8 @@
       
         
       
+        
+      
     
     
     
@@ -1805,6 +1807,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -1868,6 +1898,17 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#pick-your-path" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Pick your path
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#core-features" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1900,17 +1941,6 @@
   
 </li>
       
-        <li class="md-nav__item">
-  <a href="#where-next" class="md-nav__link">
-    <span class="md-ellipsis">
-      
-        Where next
-      
-    </span>
-  </a>
-  
-</li>
-      
     </ul>
   
 </nav>
@@ -1935,74 +1965,107 @@
 <p><code>ins_sim</code> is an open-source <strong>6-DOF, <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> strapdown <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> Monte Carlo
 simulator</strong> with a desktop GUI. It generates a truth flight trajectory,
 derives the gyro and accelerometer outputs a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> would produce along
-it, corrupts them with a navigation-grade <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model, and runs a
-strapdown mechanization to recover position, velocity, and attitude. A Monte
-Carlo ensemble over independent noise realizations characterizes how
-navigation error grows over time for a given <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> grade.</p>
+it, corrupts them with the errors of a real <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, and runs a strapdown
+mechanization to recover position, velocity, and attitude. A Monte Carlo
+ensemble over independent draws of the sensor errors shows how navigation
+error grows over time for a given <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>.</p>
 <p><a class="md-button md-button--primary" href="download/">Download the app</a>
 <a class="md-button" href="https://github.com/jorgieo/ins_sim">View on GitHub</a></p>
+<h2 id="pick-your-path">Pick your path<a class="headerlink" href="#pick-your-path" title="Permanent link">&para;</a></h2>
+<div class="grid cards">
+<ul>
+<li>
+<p><strong>Run the app</strong></p>
+<hr />
+<p>Run the packaged mission in ten minutes, then fly your own missions
+with your own <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>.</p>
+<p><a href="get-started/first-run/">Your first simulation</a> ·
+<a href="guide/">User guide</a></p>
+</li>
+<li>
+<p><strong>Learn inertial navigation</strong></p>
+<hr />
+<p>How an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> works and why its errors grow, step by step in the notation
+of Groves (2013), next to the code that computes it.</p>
+<p><a href="theory/">Theory &amp; Math</a> ·
+<a href="validation/">Validation</a></p>
+</li>
+<li>
+<p><strong>Script it in Python</strong></p>
+<hr />
+<p>Run simulations from your own scripts: compare IMUs, budget the errors,
+or fly a trajectory of your own.</p>
+<p><a href="get-started/first-script/">Your first script</a> ·
+<a href="reference/api/">Python API</a></p>
+</li>
+<li>
+<p><strong>Upgrading from 0.2?</strong></p>
+<hr />
+<p>Version 0.3 renames the Python API, and its results differ from 0.2.</p>
+<p><a href="project/migrating-from-0.2/">Migrating from 0.2</a> ·
+<a href="project/changelog/">Changelog</a></p>
+</li>
+</ul>
+</div>
 <h2 id="core-features">Core features<a class="headerlink" href="#core-features" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Truth trajectory generation</strong> from <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> mission profiles — waypoint legs,
-  speed ramps, climbs, and turns, specified in conventional aviation units and
-  converted to strict SI internally.</li>
-<li><strong>Navigation-grade <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</strong>: angular/velocity random walk,
-  Gauss-Markov bias drift, turn-on bias repeatability, scale-factor and
-  misalignment errors, and initial-alignment errors, parameterized by a <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr>
-  datasheet spec.</li>
+<li><strong>Truth trajectories from <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> missions</strong>: take-off, climbs and
+  descents, waypoint legs, holding patterns and speed changes, written in
+  aviation units and converted to SI.</li>
+<li><strong>An <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model from the datasheet</strong>: angle and velocity random
+  walk, turn-on and in-run biases with the bias instability entered as
+  the datasheet gives it, scale-factor and misalignment errors, and
+  initial alignment errors.</li>
 <li><strong>Rotating-Earth strapdown mechanization</strong>: Earth rate, transport rate,
-  <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> radii of curvature, and Somigliana normal gravity evaluated at the
-  current latitude/altitude every step — not a flat-Earth approximation.</li>
-<li><strong>Vertical channel physics</strong>: a third-order baro-damped loop by default, or
-  free-inertial mode to observe the channel's inherent instability.</li>
-<li><strong>Monte Carlo evaluation</strong>: ensembles of independent noise realizations with
-  <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>, per-axis error bands, and percentile statistics.</li>
-<li><strong>Interactive visualizations</strong> — every tab is a plotly page rendered in-app:
-  <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> growth with a percentile table, attitude/velocity/position 3σ bands, a
-  3D trajectory with a 95th percentile error tube, and a ground-track map.</li>
+  <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> radii of curvature and normal gravity, evaluated at the current
+  position every step, not a flat-Earth approximation.</li>
+<li><strong>Vertical channel physics</strong>: a third-order baro-damped loop by default,
+  or free-inertial to watch the channel's instability.</li>
+<li><strong>Monte Carlo evaluation</strong>: independent error draws for every trial,
+  errors measured as the textbook defines them, and <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>, ±3σ and
+  percentile statistics.</li>
+<li><strong>Interactive visualizations</strong>: every tab is a plotly page rendered in
+  the app: <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> growth with an hourly table, attitude, velocity and
+  position errors with ±3σ bands, a 3D trajectory with its 95th-percentile
+  error tube, and a ground-track map.</li>
+<li><strong>Checked against the textbook</strong>: the Schuler oscillation, the bias
+  responses, the vertical channel and the noise statistics all match their
+  analytic predictions on the <a href="validation/">Validation</a> page.</li>
 </ul>
 <h2 id="architecture">Architecture<a class="headerlink" href="#architecture" title="Permanent link">&para;</a></h2>
-<p>Data flows from truth generation, through noise injection, into the strapdown
-navigator, and is summarized by the Monte Carlo / evaluation layer:</p>
+<p>Data flows from truth generation, through the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model, into the
+strapdown navigator, and is summarized by the Monte Carlo evaluation:</p>
 <pre class="mermaid"><code>flowchart TD
-    CFG["Config (YAML)&lt;br/&gt;trajectory + IMU spec"]
+    CFG["Config (YAML)&lt;br/&gt;mission + IMU spec"]
     TRUTH["Truth generation&lt;br/&gt;trajectory/kinematics.py"]
-    SENSOR["Noise addition&lt;br/&gt;sensors/imu.py"]
+    SENSOR["IMU error model&lt;br/&gt;sensors/imu.py"]
     NAV["Strapdown mechanization&lt;br/&gt;navigation/strapdown.py"]
     EVAL["Monte Carlo + plots&lt;br/&gt;evaluation/"]
     EARTH(["Earth model&lt;br/&gt;core/earth_model.py"])
 
     CFG --&gt; TRUTH
-    TRUTH --&gt;|"true ω, specific force"| SENSOR
-    SENSOR --&gt;|"measured ω, f (+ noise)"| NAV
-    NAV --&gt;|"pos, vel, attitude"| EVAL
+    TRUTH --&gt;|"ideal ω_ib^b, f_ib^b"| SENSOR
+    SENSOR --&gt;|"measured ω_ib^b, f_ib^b"| NAV
+    NAV --&gt;|"position, velocity, attitude"| EVAL
     EARTH -.-&gt;|"ω_ie, ω_en, g, R_N/R_E"| TRUTH
     EARTH -.-&gt; NAV</code></pre>
 <h2 id="conventions-in-brief">Conventions in brief<a class="headerlink" href="#conventions-in-brief" title="Permanent link">&para;</a></h2>
 <ul>
-<li><strong>Frames</strong>: local-level North-East-Down navigation frame (n) and a
-  vehicle-fixed body frame (b: x forward, y right, z down).</li>
-<li><strong>Attitude</strong>: scalar-last quaternion <code>[x, y, z, w]</code> representing the
-  body-to-<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> rotation, per the <code>scipy.spatial.transform.Rotation</code> convention.</li>
-<li><strong>Units</strong>: strict SI inside the simulation core; <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> configs use
-  conventional datasheet/aviation units (<code>deg</code>, <code>kt</code>, <code>ft</code>, <code>°/hr</code>, <code>µg</code>) and
-  are converted at load time.</li>
-</ul>
-<h2 id="where-next">Where next<a class="headerlink" href="#where-next" title="Permanent link">&para;</a></h2>
-<ul>
-<li><a href="download/">Download &amp; install</a> — grab the prebuilt app for Windows
-  (x86-64) or Linux (x86-64 / ARM64, including Raspberry Pi 4/5 on 64-bit OS).</li>
-<li><a href="get-started/first-run/">Your first simulation</a> — a ten-minute tour of
-  the app, from the first run to the results; or
-  <a href="get-started/first-script/">Your first script</a> for the same in Python.</li>
-<li><a href="guide/">User guide</a> — reading the results, writing missions,
-  modelling an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> from its datasheet, and recipes.</li>
-<li><a href="theory/">Theory &amp; Math</a> — the formulations behind the simulator.</li>
-<li><a href="validation/">Validation</a> — the simulator checked against textbook
-  results: the Schuler period, bias responses, the vertical channel and the
-  sensor noise statistics.</li>
-<li><a href="project/migrating-from-0.2/">Migrating from 0.2</a> — what changed in
-  version 0.3.</li>
+<li><strong>Notation</strong>: the symbols of Groves (2013), in these pages and in the
+  Python names. <code>v_eb_n</code> is <span class="arithmatex">\(\vvec{eb}{n}\)</span>, the velocity of the body (b)
+  relative to the Earth (e), resolved along North-East-Down axes (n).
+  <a href="theory/notation/">Notation &amp; conventions</a> defines every symbol.</li>
+<li><strong>Frames</strong>: the North-East-Down navigation frame (n) at the current
+  position, and the body frame (b): x forward, y right, z down.</li>
+<li><strong>Attitude</strong>: the body-to-<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> transformation <span class="arithmatex">\(\Cmat{b}{n}\)</span>, held as a
+  <code>scipy.spatial.transform.Rotation</code>. Quaternions are scalar-last,
+  <code>[x, y, z, w]</code>.</li>
+<li><strong>Radii of curvature</strong>: <span class="arithmatex">\(R_N\)</span> is the meridian radius and <span class="arithmatex">\(R_E\)</span> the
+  transverse one. Many texts use <span class="arithmatex">\(R_N\)</span> for the transverse radius.</li>
+<li><strong>Errors</strong>: always the estimate minus the truth.</li>
+<li><strong>Units</strong>: SI inside the simulator. The <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> files and the app use
+  datasheet and aviation units (degrees, feet, knots, °/h, µg), converted
+  when read; see <a href="reference/units-constants/">Units &amp; constants</a>.</li>
 </ul>
 
 

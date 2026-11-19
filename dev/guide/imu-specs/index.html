@@ -373,7 +373,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../project/migrating-from-0.2/" class="md-tabs__link">
+        <a href="../../project/changelog/" class="md-tabs__link">
           
   
   
@@ -1837,6 +1837,8 @@
       
         
       
+        
+      
     
     
     
@@ -1879,6 +1881,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2364,10 +2394,13 @@ and the bias instability the <em>in-run bias stability</em>.</p>
 <h3 id="scale-factor-and-misalignment">Scale factor and misalignment<a class="headerlink" href="#scale-factor-and-misalignment" title="Permanent link">&para;</a></h3>
 <p>A scale-factor error is a gain error: the sensor reads 100 <abbr title="Parts per million, 10⁻⁶: the unit of scale-factor errors.">ppm</abbr> high, say.
 A misalignment means the sensor's axes are not exactly at right angles to
-each other and to the body. Both errors are proportional to the motion, so
-they matter most in turns and accelerations, and vanish when the vehicle
-is still. Each trial draws a scale factor per axis and six independent
-misalignment angles, two for each pair of axes.</p>
+each other and to the body. Both errors are proportional to what the
+sensors measure, so they never vanish. At rest the accelerometers still
+measure gravity, and a misaligned one reads part of it along a horizontal
+axis: the packaged spec's 50 µrad reads 50 µg, as much as a bias. In
+flight the errors grow with the turn rates and accelerations, so they
+matter most in manoeuvres. Each trial draws a scale factor per axis and
+six independent misalignment angles, two for each pair of axes.</p>
 <h2 id="the-alignment-block">The alignment block<a class="headerlink" href="#the-alignment-block" title="Permanent link">&para;</a></h2>
 <p>Before it navigates, an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> works out its initial attitude, and the
 <code>alignment</code> block gives how far off that is. It has two values: the tilt

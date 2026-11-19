@@ -373,7 +373,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../project/migrating-from-0.2/" class="md-tabs__link">
+        <a href="../../project/changelog/" class="md-tabs__link">
           
   
   
@@ -1803,6 +1803,8 @@
       
         
       
+        
+      
     
     
     
@@ -1845,6 +1847,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2063,8 +2093,13 @@ underlying random numbers, scaled by each spec's values, so the difference
 between them comes from the specs, not from luck. This makes the
 <em>difference</em> between two specs much more precise than either result on its
 own, even with few trials.</p>
-<p>The same holds for any other setting, such as the alignment block or the
-mission. In a script, pass the same <code>seed</code> to <code>run_monte_carlo</code>.</p>
+<p>The same holds for any other change to the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec, such as the
+alignment block, as long as the mission and the time step stay the same.
+Changing either of those changes the number of samples, and with it the
+noise: each trial keeps its turn-on biases, scale factors, misalignments
+and alignment errors, but its noise is drawn afresh. Comparisons between
+missions therefore need more trials. In a script, pass the same <code>seed</code> to
+<code>run_monte_carlo</code>.</p>
 <h2 id="find-the-dominant-error-source">Find the dominant error source<a class="headerlink" href="#find-the-dominant-error-source" title="Permanent link">&para;</a></h2>
 <p>To find which error limits a navigator, run it with one group of errors at
 a time and compare. Each group draws exactly the same errors in these runs

@@ -373,7 +373,7 @@
     
     
       <li class="md-tabs__item">
-        <a href="../../project/migrating-from-0.2/" class="md-tabs__link">
+        <a href="../../project/changelog/" class="md-tabs__link">
           
   
   
@@ -1864,6 +1864,8 @@
       
         
       
+        
+      
     
     
     
@@ -1906,6 +1908,34 @@
 
           </label>
           <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
             
               
                 
@@ -2161,7 +2191,9 @@ Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></su
 <li><strong>Scale factor and misalignment.</strong> A sensor's gain is slightly wrong, by
   parts per million, and its axes are not exactly orthogonal or exactly
   along the body axes, by microradians. These errors are proportional to
-  the motion: invisible at rest, largest in turns and accelerations.</li>
+  what the sensor measures, so they are present even at rest, where the
+  accelerometers measure gravity and the gyros the Earth's rotation, and
+  largest in turns and accelerations.</li>
 <li><strong>Static bias.</strong> Every time the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> is switched on, each bias settles at a
   slightly different value, then stays there for the run. Datasheets call
   its spread the turn-on bias repeatability.</li>
