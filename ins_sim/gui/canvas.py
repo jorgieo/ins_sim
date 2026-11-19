@@ -35,8 +35,10 @@ from PySide6.QtWidgets import (
 
 try:
     from PySide6.QtWebEngineWidgets import QWebEngineView
-except ImportError:      # pragma: no cover - PySide6-Addons not installed
-    QWebEngineView = None
+    _WEBENGINE_ERROR = ""
+except ImportError as exc:   # pragma: no cover - no Qt WebEngine, or a
+    QWebEngineView = None    # system library it needs is missing
+    _WEBENGINE_ERROR = str(exc)
 
 from ins_sim.gui import figures
 
@@ -173,8 +175,11 @@ class VisualizationPanel(QTabWidget):
 
         if QWebEngineView is None:
             layout.addWidget(_centered_label(
-                "QtWebEngine is not installed — reinstall the full "
-                "PySide6 package to view plotly visualizations."))
+                "Plots need Qt WebEngine, which failed to load:\n"
+                f"{_WEBENGINE_ERROR}\n\n"
+                "If this names a missing library, install the package that "
+                "provides it (see the download page). Otherwise reinstall "
+                "the full PySide6 package."))
             return page
 
         path = self._ensure_html_dir() / filename

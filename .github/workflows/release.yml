@@ -5,9 +5,11 @@
 # - Pushes of v* tags: additionally create a GitHub Release with the
 #   binaries attached.
 #
-# Compatibility note: Linux binaries built on ubuntu-latest (24.04)
-# require a similarly recent glibc on the target machine. Pin
-# ubuntu-22.04 here if wider compatibility is needed.
+# Compatibility note: the Linux binaries are built on Ubuntu 24.04 and
+# require a similarly recent glibc on the target machine, as
+# docs/download.md says. The runners are pinned to 24.04 rather than
+# ubuntu-latest, which moves to each new Ubuntu release (26.04 in late
+# 2026) and would silently raise that requirement.
 #
 # Architectures: x86_64 Linux/Windows plus a native aarch64 Linux
 # bundle built on GitHub's ubuntu-24.04-arm runner (for Raspberry Pi
@@ -39,7 +41,7 @@ jobs:
           - os: windows-latest
             arch: x86_64
             python: "3.12.10"
-          - os: ubuntu-latest
+          - os: ubuntu-24.04
             arch: x86_64
             python: "3.12.16"
           - os: ubuntu-24.04-arm
@@ -67,11 +69,16 @@ jobs:
       - name: Run test suite
         run: python -m pytest -q
 
+      # The bundle uses the system's own libraries, so the runner needs the
+      # ones Qt WebEngine loads; docs/download.md lists the same packages.
+      # On ARM64, Qt WebEngine also links the system's Opus, minizip and
+      # snappy. Without them it fails to load, and the smoke test fails
+      # because no plot is drawn.
       - name: Install QtWebEngine runtime libraries (Linux)
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64
+          sudo apt-get install -y libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64 libopus0 libminizip1t64 libsnappy1v5
 
       - name: Build bundle
         run: pyinstaller ins_sim.spec --noconfirm

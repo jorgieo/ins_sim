@@ -52,12 +52,13 @@ tar xzf ins_sim-vX.Y.Z-linux-aarch64.tar.gz
     required. Like other desktop apps, ins_sim uses your system's own
     libraries for graphics, fonts, sound and encryption, which a desktop
     installation already has. If the app stops with
-    `error while loading shared libraries`, install the package that
-    provides the library it names. Minimal installations usually need the
-    Qt WebEngine system libraries:
+    `error while loading shared libraries`, or the result tabs say a
+    library failed to load, install the package that provides the library
+    it names. Minimal installations, the ARM64 bundle and X11 sessions
+    usually need these:
 
 ```bash
-sudo apt-get install libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64
+sudo apt-get install libegl1 libgl1 libxkbcommon0 libnss3 libasound2t64 libopus0 libminizip1t64 libsnappy1v5 libxcb-cursor0
 ```
 
 ### Raspberry Pi

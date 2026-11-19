@@ -77,6 +77,9 @@ guide lists every change.
 - The license notices in the downloadable app also credit the Python
   runtime, PyInstaller's launcher, Microsoft's runtime libraries
   (Windows), ICU (Linux), and the GCC libraries in NumPy and SciPy.
+- When Qt WebEngine cannot load, the result tabs say why, naming the
+  missing system library, instead of asking to reinstall PySide6. The
+  download page lists the libraries the Linux ARM64 build needs.
 
 ## [0.2.0] - 2026-07-22
 
