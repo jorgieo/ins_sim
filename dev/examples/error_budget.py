@@ -21,11 +21,14 @@ SOURCES = {
     "Accelerometer biases": ["accel_br_std", "accel_bias_instability"],
     "Accel. scale factor and misalignment": ["accel_sf_std", "accel_ma_std"],
     "Sensor noise (ARW and VRW)": ["gyro_arw", "accel_vrw"],
+    "Barometer": ["baro"],
 }
 
 truth, _, _ = build_trajectory(str(MISSION), tau_i=2.0)
 spec = load_imu_spec(str(default_imu_spec_path()))
-no_errors = replace(spec, **{field: 0.0 for fields in SOURCES.values() for field in fields})
+# Every error off: spreads of 0, and None for an ideal barometer.
+no_errors = replace(spec, **{field: None if field == "baro" else 0.0
+                             for fields in SOURCES.values() for field in fields})
 
 
 def final_cep(spec):

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1582,6 +1582,84 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;baro
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" baro">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro.BaroSpec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaroSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro.baro_spec_from_yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;baro_spec_from_yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro.generate_baro_samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;generate_baro_samples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ins_sim.sensors.noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;noise
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" noise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.noise.gauss_markov" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;gauss_markov
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2086,6 +2164,84 @@
   
 </li>
       
+        <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;baro
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" baro">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro.BaroSpec" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;BaroSpec
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro.baro_spec_from_yaml" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;baro_spec_from_yaml
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.baro.generate_baro_samples" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;generate_baro_samples
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ins_sim.sensors.noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;noise
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" noise">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.sensors.noise.gauss_markov" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;gauss_markov
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
     </ul>
   
 </nav>
@@ -2107,8 +2263,8 @@
 
 
 <h1 id="sensors">Sensors<a class="headerlink" href="#sensors" title="Permanent link">&para;</a></h1>
-<p>The <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model: the datasheet parameters and the noisy gyro and
-accelerometer outputs they produce.</p>
+<p>The sensor error models: the datasheet parameters and the noisy gyro,
+accelerometer and barometer outputs they produce.</p>
 
 
 <div class="doc doc-object doc-module">
@@ -2194,7 +2350,12 @@ Allan deviation peaks at the datasheet bias instability B.</p>
   </span>
 
 <a href="#ins_sim.sensors.imu.IMUSpec" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">IMUSpec</span><span class="p">(</span><span class="n">gyro_arw</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.002</span> <span class="o">*</span> <span class="n"><span title="numpy.pi">pi</span></span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">gyro_bias_instability</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n"><span title="numpy.pi">pi</span></span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">gyro_bias_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">3600.0</span><span class="p">,</span> <span class="n">gyro_br_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n"><span title="numpy.pi">pi</span></span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">gyro_sf_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">gyro_ma_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">accel_vrw</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">accel_bias_instability</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">5e-06</span> <span class="o">*</span> <span class="mf">9.80665</span><span class="p">,</span> <span class="n">accel_bias_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">3600.0</span><span class="p">,</span> <span class="n">accel_br_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">2.5e-05</span> <span class="o">*</span> <span class="mf">9.80665</span><span class="p">,</span> <span class="n">accel_sf_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">accel_ma_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">align_tilt_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">align_heading_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">IMUSpec</span><span class="p">(</span><span class="n">gyro_arw</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.002</span> <span class="o">*</span> <span class="n"><span title="numpy.pi">pi</span></span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">gyro_bias_instability</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n"><span title="numpy.pi">pi</span></span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">gyro_bias_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">3600.0</span><span class="p">,</span> <span class="n">gyro_br_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.01</span> <span class="o">*</span> <span class="n"><span title="numpy.pi">pi</span></span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span><span class="p">,</span> <span class="n">gyro_sf_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">gyro_ma_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">accel_vrw</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.005</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span> <span class="n">accel_bias_instability</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">5e-06</span> <span class="o">*</span> <span class="mf">9.80665</span><span class="p">,</span> <span class="n">accel_bias_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">3600.0</span><span class="p">,</span> <span class="n">accel_br_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">2.5e-05</span> <span class="o">*</span> <span class="mf">9.80665</span><span class="p">,</span> <span class="n">accel_sf_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">accel_ma_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">align_tilt_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">align_heading_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">baro</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;ins_sim.sensors.baro.BaroSpec&lt;/code&gt;)" href="#ins_sim.sensors.baro.BaroSpec">BaroSpec</a></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2370,15 +2531,30 @@ dev [rad]. Physically ≈ gyrocompass limit, gyro repeatability
 / (omega_ie·cos L_b).</p>
           </div>
         </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.sensors.imu.IMUSpec.baro">baro</span></code></b>
+              (<code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;ins_sim.sensors.baro.BaroSpec&lt;/code&gt;)" href="#ins_sim.sensors.baro.BaroSpec">BaroSpec</a> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Errors of the barometric altimeter that aids the vertical
+channel (see <code>ins_sim.sensors.baro.BaroSpec</code>), or None for an
+ideal barometer that reports the true height.</p>
+          </div>
+        </li>
     </ul>
 
 
 <details class="note" open>
   <summary>Note</summary>
   <p>The multiplicative (scale factor, misalignment) and
-initial-alignment terms default to zero — they apply only when
-specified — so zero-noise diagnostic specs and legacy YAMLs
-keep their exact-passthrough behavior.</p>
+initial-alignment terms default to zero, and the barometer to
+ideal — they apply only when specified — so zero-noise diagnostic
+specs and legacy YAMLs keep their exact-passthrough behavior.</p>
 </details>
 
 
@@ -2563,7 +2739,9 @@ resolved in body axes, shape (M, 3) [m/s²].</p>
           –
           <div class="doc-md-description">
             <p>Path to a <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> file with <code>gyro</code> and <code>accel</code> sections
-in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
+in datasheet units (deg/√hr, deg/hr, µg, etc.), and optional
+<code>alignment</code> and <code>baro</code> sections. Without a <code>baro</code> section the
+barometer is ideal.</p>
           </div>
         </li>
     </ul>
@@ -2598,14 +2776,7 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/sensors/imu.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
-<span class="normal">153</span>
-<span class="normal">154</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">154</span>
 <span class="normal">155</span>
 <span class="normal">156</span>
 <span class="normal">157</span>
@@ -2638,12 +2809,25 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
 <span class="normal">184</span>
 <span class="normal">185</span>
 <span class="normal">186</span>
-<span class="normal">187</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_imu_spec</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IMUSpec</span><span class="p">:</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">load_imu_spec</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IMUSpec</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Loads an IMUSpec from a YAML file expressed in datasheet units.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        yaml_path: Path to a YAML file with `gyro` and `accel` sections</span>
-<span class="sd">            in datasheet units (deg/√hr, deg/hr, µg, etc.).</span>
+<span class="sd">            in datasheet units (deg/√hr, deg/hr, µg, etc.), and optional</span>
+<span class="sd">            `alignment` and `baro` sections. Without a `baro` section the</span>
+<span class="sd">            barometer is ideal.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        IMUSpec: Equivalent error-parameter set converted to SI units.</span>
@@ -2661,6 +2845,7 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
     <span class="n">g</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"gyro"</span><span class="p">]</span>
     <span class="n">a</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"accel"</span><span class="p">]</span>
     <span class="n">al</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"alignment"</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="n">baro</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"baro"</span><span class="p">)</span>
     <span class="c1"># --8&lt;-- [start:datasheet_units]</span>
     <span class="n">DEG_HR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span>
     <span class="k">return</span> <span class="n">IMUSpec</span><span class="p">(</span>
@@ -2678,6 +2863,7 @@ in datasheet units (deg/√hr, deg/hr, µg, etc.).</p>
         <span class="n">accel_ma_std</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"misalignment_urad"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>  <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
         <span class="n">align_tilt_std</span>    <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tilt_std_deg"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>
         <span class="n">align_heading_std</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"heading_std_deg"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>
+        <span class="n">baro</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">baro</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">baro_spec_from_yaml</span><span class="p">(</span><span class="n">baro</span><span class="p">),</span>
     <span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
@@ -2762,18 +2948,7 @@ align_heading_std).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/sensors/imu.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">213</span>
-<span class="normal">214</span>
-<span class="normal">215</span>
-<span class="normal">216</span>
-<span class="normal">217</span>
-<span class="normal">218</span>
-<span class="normal">219</span>
-<span class="normal">220</span>
-<span class="normal">221</span>
-<span class="normal">222</span>
-<span class="normal">223</span>
-<span class="normal">224</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">224</span>
 <span class="normal">225</span>
 <span class="normal">226</span>
 <span class="normal">227</span>
@@ -2791,7 +2966,18 @@ align_heading_std).</p>
 <span class="normal">239</span>
 <span class="normal">240</span>
 <span class="normal">241</span>
-<span class="normal">242</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">draw_initial_misalignment</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">draw_initial_misalignment</span><span class="p">(</span><span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
                               <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Draws a per-run initial-alignment attitude error delta_psi_nb^n.</span>
 
@@ -2929,12 +3115,7 @@ accelerometer outputs, each shape (M, 3).</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/sensors/imu.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">312</span>
-<span class="normal">313</span>
-<span class="normal">314</span>
-<span class="normal">315</span>
-<span class="normal">316</span>
-<span class="normal">317</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">317</span>
 <span class="normal">318</span>
 <span class="normal">319</span>
 <span class="normal">320</span>
@@ -2981,7 +3162,12 @@ accelerometer outputs, each shape (M, 3).</p>
 <span class="normal">361</span>
 <span class="normal">362</span>
 <span class="normal">363</span>
-<span class="normal">364</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_imu_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_imu_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
                          <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">IMUSamples</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Generates noisy IMU samples from a truth trajectory and an error spec.</span>
 
@@ -3034,6 +3220,718 @@ accelerometer outputs, each shape (M, 3).</p>
         <span class="n">rng_accel</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">f_ib_b</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_sf_std</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_ma_std</span><span class="p">,</span>
         <span class="n">spec</span><span class="o">.</span><span class="n">accel_br_std</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_gm_std</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_bias_tau</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_vrw</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">IMUSamples</span><span class="p">(</span><span class="n">meas_omega_ib_b</span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="ins_sim.sensors.baro" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">ins_sim.sensors.baro</span>
+
+
+<a href="#ins_sim.sensors.baro" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Barometric altimeter error model: the height measurement that aids the vertical channel.</p>
+<p>A pressure altimeter converts static pressure to height through a standard
+atmosphere, so its errors come from the atmosphere differing from that
+standard, not from the sensor alone (Groves 2013, Chapter 6). A <code>BaroSpec</code>
+sets the spread of each error term in the model</p>
+<div class="highlight"><pre><span></span><code>meas_h_b = h_b + s_b·(h_b − h_b0) + b_bs + b_bd(t) + w_b
+</code></pre></div>
+<p>and <code>generate_baro_samples</code> draws one realization of it along a truth
+trajectory. The model is explained on the <a class="autorefs autorefs-internal" title="Barometer errors" href="../../../theory/vertical-channel/#barometer-error-model">Vertical channel</a>
+theory page.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ins_sim.sensors.baro.BaroSpec" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">BaroSpec</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#ins_sim.sensors.baro.BaroSpec" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">BaroSpec</span><span class="p">(</span><span class="n">scale_factor_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">bias_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">drift_std</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">,</span> <span class="n">drift_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">3600.0</span><span class="p">,</span> <span class="n">noise_density</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Barometric altimeter error parameters, in SI units.</p>
+<p>Every spread defaults to zero, so <code>BaroSpec()</code> is an ideal barometer
+that reports the true height.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.sensors.baro.BaroSpec.scale_factor_std">scale_factor_std</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Std dev of the scale-factor error s_b, drawn once
+per run [dimensionless, e.g. 0.02 = 2%]. Models a non-standard
+air temperature: the altimeter's height above the departure
+point is off by s_b times that height.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.sensors.baro.BaroSpec.bias_std">bias_std</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Std dev of the static bias b_bs, drawn once per run [m].
+Models the error in the altimeter setting (<abbr title="The altimeter pressure setting that makes a barometric altimeter read field elevation on the ground.">QNH</abbr>) and the
+sensor's own offset.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.sensors.baro.BaroSpec.drift_std">drift_std</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Steady-state std dev of the drift b_bd, a first-order
+Gauss-Markov process [m]. Models the weather: the sea-level
+pressure changing along the route and over time.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.sensors.baro.BaroSpec.drift_tau">drift_tau</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Correlation time of the drift [s], above 0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.sensors.baro.BaroSpec.noise_density">noise_density</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Density of the white noise w_b [m·√s, i.e. m/√Hz].
+The per-sample std dev is noise_density/√tau_i, so the noise
+the vertical channel sees does not depend on the time step.</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ins_sim.sensors.baro.baro_spec_from_yaml" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">baro_spec_from_yaml</span>
+
+
+<a href="#ins_sim.sensors.baro.baro_spec_from_yaml" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">baro_spec_from_yaml</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="n"><span title="dict">dict</span></span><span class="p">[</span><span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n"><span title="typing.Any">Any</span></span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;ins_sim.sensors.baro.BaroSpec&lt;/code&gt;)" href="#ins_sim.sensors.baro.BaroSpec">BaroSpec</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Converts the <code>baro:</code> block of an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> file to a BaroSpec.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>cfg</code></b>
+              (<code><span title="dict">dict</span>[<span title="str">str</span>, <span title="typing.Any">Any</span>]</code>)
+          –
+          <div class="doc-md-description">
+            <p>The parsed block, in datasheet units. Every key is optional
+and defaults to no error: <code>scale_factor_pct</code> [%], <code>bias_m</code> [m],
+<code>drift_m</code> [m], <code>drift_tau_s</code> [s, default 3600] and
+<code>noise_m_per_rt_hz</code> [m/√Hz].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>BaroSpec</code></b> (              <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;ins_sim.sensors.baro.BaroSpec&lt;/code&gt;)" href="#ins_sim.sensors.baro.BaroSpec">BaroSpec</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>The same parameters in SI units.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.sensors.baro</span><span class="w"> </span><span class="kn">import</span> <span class="n">baro_spec_from_yaml</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">baro_spec_from_yaml</span><span class="p">({</span><span class="s2">"scale_factor_pct"</span><span class="p">:</span> <span class="mf">2.0</span><span class="p">,</span> <span class="s2">"bias_m"</span><span class="p">:</span> <span class="mf">10.0</span><span class="p">})</span>
+<span class="go">BaroSpec(scale_factor_std=0.02, bias_std=10.0, drift_std=0.0, drift_tau=3600.0, noise_density=0.0)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/sensors/baro.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">57</span>
+<span class="normal">58</span>
+<span class="normal">59</span>
+<span class="normal">60</span>
+<span class="normal">61</span>
+<span class="normal">62</span>
+<span class="normal">63</span>
+<span class="normal">64</span>
+<span class="normal">65</span>
+<span class="normal">66</span>
+<span class="normal">67</span>
+<span class="normal">68</span>
+<span class="normal">69</span>
+<span class="normal">70</span>
+<span class="normal">71</span>
+<span class="normal">72</span>
+<span class="normal">73</span>
+<span class="normal">74</span>
+<span class="normal">75</span>
+<span class="normal">76</span>
+<span class="normal">77</span>
+<span class="normal">78</span>
+<span class="normal">79</span>
+<span class="normal">80</span>
+<span class="normal">81</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">baro_spec_from_yaml</span><span class="p">(</span><span class="n">cfg</span><span class="p">:</span> <span class="nb">dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">BaroSpec</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Converts the `baro:` block of an IMU spec YAML file to a BaroSpec.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        cfg: The parsed block, in datasheet units. Every key is optional</span>
+<span class="sd">            and defaults to no error: `scale_factor_pct` [%], `bias_m` [m],</span>
+<span class="sd">            `drift_m` [m], `drift_tau_s` [s, default 3600] and</span>
+<span class="sd">            `noise_m_per_rt_hz` [m/√Hz].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        BaroSpec: The same parameters in SI units.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.sensors.baro import baro_spec_from_yaml</span>
+<span class="sd">        &gt;&gt;&gt; baro_spec_from_yaml({"scale_factor_pct": 2.0, "bias_m": 10.0})</span>
+<span class="sd">        BaroSpec(scale_factor_std=0.02, bias_std=10.0, drift_std=0.0, drift_tau=3600.0, noise_density=0.0)</span>
+<span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:datasheet_units]</span>
+    <span class="k">return</span> <span class="n">BaroSpec</span><span class="p">(</span>
+        <span class="n">scale_factor_std</span> <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scale_factor_pct"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">100.0</span><span class="p">,</span>
+        <span class="n">bias_std</span>         <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"bias_m"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">drift_std</span>        <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"drift_m"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+        <span class="n">drift_tau</span>        <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"drift_tau_s"</span><span class="p">,</span> <span class="mf">3600.0</span><span class="p">),</span>
+        <span class="n">noise_density</span>    <span class="o">=</span> <span class="n">cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"noise_m_per_rt_hz"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">),</span>
+    <span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ins_sim.sensors.baro.generate_baro_samples" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">generate_baro_samples</span>
+
+
+<a href="#ins_sim.sensors.baro.generate_baro_samples" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">generate_baro_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.TruthTrajectory&lt;/code&gt;)" href="../trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory">TruthTrajectory</a></span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;ins_sim.sensors.baro.BaroSpec&lt;/code&gt;)" href="#ins_sim.sensors.baro.BaroSpec">BaroSpec</a></span><span class="p">,</span> <span class="n">rng</span><span class="p">:</span> <span class="n"><span title="numpy.random.Generator">Generator</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Generates barometric height measurements from a truth trajectory.</p>
+<p>Measurement model:</p>
+<div class="highlight"><pre><span></span><code>meas_h_b = h_b + s_b·(h_b − h_b0) + b_bs + b_bd(t) + w_b
+</code></pre></div>
+<ul>
+<li>s_b: scale-factor error ~ N(0, scale_factor_std²), drawn once per
+  run. It scales the height above the departure point h_b0, where the
+  altimeter setting makes the barometer read correctly apart from b_bs.</li>
+<li>b_bs: static bias ~ N(0, bias_std²), drawn once per run.</li>
+<li>b_bd: drift, a stationary first-order Gauss-Markov process with
+  spread drift_std and correlation time drift_tau.</li>
+<li>w_b: white noise, with σ = noise_density/√tau_i per sample.</li>
+</ul>
+<p>The draws come from <code>rng</code> in a fixed order (s_b, b_bs, the drift, w_b)
+whatever the parameter values, so changing one spread never reshuffles
+the others.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>truth</code></b>
+              (<code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.TruthTrajectory&lt;/code&gt;)" href="../trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory">TruthTrajectory</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Truth trajectory exposing <code>h_b</code> (shape (M,) [m]) and <code>tau_i</code>.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>spec</code></b>
+              (<code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt; (&lt;code&gt;ins_sim.sensors.baro.BaroSpec&lt;/code&gt;)" href="#ins_sim.sensors.baro.BaroSpec">BaroSpec</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Barometer error-parameter set.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>rng</code></b>
+              (<code><span title="numpy.random.Generator">Generator</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Seeded NumPy random generator.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>numpy.ndarray: Measured height meas_h_b, shape (M,) [m].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>An ideal barometer reports the true height:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">types</span><span class="w"> </span><span class="kn">import</span> <span class="n">SimpleNamespace</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.sensors.baro</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaroSpec</span><span class="p">,</span> <span class="n">generate_baro_samples</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">truth</span> <span class="o">=</span> <span class="n">SimpleNamespace</span><span class="p">(</span><span class="n">h_b</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">100.0</span><span class="p">,</span> <span class="mf">150.0</span><span class="p">,</span> <span class="mf">200.0</span><span class="p">]),</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">generate_baro_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">BaroSpec</span><span class="p">(),</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">))</span>
+<span class="go">array([100., 150., 200.])</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/sensors/baro.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span>
+<span class="normal">103</span>
+<span class="normal">104</span>
+<span class="normal">105</span>
+<span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">generate_baro_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">BaroSpec</span><span class="p">,</span>
+                          <span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Generates barometric height measurements from a truth trajectory.</span>
+
+<span class="sd">    Measurement model:</span>
+
+<span class="sd">        meas_h_b = h_b + s_b·(h_b − h_b0) + b_bs + b_bd(t) + w_b</span>
+
+<span class="sd">    - s_b: scale-factor error ~ N(0, scale_factor_std²), drawn once per</span>
+<span class="sd">      run. It scales the height above the departure point h_b0, where the</span>
+<span class="sd">      altimeter setting makes the barometer read correctly apart from b_bs.</span>
+<span class="sd">    - b_bs: static bias ~ N(0, bias_std²), drawn once per run.</span>
+<span class="sd">    - b_bd: drift, a stationary first-order Gauss-Markov process with</span>
+<span class="sd">      spread drift_std and correlation time drift_tau.</span>
+<span class="sd">    - w_b: white noise, with σ = noise_density/√tau_i per sample.</span>
+
+<span class="sd">    The draws come from `rng` in a fixed order (s_b, b_bs, the drift, w_b)</span>
+<span class="sd">    whatever the parameter values, so changing one spread never reshuffles</span>
+<span class="sd">    the others.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        truth: Truth trajectory exposing `h_b` (shape (M,) [m]) and `tau_i`.</span>
+<span class="sd">        spec: Barometer error-parameter set.</span>
+<span class="sd">        rng: Seeded NumPy random generator.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray: Measured height meas_h_b, shape (M,) [m].</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        An ideal barometer reports the true height:</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from types import SimpleNamespace</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.sensors.baro import BaroSpec, generate_baro_samples</span>
+<span class="sd">        &gt;&gt;&gt; truth = SimpleNamespace(h_b=np.array([100.0, 150.0, 200.0]), tau_i=1.0)</span>
+<span class="sd">        &gt;&gt;&gt; generate_baro_samples(truth, BaroSpec(), np.random.default_rng(0))</span>
+<span class="sd">        array([100., 150., 200.])</span>
+<span class="sd">    """</span>
+    <span class="n">h_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">tau_i</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">tau_i</span>
+    <span class="c1"># --8&lt;-- [start:baro_errors]</span>
+    <span class="n">s_b</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">scale_factor_std</span><span class="p">)</span>
+    <span class="n">b_bs</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">bias_std</span><span class="p">)</span>
+    <span class="n">b_bd</span> <span class="o">=</span> <span class="n">gauss_markov</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h_b</span><span class="p">),</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">drift_std</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">drift_tau</span><span class="p">,</span>
+                        <span class="n">n_axes</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+    <span class="n">w_b</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">noise_density</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tau_i</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">h_b</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">h_b</span> <span class="o">+</span> <span class="n">s_b</span> <span class="o">*</span> <span class="p">(</span><span class="n">h_b</span> <span class="o">-</span> <span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">b_bs</span> <span class="o">+</span> <span class="n">b_bd</span> <span class="o">+</span> <span class="n">w_b</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="ins_sim.sensors.noise" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">ins_sim.sensors.noise</span>
+
+
+<a href="#ins_sim.sensors.noise" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Random processes shared by the sensor error models.</p>
+<p><code>gauss_markov</code> draws the first-order Gauss-Markov process that ins_sim uses
+for every slowly wandering sensor error: the in-run bias of the gyros and
+accelerometers, and the weather drift of the barometric altimeter.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ins_sim.sensors.noise.gauss_markov" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">gauss_markov</span>
+
+
+<a href="#ins_sim.sensors.noise.gauss_markov" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">gauss_markov</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n"><span title="numpy.random.Generator">Generator</span></span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="n"><span title="int">int</span></span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">sigma</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">tau_c</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">n_axes</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Draws a stationary first-order Gauss-Markov process on each axis.</p>
+<p>The discrete recursion is</p>
+<div class="highlight"><pre><span></span><code>x[k+1] = a·x[k] + √(1 − a²)·σ·u[k+1],   a = exp(−tau_i/tau_c),
+</code></pre></div>
+<p>with u white and unit-variance. The process starts in its stationary
+distribution, x[0] ~ N(0, σ²), so its spread is σ at every sample and
+its autocorrelation is exp(−|Δt|/tau_c).</p>
+<p>The draws come from <code>rng</code> in a fixed order, x[0] then u, and happen
+whatever σ is, so a zero σ consumes the same random numbers as any
+other value.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>rng</code></b>
+              (<code><span title="numpy.random.Generator">Generator</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Seeded NumPy random generator.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>n_samples</code></b>
+              (<code><span title="int">int</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Number of samples M.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tau_i</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Sample interval [s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>sigma</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Steady-state standard deviation σ, in the process's units.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tau_c</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Correlation time [s], above 0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>n_axes</code></b>
+              (<code><span title="int">int</span></code>, default:
+                  <code>3</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Number of independent axes. Defaults to 3.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>numpy.ndarray: The process, shape (n_samples, n_axes).</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.sensors.noise</span><span class="w"> </span><span class="kn">import</span> <span class="n">gauss_markov</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">gauss_markov</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">default_rng</span><span class="p">(</span><span class="mi">0</span><span class="p">),</span> <span class="mi">5</span><span class="p">,</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+<span class="gp">... </span>                 <span class="n">sigma</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">tau_c</span><span class="o">=</span><span class="mf">60.0</span><span class="p">,</span> <span class="n">n_axes</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span><span class="o">.</span><span class="n">shape</span>
+<span class="go">(5, 1)</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/sensors/noise.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">12</span>
+<span class="normal">13</span>
+<span class="normal">14</span>
+<span class="normal">15</span>
+<span class="normal">16</span>
+<span class="normal">17</span>
+<span class="normal">18</span>
+<span class="normal">19</span>
+<span class="normal">20</span>
+<span class="normal">21</span>
+<span class="normal">22</span>
+<span class="normal">23</span>
+<span class="normal">24</span>
+<span class="normal">25</span>
+<span class="normal">26</span>
+<span class="normal">27</span>
+<span class="normal">28</span>
+<span class="normal">29</span>
+<span class="normal">30</span>
+<span class="normal">31</span>
+<span class="normal">32</span>
+<span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span>
+<span class="normal">46</span>
+<span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">gauss_markov</span><span class="p">(</span><span class="n">rng</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">Generator</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">sigma</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tau_c</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">n_axes</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">3</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Draws a stationary first-order Gauss-Markov process on each axis.</span>
+
+<span class="sd">    The discrete recursion is</span>
+
+<span class="sd">        x[k+1] = a·x[k] + √(1 − a²)·σ·u[k+1],   a = exp(−tau_i/tau_c),</span>
+
+<span class="sd">    with u white and unit-variance. The process starts in its stationary</span>
+<span class="sd">    distribution, x[0] ~ N(0, σ²), so its spread is σ at every sample and</span>
+<span class="sd">    its autocorrelation is exp(−|Δt|/tau_c).</span>
+
+<span class="sd">    The draws come from `rng` in a fixed order, x[0] then u, and happen</span>
+<span class="sd">    whatever σ is, so a zero σ consumes the same random numbers as any</span>
+<span class="sd">    other value.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        rng: Seeded NumPy random generator.</span>
+<span class="sd">        n_samples: Number of samples M.</span>
+<span class="sd">        tau_i: Sample interval [s].</span>
+<span class="sd">        sigma: Steady-state standard deviation σ, in the process's units.</span>
+<span class="sd">        tau_c: Correlation time [s], above 0.</span>
+<span class="sd">        n_axes: Number of independent axes. Defaults to 3.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray: The process, shape (n_samples, n_axes).</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.sensors.noise import gauss_markov</span>
+<span class="sd">        &gt;&gt;&gt; x = gauss_markov(np.random.default_rng(0), 5, tau_i=1.0,</span>
+<span class="sd">        ...                  sigma=2.0, tau_c=60.0, n_axes=1)</span>
+<span class="sd">        &gt;&gt;&gt; x.shape</span>
+<span class="sd">        (5, 1)</span>
+<span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:gauss_markov]</span>
+    <span class="c1"># The IIR filter produces the zero-start response to u; the decaying</span>
+    <span class="c1"># initial state a^k·x[0] is added to it.</span>
+    <span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tau_i</span> <span class="o">/</span> <span class="n">tau_c</span><span class="p">)</span>
+    <span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span>
+    <span class="n">x0</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_axes</span><span class="p">)</span>
+    <span class="n">u</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_axes</span><span class="p">));</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">lfilter</span><span class="p">([</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="p">],</span> <span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span>
 </code></pre></div></td></tr></table></div>
             </details>
     </div>

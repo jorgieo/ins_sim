@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2345,8 +2345,8 @@ resolved in <abbr title="North-East-Down: the local navigation frame (n) used th
 
         <p>Runs n_trials independent noisy-<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> strapdown realizations.</p>
 <p>Each trial has its own random stream, spawned from <code>seed</code>, and each
-error source within a trial (initial alignment, <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>) draws from its own
-child stream. A trial's draws therefore do not depend on <code>n_trials</code>, and
+error source within a trial (initial alignment, <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, barometer) draws
+from its own child stream. A trial's draws therefore do not depend on <code>n_trials</code>, and
 changing one error source's parameters leaves the other sources'
 realizations unchanged (common random numbers).</p>
 
@@ -2413,9 +2413,10 @@ completes. Defaults to None (no reporting).</p>
           –
           <div class="doc-md-description">
             <p>When True the strapdown runs with the baro-damped
-vertical channel (truth height as the baro measurement);
-when False the vertical channel is free-inertial and
-diverges. Defaults to True.</p>
+vertical channel, aided by a barometer with the errors in
+<code>spec.baro</code> (the true height when <code>spec.baro</code> is None); when
+False the vertical channel is free-inertial and diverges.
+Defaults to True.</p>
           </div>
         </li>
     </ul>
@@ -2448,8 +2449,7 @@ diverges. Defaults to True.</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/evaluation/monte_carlo.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 58</span>
-<span class="normal"> 59</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 59</span>
 <span class="normal"> 60</span>
 <span class="normal"> 61</span>
 <span class="normal"> 62</span>
@@ -2531,15 +2531,23 @@ diverges. Defaults to True.</p>
 <span class="normal">138</span>
 <span class="normal">139</span>
 <span class="normal">140</span>
-<span class="normal">141</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_monte_carlo</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">run_monte_carlo</span><span class="p">(</span><span class="n">truth</span><span class="p">:</span> <span class="s2">"TruthTrajectory"</span><span class="p">,</span> <span class="n">spec</span><span class="p">:</span> <span class="n">IMUSpec</span><span class="p">,</span>
                     <span class="n">n_trials</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">seed</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
                     <span class="n">progress_callback</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
                     <span class="n">baro_aiding</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MonteCarloResult</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Runs n_trials independent noisy-IMU strapdown realizations.</span>
 
 <span class="sd">    Each trial has its own random stream, spawned from `seed`, and each</span>
-<span class="sd">    error source within a trial (initial alignment, IMU) draws from its own</span>
-<span class="sd">    child stream. A trial's draws therefore do not depend on `n_trials`, and</span>
+<span class="sd">    error source within a trial (initial alignment, IMU, barometer) draws</span>
+<span class="sd">    from its own child stream. A trial's draws therefore do not depend on `n_trials`, and</span>
 <span class="sd">    changing one error source's parameters leaves the other sources'</span>
 <span class="sd">    realizations unchanged (common random numbers).</span>
 
@@ -2553,9 +2561,10 @@ diverges. Defaults to True.</p>
 <span class="sd">            progress_callback(n_done, n_trials) after each trial</span>
 <span class="sd">            completes. Defaults to None (no reporting).</span>
 <span class="sd">        baro_aiding: When True the strapdown runs with the baro-damped</span>
-<span class="sd">            vertical channel (truth height as the baro measurement);</span>
-<span class="sd">            when False the vertical channel is free-inertial and</span>
-<span class="sd">            diverges. Defaults to True.</span>
+<span class="sd">            vertical channel, aided by a barometer with the errors in</span>
+<span class="sd">            `spec.baro` (the true height when `spec.baro` is None); when</span>
+<span class="sd">            False the vertical channel is free-inertial and diverges.</span>
+<span class="sd">            Defaults to True.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        MonteCarloResult: estimates and attitude errors for every trial.</span>
@@ -2585,7 +2594,7 @@ diverges. Defaults to True.</p>
     <span class="n">C_b_n0</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
     <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">trial_rng</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">trial_rngs</span><span class="p">):</span>
-        <span class="n">rng_alignment</span><span class="p">,</span> <span class="n">rng_imu</span> <span class="o">=</span> <span class="n">trial_rng</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="n">rng_alignment</span><span class="p">,</span> <span class="n">rng_imu</span><span class="p">,</span> <span class="n">rng_baro</span> <span class="o">=</span> <span class="n">trial_rng</span><span class="o">.</span><span class="n">spawn</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
         <span class="c1"># Per-trial initial-alignment error delta_psi_nb^n: small NED tilts</span>
         <span class="c1"># plus an azimuth error, applied to the truth attitude (zero-mean</span>
         <span class="c1"># draws; exact truth initialization when the alignment stds are 0).</span>
@@ -2597,9 +2606,15 @@ diverges. Defaults to True.</p>
             <span class="n">est_C_b_n0</span><span class="o">.</span><span class="n">as_quat</span><span class="p">(),</span> <span class="c1"># pyright: ignore[reportCallIssue]</span>
         <span class="p">)</span>
         <span class="n">meas_omega_ib_b</span><span class="p">,</span> <span class="n">meas_f_ib_b</span> <span class="o">=</span> <span class="n">generate_imu_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">rng_imu</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">baro_aiding</span><span class="p">:</span>
+            <span class="n">meas_h_b</span> <span class="o">=</span> <span class="kc">None</span>                                  <span class="c1"># free-inertial</span>
+        <span class="k">elif</span> <span class="n">spec</span><span class="o">.</span><span class="n">baro</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">meas_h_b</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">h_b</span>                             <span class="c1"># ideal barometer</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">meas_h_b</span> <span class="o">=</span> <span class="n">generate_baro_samples</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">baro</span><span class="p">,</span> <span class="n">rng_baro</span><span class="p">)</span>
         <span class="n">nav</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span>
             <span class="n">meas_omega_ib_b</span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">,</span> <span class="n">init_state</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">tau_i</span><span class="p">,</span>
-            <span class="n">meas_h_b</span><span class="o">=</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span> <span class="k">if</span> <span class="n">baro_aiding</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="n">meas_h_b</span><span class="o">=</span><span class="n">meas_h_b</span><span class="p">)</span>
         <span class="c1"># --8&lt;-- [end:trial]</span>
         <span class="n">est_r_lb_l</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>   <span class="o">=</span> <span class="n">nav</span><span class="o">.</span><span class="n">r_lb_l</span>
         <span class="n">est_L_b</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>      <span class="o">=</span> <span class="n">nav</span><span class="o">.</span><span class="n">L_b</span>
@@ -2688,15 +2703,7 @@ trials at each time step, shape (M,) [m].</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/evaluation/monte_carlo.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
-<span class="normal">149</span>
-<span class="normal">150</span>
-<span class="normal">151</span>
-<span class="normal">152</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">152</span>
 <span class="normal">153</span>
 <span class="normal">154</span>
 <span class="normal">155</span>
@@ -2712,7 +2719,15 @@ trials at each time step, shape (M,) [m].</p>
 <span class="normal">165</span>
 <span class="normal">166</span>
 <span class="normal">167</span>
-<span class="normal">168</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">percentile_envelope</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">percentile_envelope</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">q</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mi">95</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Computes the per-time-step q-th percentile of 3D position error magnitude.</span>
 
 <span class="sd">    Args:</span>

@@ -21,7 +21,7 @@
       
       
       <link rel="icon" href="assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2020,7 +2020,8 @@ or fly a trajectory of your own.</p>
   <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> radii of curvature and normal gravity, evaluated at the current
   position every step, not a flat-Earth approximation.</li>
 <li><strong>Vertical channel physics</strong>: a third-order baro-damped loop by default,
-  or free-inertial to watch the channel's instability.</li>
+  aided by a barometer with its own errors (temperature, altimeter setting,
+  weather, noise), or free-inertial to watch the channel's instability.</li>
 <li><strong>Monte Carlo evaluation</strong>: independent error draws for every trial,
   errors measured as the textbook defines them, and <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>, ±3σ and
   percentile statistics.</li>

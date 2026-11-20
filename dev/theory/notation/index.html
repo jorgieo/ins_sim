@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1098,6 +1098,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="IMU errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#barometer-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Barometer errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2112,6 +2129,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="IMU errors">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#barometer-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Barometer errors
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2504,6 +2538,53 @@ so mission altitudes given above mean sea level (for example the <abbr title="Th
 </table>
 <p>Groves' gyro model also includes a g-dependent bias, proportional to
 specific force. ins_sim does not model it.</p>
+<h3 id="barometer-errors">Barometer errors<a class="headerlink" href="#barometer-errors" title="Permanent link">&para;</a></h3>
+<p>The barometric altimeter that aids the vertical channel reports</p>
+<div class="arithmatex">\[
+\tilde h_b = h_b + s_b\left(h_b - h_{b0}\right) + b_{bs} + b_{bd} + w_b
+\]</div>
+<p>where <span class="arithmatex">\(h_{b0}\)</span> is the height of the departure point.</p>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Meaning</th>
+<th>Drawn</th>
+<th><code>BaroSpec</code> field</th>
+<th><abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> key</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><span class="arithmatex">\(s_b\)</span></td>
+<td>Scale-factor error, from a non-standard air temperature</td>
+<td>Once per trial</td>
+<td><code>scale_factor_std</code></td>
+<td><code>scale_factor_pct</code></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(b_{bs}\)</span></td>
+<td>Static bias, from the altimeter setting (<abbr title="The altimeter pressure setting that makes a barometric altimeter read field elevation on the ground.">QNH</abbr>)</td>
+<td>Once per trial</td>
+<td><code>bias_std</code></td>
+<td><code>bias_m</code></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(b_{bd}\)</span></td>
+<td>Weather drift: a first-order Gauss–Markov process</td>
+<td>Every sample</td>
+<td><code>drift_std</code>, <code>drift_tau</code></td>
+<td><code>drift_m</code>, <code>drift_tau_s</code></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(w_b\)</span></td>
+<td>White noise</td>
+<td>Every sample</td>
+<td><code>noise_density</code></td>
+<td><code>noise_m_per_rt_hz</code></td>
+</tr>
+</tbody>
+</table>
 <h2 id="symbols-and-code-names">Symbols and code names<a class="headerlink" href="#symbols-and-code-names" title="Permanent link">&para;</a></h2>
 <p>The Python column lists the identifiers used from v0.3.0. They follow one
 pattern:</p>
@@ -2629,6 +2710,14 @@ pattern:</p>
 <td><code>meas_f_ib_b</code></td>
 <td><code>f_meas</code></td>
 <td><a href="../imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a></td>
+</tr>
+<tr>
+<td><span class="arithmatex">\(\tilde h_b\)</span></td>
+<td>Barometric height</td>
+<td>m</td>
+<td><code>meas_h_b</code></td>
+<td><code>alt_truth</code> (true height only)</td>
+<td><a href="../vertical-channel/">Vertical channel</a></td>
 </tr>
 <tr>
 <td><span class="arithmatex">\(\wvec{in}{n}\)</span></td>

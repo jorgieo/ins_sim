@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2133,11 +2133,14 @@ the same settings and compare the <abbr title="Circular error probable: the radi
     <span class="s2">"Accelerometer biases"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"accel_br_std"</span><span class="p">,</span> <span class="s2">"accel_bias_instability"</span><span class="p">],</span>
     <span class="s2">"Accel. scale factor and misalignment"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"accel_sf_std"</span><span class="p">,</span> <span class="s2">"accel_ma_std"</span><span class="p">],</span>
     <span class="s2">"Sensor noise (ARW and VRW)"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"gyro_arw"</span><span class="p">,</span> <span class="s2">"accel_vrw"</span><span class="p">],</span>
+    <span class="s2">"Barometer"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"baro"</span><span class="p">],</span>
 <span class="p">}</span>
 
 <span class="n">truth</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">build_trajectory</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">MISSION</span><span class="p">),</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 <span class="n">spec</span> <span class="o">=</span> <span class="n">load_imu_spec</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">default_imu_spec_path</span><span class="p">()))</span>
-<span class="n">no_errors</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="mf">0.0</span> <span class="k">for</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">SOURCES</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">})</span>
+<span class="c1"># Every error off: spreads of 0, and None for an ideal barometer.</span>
+<span class="n">no_errors</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s2">"baro"</span> <span class="k">else</span> <span class="mf">0.0</span>
+                             <span class="k">for</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">SOURCES</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">})</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">final_cep</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
@@ -2163,13 +2166,17 @@ prints:</p>
   Accelerometer biases                     120 m
   Accel. scale factor and misalignment     168 m
   Sensor noise (ARW and VRW)               136 m
-  All sources together                     799 m
+  Barometer                                  5 m
+  All sources together                     796 m
 </code></pre></div>
 <p>On this flight the initial alignment and the gyro biases dominate; the
-accelerometer biases matter least. A better accelerometer would barely
-help, while a better alignment or better gyros would. The contributions do
-not add up directly: they combine roughly as the square root of the sum of
-their squares, 732 m here, against 799 m for all sources together.</p>
+accelerometer biases matter least among the inertial sensors. A better
+accelerometer would barely help, while a better alignment or better gyros
+would. The barometer aids only the height, so it hardly touches the
+horizontal <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>; its errors show in the Down position error instead. The
+contributions do not add up directly: they combine roughly as the square
+root of the sum of their squares, 732 m here, against 796 m for all
+sources together.</p>
 <p>Which source dominates depends on the flight: errors that the Schuler
 oscillation keeps bounded, such as the accelerometer biases, matter less
 on long flights than errors that keep growing, such as the gyro biases.

@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -893,6 +893,17 @@
     <span class="md-ellipsis">
       
         The alignment block
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#the-baro-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The baro block
       
     </span>
   </a>
@@ -2061,6 +2072,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#the-baro-block" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The baro block
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#switching-errors-off" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2174,6 +2196,16 @@ button at the top right of each file copies it):</p>
 <span class="nt">alignment</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tilt_std_deg</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">0.0015</span><span class="w">  </span><span class="c1"># N/E tilt misalignment 1σ [°]</span>
 <span class="w">  </span><span class="nt">heading_std_deg</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.04</span><span class="w">    </span><span class="c1"># Azimuth misalignment 1σ [°]</span>
+
+<span class="c1"># Barometric altimeter that aids the vertical channel, typical of an</span>
+<span class="c1"># aircraft air-data system. Omit this section for an ideal barometer.</span>
+<span class="c1"># Near sea level 1 hPa of pressure is about 8.3 m of height.</span>
+<span class="nt">baro</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">scale_factor_pct</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">2.0</span><span class="w">     </span><span class="c1"># Scale-factor error 1σ: a 6 K non-standard air temperature [%]</span>
+<span class="w">  </span><span class="nt">bias_m</span><span class="p">:</span><span class="w">            </span><span class="l l-Scalar l-Scalar-Plain">10.0</span><span class="w">     </span><span class="c1"># Static bias 1σ: altimeter-setting (QNH) error of about 1 hPa [m]</span>
+<span class="w">  </span><span class="nt">drift_m</span><span class="p">:</span><span class="w">           </span><span class="l l-Scalar l-Scalar-Plain">10.0</span><span class="w">     </span><span class="c1"># Weather drift 1σ: sea-level pressure changing en route [m]</span>
+<span class="w">  </span><span class="nt">drift_tau_s</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">7200.0</span><span class="w">     </span><span class="c1"># Correlation time of the weather drift [s]</span>
+<span class="w">  </span><span class="nt">noise_m_per_rt_hz</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w">     </span><span class="c1"># White-noise density [m/√Hz]</span>
 </code></pre></div>
 </div>
 <div class="tabbed-block">
@@ -2289,7 +2321,7 @@ button at the top right of each file copies it):</p>
 </code></pre></div>
 <div class="highlight"><pre><span></span><code>CEP of 10 trials on the training flight
 IMU grade        1 min     5 min    10 min    25 min
-Navigation         2 m      31 m     120 m     685 m
+Navigation         2 m      32 m     122 m     688 m
 Tactical          22 m     534 m    2.9 km   27.6 km
 MEMS             189 m    8.5 km   50.3 km  457.8 km
 </code></pre></div>
@@ -2422,10 +2454,57 @@ six independent misalignment angles, two for each pair of axes.</p>
 </ul>
 <p>Leave the block out to start every trial from the true attitude. That is
 useful when you want to see the sensor errors alone.</p>
+<h2 id="the-baro-block">The baro block<a class="headerlink" href="#the-baro-block" title="Permanent link">&para;</a></h2>
+<p>With <em>Baro altitude aiding</em> on, a barometric altimeter holds the
+navigator's height (see <a href="../../theory/vertical-channel/">Vertical channel</a>).
+The <code>baro</code> block gives that altimeter's errors. A pressure altimeter turns
+pressure into height through a standard atmosphere, so most of its error
+comes from the day's atmosphere, not from the sensor. Near sea level,
+1 hPa of pressure is about 8.3 m of height.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Error</th>
+<th>Where the packaged value comes from</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scale_factor_pct</code></td>
+<td>Air colder or warmer than standard: the altimeter's height above the departure point is off by this fraction</td>
+<td>2%: about 6 K away from standard, out of 288 K</td>
+</tr>
+<tr>
+<td><code>bias_m</code></td>
+<td>The altimeter setting (<abbr title="The altimeter pressure setting that makes a barometric altimeter read field elevation on the ground.">QNH</abbr>) and the sensor's offset, constant over a run</td>
+<td>10 m: about 1 hPa</td>
+</tr>
+<tr>
+<td><code>drift_m</code>, <code>drift_tau_s</code></td>
+<td>The weather: sea-level pressure changing along the route and over time</td>
+<td>10 m over about 2 hours</td>
+</tr>
+<tr>
+<td><code>noise_m_per_rt_hz</code></td>
+<td>Fast, random sensor noise</td>
+<td>0.1 m/√Hz: 0.3 m per sample at 10 Hz</td>
+</tr>
+</tbody>
+</table>
+<p>Whatever the barometer reports, the navigator's height follows within a
+couple of minutes, so these errors pass almost in full into the Down
+position error. On the packaged mission, which climbs to 4,600 m, the
+scale factor dominates: 2% of the climb is about 90 m. The horizontal
+errors hardly change.</p>
+<p>Leave the block out for an ideal barometer that reports the true height.
+The tactical-grade and <abbr title="Micro-electro-mechanical systems: low-cost silicon inertial sensors.">MEMS</abbr> presets do that, so that comparing them
+compares the IMUs alone.</p>
 <h2 id="switching-errors-off">Switching errors off<a class="headerlink" href="#switching-errors-off" title="Permanent link">&para;</a></h2>
 <p>Set any value to 0 to remove that error. <code>scale_factor_ppm</code>,
-<code>misalignment_urad</code> and the whole alignment block are optional and default
-to 0. Keep <code>bias_tau_s</code> positive, even when its bias instability is 0.</p>
+<code>misalignment_urad</code>, the alignment block and the baro block are optional
+and default to 0. Keep <code>bias_tau_s</code> positive, even when its bias
+instability is 0.</p>
 <p>With every error at 0 the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> is perfect, and the navigator follows the
 truth exactly. Switching errors off one group at a time shows which one
 matters most: see <a href="../recipes/#find-the-dominant-error-source">Recipes</a>.</p>

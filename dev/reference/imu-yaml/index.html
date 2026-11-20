@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1662,6 +1662,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#baro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        baro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#rules" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1973,6 +1984,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#baro" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        baro
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#rules" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2048,6 +2070,11 @@ them in from a datasheet, and the
 <td><code>alignment</code></td>
 <td>no</td>
 <td>The initial attitude error: see <a href="#alignment">alignment</a>. Without it, each trial starts from the true attitude.</td>
+</tr>
+<tr>
+<td><code>baro</code></td>
+<td>no</td>
+<td>The errors of the barometric altimeter that aids the height: see <a href="#baro">baro</a>. Without it, the barometer reports the true height.</td>
 </tr>
 </tbody>
 </table>
@@ -2196,10 +2223,68 @@ errors of that size.</p>
 </tr>
 </tbody>
 </table>
+<h2 id="baro">baro<a class="headerlink" href="#baro" title="Permanent link">&para;</a></h2>
+<p>The barometer is used only while <em>Baro altitude aiding</em> is on. Its
+<code>IMUSpec</code> field is <code>baro</code>, a <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../api/sensors/#ins_sim.sensors.baro.BaroSpec"><code>BaroSpec</code></a>,
+or <code>None</code> when the file has no <code>baro</code> block.</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Required</th>
+<th>Unit</th>
+<th>Meaning</th>
+<th><code>BaroSpec</code> field, SI unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>scale_factor_pct</code></td>
+<td>no, default 0</td>
+<td>%</td>
+<td>Scale-factor error, applied to the height above the departure point</td>
+<td><code>scale_factor_std</code>, dimensionless</td>
+</tr>
+<tr>
+<td><code>bias_m</code></td>
+<td>no, default 0</td>
+<td>m</td>
+<td>Static bias: the constant error of each run</td>
+<td><code>bias_std</code>, m</td>
+</tr>
+<tr>
+<td><code>drift_m</code></td>
+<td>no, default 0</td>
+<td>m</td>
+<td>Spread of the weather drift</td>
+<td><code>drift_std</code>, m</td>
+</tr>
+<tr>
+<td><code>drift_tau_s</code></td>
+<td>no, default 3600; above 0</td>
+<td>s</td>
+<td>Correlation time of the weather drift</td>
+<td><code>drift_tau</code>, s</td>
+</tr>
+<tr>
+<td><code>noise_m_per_rt_hz</code></td>
+<td>no, default 0</td>
+<td>m/√Hz</td>
+<td>Density of the white noise</td>
+<td><code>noise_density</code>, m·√s</td>
+</tr>
+</tbody>
+</table>
 <h2 id="rules">Rules<a class="headerlink" href="#rules" title="Permanent link">&para;</a></h2>
 <ul>
 <li>Every value must be 0 or more. Set a value to 0 to remove that error.</li>
-<li><code>bias_tau_s</code> must be above 0, even when its bias instability is 0.</li>
+<li><code>bias_tau_s</code> must be above 0, even when its bias instability is 0, and
+  so must <code>drift_tau_s</code> when it is given.</li>
 <li>A missing required key stops the run with a message naming it, such as
   <code>KeyError: 'bias_tau_s'</code>.</li>
 </ul>
@@ -2232,6 +2317,16 @@ errors of that size.</p>
 <span class="nt">alignment</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">tilt_std_deg</span><span class="p">:</span><span class="w">    </span><span class="l l-Scalar l-Scalar-Plain">0.0015</span><span class="w">  </span><span class="c1"># N/E tilt misalignment 1σ [°]</span>
 <span class="w">  </span><span class="nt">heading_std_deg</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">0.04</span><span class="w">    </span><span class="c1"># Azimuth misalignment 1σ [°]</span>
+
+<span class="c1"># Barometric altimeter that aids the vertical channel, typical of an</span>
+<span class="c1"># aircraft air-data system. Omit this section for an ideal barometer.</span>
+<span class="c1"># Near sea level 1 hPa of pressure is about 8.3 m of height.</span>
+<span class="nt">baro</span><span class="p">:</span>
+<span class="w">  </span><span class="nt">scale_factor_pct</span><span class="p">:</span><span class="w">   </span><span class="l l-Scalar l-Scalar-Plain">2.0</span><span class="w">     </span><span class="c1"># Scale-factor error 1σ: a 6 K non-standard air temperature [%]</span>
+<span class="w">  </span><span class="nt">bias_m</span><span class="p">:</span><span class="w">            </span><span class="l l-Scalar l-Scalar-Plain">10.0</span><span class="w">     </span><span class="c1"># Static bias 1σ: altimeter-setting (QNH) error of about 1 hPa [m]</span>
+<span class="w">  </span><span class="nt">drift_m</span><span class="p">:</span><span class="w">           </span><span class="l l-Scalar l-Scalar-Plain">10.0</span><span class="w">     </span><span class="c1"># Weather drift 1σ: sea-level pressure changing en route [m]</span>
+<span class="w">  </span><span class="nt">drift_tau_s</span><span class="p">:</span><span class="w">     </span><span class="l l-Scalar l-Scalar-Plain">7200.0</span><span class="w">     </span><span class="c1"># Correlation time of the weather drift [s]</span>
+<span class="w">  </span><span class="nt">noise_m_per_rt_hz</span><span class="p">:</span><span class="w">  </span><span class="l l-Scalar l-Scalar-Plain">0.1</span><span class="w">     </span><span class="c1"># White-noise density [m/√Hz]</span>
 </code></pre></div>
 <p>Two more presets, for a tactical-grade and a <abbr title="Micro-electro-mechanical systems: low-cost silicon inertial sensors.">MEMS</abbr> unit, are on the
 <a href="../../guide/imu-specs/#three-presets">Modelling an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a> page.</p>
@@ -2244,7 +2339,7 @@ file into an <a class="autorefs autorefs-internal" title="&lt;code class=&quot;d
   &lt;/span&gt;" href="../api/sensors/#ins_sim.sensors.imu.IMUSpec"><code>IMUSpec</code></a>, in SI units. An
 <code>IMUSpec</code> can also be built directly. Its defaults are the packaged spec's
 noise and bias values, with no scale-factor, misalignment or alignment
-errors.</p>
+errors, and an ideal barometer.</p>
 
 
 

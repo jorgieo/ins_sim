@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2398,6 +2398,7 @@ heading values.</p>
     <span class="n">accel_ma_std</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"misalignment_urad"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>  <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
     <span class="n">align_tilt_std</span>    <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tilt_std_deg"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>
     <span class="n">align_heading_std</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"heading_std_deg"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>
+    <span class="n">baro</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">baro</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">baro_spec_from_yaml</span><span class="p">(</span><span class="n">baro</span><span class="p">),</span>
 <span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2455,14 +2456,19 @@ b_{d,k+1} = a\,b_{d,k} + \sqrt{1 - a^2}\,\sigma\,u_{k+1},
 <div class="highlight"><pre><span></span><code><span class="c1"># Dynamic (Gauss-Markov) bias: discrete AR(1) recursion</span>
 <span class="c1">#   b_d[k+1] = a·b_d[k] + √(1−a²)·σ·u[k+1],   a = exp(−tau_i/τ),</span>
 <span class="c1"># started in its stationary distribution, b_d[0] ~ N(0, σ²), so its</span>
-<span class="c1"># variance is σ² from the first sample on. The IIR filter produces the</span>
-<span class="c1"># zero-start response to u; the decaying initial state is added to it.</span>
-<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tau_i</span> <span class="o">/</span> <span class="n">bd_tau</span><span class="p">)</span>
-<span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">bd_std</span>
-<span class="n">b_d0</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bd_std</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
-<span class="n">u</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
-<span class="n">b_d</span> <span class="o">=</span> <span class="p">(</span><span class="n">lfilter</span><span class="p">([</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="p">],</span> <span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-       <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">b_d0</span><span class="p">)</span>
+<span class="c1"># variance is σ² from the first sample on.</span>
+<span class="n">b_d</span> <span class="o">=</span> <span class="n">gauss_markov</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">bd_std</span><span class="p">,</span> <span class="n">bd_tau</span><span class="p">)</span>
+</code></pre></div>
+<p>The same process models the barometer's weather drift, so it lives in
+a shared helper:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># The IIR filter produces the zero-start response to u; the decaying</span>
+<span class="c1"># initial state a^k·x[0] is added to it.</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tau_i</span> <span class="o">/</span> <span class="n">tau_c</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_axes</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_axes</span><span class="p">));</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">return</span> <span class="p">(</span><span class="n">lfilter</span><span class="p">([</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="p">],</span> <span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -2597,6 +2603,11 @@ times the bias instability, but it averages away; the bias does not.</p>
 <td>Error terms of one triad</td>
 <td><span class="arithmatex">\(\mathbf{M}\)</span>, <span class="arithmatex">\(\mathbf{b}_s\)</span>, <span class="arithmatex">\(b_d\)</span>, <span class="arithmatex">\(w\)</span></td>
 <td><code>_triad_measurement</code> and <code>_error_matrix</code> in <code>ins_sim/sensors/imu.py</code></td>
+</tr>
+<tr>
+<td>Gauss–Markov process</td>
+<td><span class="arithmatex">\(b_d\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;gauss_markov&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.noise.gauss_markov"><code>gauss_markov</code></a></td>
 </tr>
 <tr>
 <td>Initial alignment error</td>

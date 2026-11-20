@@ -2,142 +2,142 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/download/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/get-started/first-run/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/get-started/first-script/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/cli/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/imu-specs/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/missions/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/recipes/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/guide/results/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/project/changelog/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/project/migrating-from-0.2/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/bibliography/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/glossary/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/imu-yaml/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/mission-yaml/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/units-constants/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/config/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/earth-model/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/evaluation/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/navigation/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/sensors/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/reference/api/trajectory/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/earth-gravity/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/error-model/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/frames-attitude/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/imu-errors/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/mechanization/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/monte-carlo/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/notation/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/truth-kinematics/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/theory/vertical-channel/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
     <url>
          <loc>https://jorgieo.github.io/ins_sim/dev/validation/</loc>
-         <lastmod>2026-11-19</lastmod>
+         <lastmod>2026-11-20</lastmod>
     </url>
 </urlset>

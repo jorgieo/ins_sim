@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1197,6 +1197,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#barometer-error-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Barometer errors
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2010,6 +2021,17 @@
   
 </li>
         
+          <li class="md-nav__item">
+  <a href="#barometer-error-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Barometer errors
+      
+    </span>
+  </a>
+  
+</li>
+        
       </ul>
     </nav>
   
@@ -2110,8 +2132,11 @@ channel diverge.</p>
   <span class="arithmatex">\(\tau\)</span> = 100 s. The same 1 m/s error then causes a 23 m transient
   that dies away within about 20 minutes.</li>
 <li>The loop's integrator cancels a constant vertical accelerometer bias.</li>
-<li>The barometer in ins_sim is ideal: it reports the true height. Aided
-  vertical errors are therefore optimistic.</li>
+<li>The <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height follows the barometer, errors included. A constant
+  barometer error ends up in full in the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height, a slow drift is
+  followed with a lag, and white noise is filtered down to
+  <span class="arithmatex">\(1.44\,N/\sqrt\tau\)</span>. With the packaged spec the barometer, not the
+  <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, sets the Down position error.</li>
 </ul>
 </div>
 <h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
@@ -2199,9 +2224,88 @@ error is then</p>
 sign at <span class="arithmatex">\(t = 2\tau\)</span>, and overshoots by <span class="arithmatex">\(+0.08\,\delta v_D(0)\,\tau\)</span> at
 <span class="arithmatex">\(t = 3.4\,\tau\)</span>. A constant accelerometer bias leaves no steady height
 error: the integrator settles at <span class="arithmatex">\(a_c = -b_D\)</span>.</p>
+<h3 id="barometer-error-model">Barometer errors<a class="headerlink" href="#barometer-error-model" title="Permanent link">&para;</a></h3>
+<p>A pressure altimeter measures static pressure and converts it to height
+through a standard atmosphere, so its height is wrong whenever the day's
+atmosphere differs from that standard<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup>. ins_sim models the
+barometric height as</p>
+<div class="arithmatex">\[
+\tilde h_b = h_b + s_b\left(h_b - h_{b0}\right) + b_{bs} + b_{bd}(t) + w_b
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(h_{b0}\)</span> is the height of the departure point [m]. There the altimeter
+  setting makes the barometer read correctly, apart from <span class="arithmatex">\(b_{bs}\)</span>;</li>
+<li><span class="arithmatex">\(s_b\)</span> is the scale-factor error [dimensionless]. Air colder than
+  standard is denser, so pressure falls off faster with height, and the
+  altimeter misreads the height above the departure point by about
+  <span class="arithmatex">\(\Delta T/T\)</span>;</li>
+<li><span class="arithmatex">\(b_{bs}\)</span> is the static bias [m], from the error in the altimeter
+  setting (<abbr title="The altimeter pressure setting that makes a barometric altimeter read field elevation on the ground.">QNH</abbr>) and the sensor's offset;</li>
+<li><span class="arithmatex">\(b_{bd}\)</span> is the weather drift [m], a first-order Gauss–Markov process,
+  the same model as the in-run biases on the
+  <a href="../imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a> page;</li>
+<li><span class="arithmatex">\(w_b\)</span> is white noise of density <span class="arithmatex">\(N\)</span> [m/√Hz].</li>
+</ul>
+<p>Writing <span class="arithmatex">\(e = \tilde h_b - h_b\)</span> for the barometer's error, the residual is
+<span class="arithmatex">\(r = \delta h_b - e\)</span>. The loop equations above then give the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height
+error as <span class="arithmatex">\(e\)</span> passed through a filter:</p>
+<div class="arithmatex">\[
+\frac{\delta h_b(s)}{e(s)}
+= \frac{K_1 s^2 + K_2 s + K_3}{s^3 + K_1 s^2 + \left(K_2 - 1/\tau_v^2\right)s + K_3}
+\approx \frac{3\tau^2 s^2 + 3\tau s + 1}{\left(\tau s + 1\right)^3}
+\]</div>
+<p>Its gain at <span class="arithmatex">\(s = 0\)</span> is exactly 1, gravity gradient included. That has
+three consequences:</p>
+<ul>
+<li><strong>A constant error ends up in full in the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height.</strong> After a step
+  <span class="arithmatex">\(e_0\)</span>, the height error is
+  <span class="arithmatex">\(e_0\left[1 - e^{-t/\tau}\left(1 - 2t/\tau + t^2/2\tau^2\right)\right]\)</span>.
+  It overshoots by 21% at <span class="arithmatex">\(t = 1.27\,\tau\)</span>, then settles on <span class="arithmatex">\(e_0\)</span>: the
+  navigator cannot tell a barometer bias from a true height.</li>
+<li><strong>A slow drift is followed with a lag.</strong> Drifts much slower than <span class="arithmatex">\(\tau\)</span>
+  pass almost unchanged; the faster the drift, the further the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height
+  lags behind it.</li>
+<li><strong>White noise is filtered.</strong> The <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height error becomes stationary
+  noise with the spread below, where <span class="arithmatex">\(h(t)\)</span> is the filter's impulse
+  response.</li>
+</ul>
+<div class="arithmatex">\[
+\sigma_{\delta h} = N\sqrt{\int_0^\infty h(t)^2\,dt}
+\approx \sqrt{\frac{33}{16}}\,\frac{N}{\sqrt\tau}
+\approx 1.44\,\frac{N}{\sqrt\tau}
+\]</div>
+<p>With <span class="arithmatex">\(N\)</span> = 0.1 m/√Hz and <span class="arithmatex">\(\tau\)</span> = 100 s that is 1.4 cm, against
+0.32 m per sample from the barometer itself at 10 Hz.</p>
+<p>The scale factor and the bias are fixed for a run, and the weather drift
+is much slower than the loop, so all three pass almost in full into the
+<abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height. With the packaged spec, on a mission that climbs 4.5 km, the
+scale factor alone gives about 90 m (1σ).</p>
 <h2 id="as-implemented">As implemented<a class="headerlink" href="#as-implemented" title="Permanent link">&para;</a></h2>
-<p><strong>1. Gains</strong>, set once from <code>baro_tau</code>:</p>
+<p><strong>1. Barometric height.</strong> <code>run_monte_carlo</code> draws each trial's barometer
+errors from a random stream of their own, so switching them on leaves the
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> and alignment errors of every trial unchanged:</p>
 <div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Equation</label><label for="__tabbed_1_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\tilde h_b = h_b + s_b\left(h_b - h_{b0}\right) + b_{bs} + b_{bd} + w_b,
+\qquad \sigma_{w_b} = N/\sqrt{\tau_i}
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">s_b</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">scale_factor_std</span><span class="p">)</span>
+<span class="n">b_bs</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">bias_std</span><span class="p">)</span>
+<span class="n">b_bd</span> <span class="o">=</span> <span class="n">gauss_markov</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">h_b</span><span class="p">),</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">drift_std</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">drift_tau</span><span class="p">,</span>
+                    <span class="n">n_axes</span><span class="o">=</span><span class="mi">1</span><span class="p">)[:,</span> <span class="mi">0</span><span class="p">]</span>
+<span class="n">w_b</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">noise_density</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tau_i</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">h_b</span><span class="p">))</span>
+<span class="k">return</span> <span class="n">h_b</span> <span class="o">+</span> <span class="n">s_b</span> <span class="o">*</span> <span class="p">(</span><span class="n">h_b</span> <span class="o">-</span> <span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> <span class="n">b_bs</span> <span class="o">+</span> <span class="n">b_bd</span> <span class="o">+</span> <span class="n">w_b</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>2. Gains</strong>, set once from <code>baro_tau</code>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Equation</label><label for="__tabbed_2_2">Code</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="arithmatex">\[
@@ -2220,10 +2324,10 @@ K_1 = \frac{3}{\tau}, \qquad K_2 = \frac{3}{\tau^2}, \qquad K_3 = \frac{1}{\tau^
 </div>
 </div>
 </div>
-<p><strong>2. Vertical velocity and integrator.</strong> Inside the velocity update, the
+<p><strong>3. Vertical velocity and integrator.</strong> Inside the velocity update, the
 residual corrects the Down acceleration through <span class="arithmatex">\(K_2\)</span> and the
 integrator, and the integrator accumulates <span class="arithmatex">\(K_3\,r\)</span>:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Equation</label><label for="__tabbed_2_2">Code</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Equation</label><label for="__tabbed_3_2">Code</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="arithmatex">\[
@@ -2248,9 +2352,9 @@ a_{c,k+1} = a_{c,k} + K_3\,r_k\,\tau_i
 </div>
 </div>
 </div>
-<p><strong>3. Height.</strong> Inside the position update, the residual corrects the height
+<p><strong>4. Height.</strong> Inside the position update, the residual corrects the height
 through <span class="arithmatex">\(K_1\)</span>:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Equation</label><label for="__tabbed_3_2">Code</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Equation</label><label for="__tabbed_4_2">Code</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="arithmatex">\[
@@ -2272,7 +2376,7 @@ h_{b,k+1} = h_{b,k} - v_{D,k}\,\tau_i - K_1\,r_k\,\tau_i
 </div>
 <div class="admonition note">
 <p class="admonition-title">Compared with Groves (2013)</p>
-<p>Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup> explains the vertical channel's instability and
+<p>Groves<sup id="fnref2:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup> explains the vertical channel's instability and
 barometric height measurement, and combines sensors with Kalman
 filters. ins_sim instead uses a classical fixed-gain, third-order
 baro-inertial loop<sup id="fnref:tw"><a class="footnote-ref" href="#fn:tw">2</a></sup>, with its gains chosen to place a triple pole.</p>
@@ -2285,15 +2389,23 @@ prediction, reaching 6.6 km after 30 minutes; its fitted time constant is
 within 0.1% of <span class="arithmatex">\(\tau_v\)</span>. With the barometric loop it peaks at 23 m and
 decays, as the closed form above predicts. Both are checks on the
 <a href="../../validation/#vertical-channel">Validation</a> page.</p>
+<p><img alt="INS height error after a 10 m barometer bias, and while it tracks a barometer drift" src="../../assets/validation/baro_tracking.png" /></p>
+<p>The same <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> at rest, now with a barometer that errs. On the left, a
+constant 10 m barometer error: the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height overshoots by about 21% and
+settles on 10 m. On the right, a fast barometer drift, 10 m correlated
+over 10 minutes: the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height follows it a little late, as the filter
+above predicts. Both are checks on the
+<a href="../../validation/#barometer-errors">Validation</a> page.</p>
 <h2 id="assumptions-limitations">Assumptions &amp; limitations<a class="headerlink" href="#assumptions-limitations" title="Permanent link">&para;</a></h2>
 <div class="admonition warning">
 <p class="admonition-title">Assumptions &amp; limitations</p>
 <ul>
-<li><strong>An ideal barometer.</strong> The aiding height is the true height, with no
-  noise, bias or lag. A real barometric altimeter's errors, from the
-  pressure setting and from non-standard temperature, typically amount
-  to tens of metres and would pass straight into the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height. The
-  aided vertical errors in ins_sim are therefore optimistic.</li>
+<li><strong>A simple barometer model.</strong> The temperature error is one scale
+  factor for the whole flight, and the weather one Gauss–Markov drift.
+  Real errors follow the route's actual weather, and an aircraft's
+  static-pressure ports add errors that change with speed and
+  attitude. Without a <code>baro</code> block in the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec the barometer is
+  ideal, and the aided vertical errors are then optimistic.</li>
 <li><strong>Fixed gains.</strong> The loop does not adapt to the quality of the
   barometer; <span class="arithmatex">\(\tau\)</span> is fixed at 100 s in the GUI. The Python API
   accepts other values through <code>baro_tau</code>.</li>
@@ -2320,8 +2432,23 @@ decays, as the closed form above predicts. Both are checks on the
 </tr>
 <tr>
 <td>Barometric height</td>
-<td><span class="arithmatex">\(\tilde h_b\)</span>, the true height</td>
-<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;run_monte_carlo&lt;/span&gt;" href="../../reference/api/evaluation/#ins_sim.evaluation.monte_carlo.run_monte_carlo"><code>run_monte_carlo</code></a>, argument <code>baro_aiding</code></td>
+<td><span class="arithmatex">\(\tilde h_b\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;generate_baro_samples&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.baro.generate_baro_samples"><code>generate_baro_samples</code></a>; <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;run_monte_carlo&lt;/span&gt;" href="../../reference/api/evaluation/#ins_sim.evaluation.monte_carlo.run_monte_carlo"><code>run_monte_carlo</code></a>, argument <code>baro_aiding</code></td>
+</tr>
+<tr>
+<td>Barometer error spreads</td>
+<td><span class="arithmatex">\(s_b\)</span>, <span class="arithmatex">\(b_{bs}\)</span>, <span class="arithmatex">\(b_{bd}\)</span>, <span class="arithmatex">\(N\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;BaroSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.baro.BaroSpec"><code>BaroSpec</code></a>, the <code>baro</code> block of the <a href="../../reference/imu-yaml/#baro"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec</a></td>
+</tr>
+<tr>
+<td>Weather drift</td>
+<td><span class="arithmatex">\(b_{bd}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;gauss_markov&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.noise.gauss_markov"><code>gauss_markov</code></a></td>
 </tr>
 <tr>
 <td>Gravity gradient</td>
@@ -2332,7 +2459,7 @@ decays, as the closed form above predicts. Both are checks on the
 </table>
 <p>This example applies a 1 m/s Down-velocity error to a level <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> at rest at
 the equator and compares the simulated height error with both closed forms:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Script</label><label for="__tabbed_4_2">Output</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Script</label><label for="__tabbed_5_2">Output</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="sd">"""A 1 m/s Down-velocity error, free-inertial and with an ideal barometer."""</span>
@@ -2387,7 +2514,7 @@ t [min]           simulated  predicted    simulated  predicted
 <li id="fn:groves">
 <p><a href="../../reference/bibliography/#groves2013">Groves (2013)</a>, Chapter 5
 for the instability of the vertical channel, and Chapter 6 for
-barometric height measurement.&#160;<a class="footnote-backref" href="#fnref:groves" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+barometric height measurement.&#160;<a class="footnote-backref" href="#fnref:groves" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:groves" title="Jump back to footnote 1 in the text">&#8617;</a></p>
 </li>
 <li id="fn:tw">
 <p><a href="../../reference/bibliography/#titterton2004">Titterton &amp; Weston (2004)</a>.&#160;<a class="footnote-backref" href="#fnref:tw" title="Jump back to footnote 2 in the text">&#8617;</a></p>

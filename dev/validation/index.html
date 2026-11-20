@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -1316,6 +1316,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#barometer-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Barometer errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#angle-random-walk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2065,6 +2076,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#barometer-errors" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Barometer errors
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#angle-random-walk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2158,6 +2180,9 @@ predictions are derived on the Theory pages: the
 <ul>
 <li>Every inertial check agrees with its prediction to within 0.3%, and
   every noise check to within statistical sampling error.</li>
+<li>Barometer errors reach the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height exactly as the damping loop's
+  transfer function predicts: a bias in full, a drift with a lag, and
+  white noise attenuated about sevenfold at a 1 s step.</li>
 <li>A 0.01 °/h gyro bias starts the position drifting at about 0.6 <abbr title="Nautical mile: 1,852 m.">nmi</abbr>/h,
   the classic figure for a navigation-grade <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>. Over hours the
   Earth-rate loop bends that drift over, and the simulator reproduces
@@ -2224,6 +2249,24 @@ predictions are derived on the Theory pages: the
 <td>damped</td>
 </tr>
 <tr>
+<td>Steady <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height error from a 10 m barometer bias</td>
+<td>10.00 m</td>
+<td>10.00 m</td>
+<td>0.00%</td>
+</tr>
+<tr>
+<td>RMS lag of the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height behind a barometer drift</td>
+<td>2.53 m</td>
+<td>2.56 m</td>
+<td>+1.26%</td>
+</tr>
+<tr>
+<td><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height-error spread from 0.1 m/√Hz of barometer noise</td>
+<td>1.44 cm</td>
+<td>1.45 cm</td>
+<td>+1.00%</td>
+</tr>
+<tr>
 <td>Integrated-angle spread after 30 min, <span class="arithmatex">\(\tau_i\)</span> = 0.1 s</td>
 <td>5.09″</td>
 <td>5.04″</td>
@@ -2278,7 +2321,8 @@ navigator:</p>
 <span class="n">nav</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">omega_ib_b</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">gyro_bias_b</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
                          <span class="n">truth</span><span class="o">.</span><span class="n">f_ib_b</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">accel_bias_b</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">),</span>
                          <span class="n">start</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">tau_i</span><span class="p">,</span>
-                         <span class="n">meas_h_b</span><span class="o">=</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span> <span class="k">if</span> <span class="n">baro</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
+                         <span class="n">meas_h_b</span><span class="o">=</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span> <span class="k">if</span> <span class="n">meas_h_b</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">meas_h_b</span><span class="p">)</span>
+                         <span class="k">if</span> <span class="n">baro</span> <span class="k">else</span> <span class="kc">None</span><span class="p">)</span>
 </code></pre></div>
 </div>
 </div>
@@ -2372,6 +2416,41 @@ velocity errors, which slows the divergence slightly. With an ideal
 barometer, the third-order damping loop instead holds the error to a
 transient of a few tens of metres.</p>
 <p><img alt="Height error after a 1 m/s Down-velocity error, free-inertial and with an ideal barometer" src="../assets/validation/vertical_channel.png" /></p>
+<h2 id="barometer-errors">Barometer errors<a class="headerlink" href="#barometer-errors" title="Permanent link">&para;</a></h2>
+<p>The damping loop pulls the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height onto the barometer's, errors
+included. Linearized, the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height error is the barometer error <span class="arithmatex">\(e\)</span>
+passed through the filter</p>
+<div class="arithmatex">\[
+\frac{\delta h_b(s)}{e(s)}
+= \frac{K_1 s^2 + K_2 s + K_3}{s^3 + K_1 s^2 + \left(K_2 - 1/\tau_v^2\right)s + K_3}
+\]</div>
+<p>derived on the <a href="../theory/vertical-channel/#barometer-error-model">Vertical channel</a>
+page. The checks run each kind of barometer error on its own through the
+navigator and compare the height error with that filter's response:</p>
+<ul>
+<li><strong>A constant 10 m error</strong> must end up in full in the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height, after
+  the filter's step response.</li>
+<li><strong>A drift</strong>, here one Gauss–Markov realization with a 10 m spread and a
+  10-minute correlation time, must be followed with the filter's lag. The
+  prediction passes the same realization through the filter.</li>
+<li><strong>White noise</strong> of density <span class="arithmatex">\(N\)</span> must leave a height-error spread of
+  <span class="arithmatex">\(N\sqrt{\int_0^\infty h(t)^2\,dt}\)</span>, where <span class="arithmatex">\(h(t)\)</span> is the filter's
+  impulse response. The scenario computes the integral exactly from the
+  filter's state-space form.</li>
+</ul>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:1"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Prediction</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">,</span> <span class="n">K3</span> <span class="o">=</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="n">baro_tau</span><span class="p">,</span> <span class="mf">3.0</span> <span class="o">/</span> <span class="n">baro_tau</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">baro_tau</span><span class="o">**</span><span class="mi">3</span>
+<span class="n">tau_v</span> <span class="o">=</span> <span class="n">vertical_time_constant</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span>
+<span class="n">num</span> <span class="o">=</span> <span class="p">[</span><span class="n">K1</span><span class="p">,</span> <span class="n">K2</span><span class="p">,</span> <span class="n">K3</span><span class="p">]</span>
+<span class="n">den</span> <span class="o">=</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">K1</span><span class="p">,</span> <span class="n">K2</span> <span class="o">-</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="n">tau_v</span><span class="o">**</span><span class="mi">2</span><span class="p">,</span> <span class="n">K3</span><span class="p">]</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="INS height error after a 10 m barometer bias, and while it tracks a barometer drift" src="../assets/validation/baro_tracking.png" /></p>
+<p><img alt="Spread of the INS height error from white barometer noise, over 200 runs" src="../assets/validation/baro_noise.png" /></p>
 <h2 id="angle-random-walk">Angle random walk<a class="headerlink" href="#angle-random-walk" title="Permanent link">&para;</a></h2>
 <p>Gyro white noise integrates into an attitude error whose spread grows with
 the square root of time, at a rate set by the angle random walk (<abbr title="Angle random walk: gyro white noise. Integrated angle uncertainty grows as ARW·√t; datasheets quote it in °/√h.">ARW</abbr>)

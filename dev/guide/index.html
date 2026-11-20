@@ -23,7 +23,7 @@
       
       
       <link rel="icon" href="../assets/images/favicon.png">
-      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.1">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
     
     
       
@@ -2001,9 +2001,11 @@ a desktop PC each trial of the packaged 80-minute mission takes:</p>
 </table>
 <p>A 1 s step is fine for a quick look at how the errors grow. Use 0.1 s for
 final numbers.</p>
-<p><strong>Baro altitude aiding</strong> (checked by default) feeds the true height into
-the navigator's height channel, as a perfect barometric altimeter would.
-Without it the height error grows exponentially: try it in
+<p><strong>Baro altitude aiding</strong> (checked by default) feeds a barometric
+altimeter's height into the navigator's height channel. The altimeter errs
+as the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec's <code>baro</code> block says, or reports the true height if the spec
+has none (see <a href="imu-specs/#the-baro-block">Modelling an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>). Without
+aiding the height error grows exponentially: try it in
 <a href="../get-started/first-run/#7-switch-off-the-barometer">Your first simulation</a>.
 The <a href="../theory/vertical-channel/">Vertical channel</a> page explains why.</p>
 <p><strong>Output Visualizations</strong> selects the result tabs to build. Each tab takes
