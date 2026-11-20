@@ -97,7 +97,12 @@ class SimulationWorker(QObject):
         spec = load_imu_spec(str(imu_spec_path))
 
         baro_aiding = self._config.get("baro_aiding", True)
-        vertical = "baro-damped" if baro_aiding else "free-inertial"
+        if not baro_aiding:
+            vertical = "free-inertial"
+        elif spec.baro is None:
+            vertical = "baro-damped, ideal barometer"
+        else:
+            vertical = "baro-damped"
         self.log_message.emit(f"Running {n_trials} Monte Carlo trials "
                               f"({vertical} vertical channel)...")
         mc = run_monte_carlo(

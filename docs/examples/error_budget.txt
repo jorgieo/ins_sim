@@ -5,4 +5,5 @@ CEP after 27 min, each source on its own
   Accelerometer biases                     120 m
   Accel. scale factor and misalignment     168 m
   Sensor noise (ARW and VRW)               136 m
-  All sources together                     799 m
+  Barometer                                  5 m
+  All sources together                     796 m

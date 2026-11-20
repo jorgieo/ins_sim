@@ -82,9 +82,10 @@ same numbers every time.
 
 Open the **Position Errors** tab. It shows the North, East and Down errors
 over time: a dark line for the average over the trials, and a shaded band
-of ±3 standard deviations around it. The North and East bands widen to
-kilometres, but the Down band stays within metres. The barometric
-altimeter holds the height, as the next step shows.
+of ±3 standard deviations around it. The North and East bands keep
+widening, to kilometres, but the Down band levels off at a few hundred
+metres once the climb ends. The barometric altimeter holds the height, to
+within its own errors, as the next step shows.
 
 Then open the **Map** tab: the true track over Puerto Rico, every trial's
 estimated track, and a shaded band that holds 95% of the trials. White

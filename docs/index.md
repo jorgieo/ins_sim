@@ -69,7 +69,8 @@ error grows over time for a given IMU.
   WGS-84 radii of curvature and normal gravity, evaluated at the current
   position every step, not a flat-Earth approximation.
 - **Vertical channel physics**: a third-order baro-damped loop by default,
-  or free-inertial to watch the channel's instability.
+  aided by a barometer with its own errors (temperature, altimeter setting,
+  weather, noise), or free-inertial to watch the channel's instability.
 - **Monte Carlo evaluation**: independent error draws for every trial,
   errors measured as the textbook defines them, and CEP, ±3σ and
   percentile statistics.

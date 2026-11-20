@@ -15,7 +15,7 @@ for a navigation estimate, `delta_` for an error.
 | ---- | -------------- | ---------- |
 | [Earth model](earth-model.md) | WGS-84 radii of curvature, Earth rate, transport rate, gravity | `normal_gravity`, `wgs84_radii` |
 | [Trajectory](trajectory.md) | The truth trajectory from a mission YAML, and the ideal IMU outputs along it | `build_trajectory`, `TruthTrajectory` |
-| [Sensors](sensors.md) | The IMU error model | `load_imu_spec`, `generate_imu_samples` |
+| [Sensors](sensors.md) | The IMU and barometer error models | `load_imu_spec`, `generate_imu_samples`, `generate_baro_samples` |
 | [Navigation](navigation.md) | The strapdown mechanization | `strapdown_navgrade` |
 | [Evaluation](evaluation.md) | Monte Carlo runs and the navigation-error definitions | `run_monte_carlo`, `position_error` |
 | [Configuration](config.md) | Paths to the packaged default YAML files | `default_trajectory_path` |

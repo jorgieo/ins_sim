@@ -69,9 +69,11 @@ a desktop PC each trial of the packaged 80-minute mission takes:
 A 1 s step is fine for a quick look at how the errors grow. Use 0.1 s for
 final numbers.
 
-**Baro altitude aiding** (checked by default) feeds the true height into
-the navigator's height channel, as a perfect barometric altimeter would.
-Without it the height error grows exponentially: try it in
+**Baro altitude aiding** (checked by default) feeds a barometric
+altimeter's height into the navigator's height channel. The altimeter errs
+as the IMU spec's `baro` block says, or reports the true height if the spec
+has none (see [Modelling an IMU](imu-specs.md#the-baro-block)). Without
+aiding the height error grows exponentially: try it in
 [Your first simulation](../get-started/first-run.md#7-switch-off-the-barometer).
 The [Vertical channel](../theory/vertical-channel.md) page explains why.
 

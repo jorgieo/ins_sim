@@ -9,6 +9,9 @@
 | North error after 3 h from a 0.01 °/h gyro bias | −2,808 m | −2,807 m | −0.05% |
 | Free-inertial vertical time constant \(\tau_v\) | 573.0 s | 572.6 s | −0.07% |
 | Largest height error with an ideal barometer | bounded | 23.3 m, then 0.001 m at 50 min | damped |
+| Steady INS height error from a 10 m barometer bias | 10.00 m | 10.00 m | 0.00% |
+| RMS lag of the INS height behind a barometer drift | 2.53 m | 2.56 m | +1.26% |
+| INS height-error spread from 0.1 m/√Hz of barometer noise | 1.44 cm | 1.45 cm | +1.00% |
 | Integrated-angle spread after 30 min, \(\tau_i\) = 0.1 s | 5.09″ | 5.04″ | −0.91% |
 | Integrated-angle spread after 30 min, \(\tau_i\) = 1 s | 5.09″ | 5.08″ | −0.23% |
 | Gauss–Markov bias spread at the first sample | σ | 0.997 σ | −0.34% |

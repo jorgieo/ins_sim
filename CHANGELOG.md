@@ -5,6 +5,29 @@ All notable changes to ins_sim. The format follows
 numbers [Semantic Versioning](https://semver.org/): before 1.0, a new minor
 version may change the API.
 
+## [Unreleased]
+
+### Added
+
+- **A barometer error model.** The barometric altimeter that aids the
+  vertical channel now errs like a real one: a scale-factor error from
+  non-standard air temperature, a static bias from the altimeter setting,
+  a weather drift and white noise. An optional `baro` block in the IMU
+  spec sets them; without it the barometer is ideal, as before. In Python,
+  `IMUSpec.baro` takes a `BaroSpec`, and `generate_baro_samples` draws the
+  measurements. Each trial draws its barometer errors from a random stream
+  of its own, so they leave the IMU and alignment errors unchanged.
+
+### Changed
+
+- **The packaged IMU spec has a barometer**, typical of an aircraft
+  air-data system, so the app's default results differ from 0.3.0. The
+  Down position error on the packaged mission grows from under 10 m to
+  about 80 m (1σ); the horizontal errors barely change. IMU specs that
+  the app has already copied into your `imu_specs` folder keep their
+  ideal barometer; add a `baro` block to them, or copy the new default,
+  to get the new behaviour.
+
 ## [0.3.0] - 2026-11-19
 
 Version 0.3.0 adopts the notation of Groves, *Principles of GNSS, Inertial,
@@ -116,6 +139,7 @@ The first release.
 - A command-line run with a summary figure and an interactive map.
 - Downloadable apps for Windows and Linux.
 
+[Unreleased]: https://github.com/jorgieo/ins_sim/compare/v0.3.0...HEAD
 [0.3.0]: https://github.com/jorgieo/ins_sim/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jorgieo/ins_sim/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/jorgieo/ins_sim/compare/v0.1.0...v0.1.1

@@ -16,12 +16,15 @@ textbook single-axis formulas apply exactly.
 from types import SimpleNamespace
 
 import numpy as np
+from scipy.linalg import solve_continuous_lyapunov
+from scipy.signal import lsim, tf2ss
 from scipy.spatial.transform import Rotation as Rot
 
 from ins_sim.config import default_trajectory_path
 from ins_sim.core.earth_model import WGS84_A, WGS84_OMEGA, normal_gravity, wgs84_radii
 from ins_sim.evaluation.errors import attitude_error, position_error
 from ins_sim.navigation.strapdown import NavState, strapdown_navgrade
+from ins_sim.sensors.baro import BaroSpec, generate_baro_samples
 from ins_sim.sensors.imu import GM_ALLAN_PEAK, IMUSpec, generate_imu_samples
 from ins_sim.trajectory.kinematics import TruthTrajectory, build_trajectory
 
@@ -43,8 +46,12 @@ def stationary_truth(duration_s: float, tau_i: float, L_b_deg: float = 0.0,
 
 def navigate(truth: TruthTrajectory, *, delta_psi_nb_n0=(0.0, 0.0, 0.0),
              delta_v_eb_n0=(0.0, 0.0, 0.0), accel_bias_b=(0.0, 0.0, 0.0),
-             gyro_bias_b=(0.0, 0.0, 0.0), baro: bool = True) -> SimpleNamespace:
+             gyro_bias_b=(0.0, 0.0, 0.0), baro: bool = True,
+             meas_h_b: np.ndarray | None = None) -> SimpleNamespace:
     """Runs the strapdown navigator on the truth's own IMU outputs plus chosen errors.
+
+    With `baro` the vertical channel is aided by `meas_h_b`, or by the true
+    height (an ideal barometer) when `meas_h_b` is None.
 
     Returns:
         SimpleNamespace: t, nav (NavSolution), delta_r_eb_n, delta_psi_nb_n.
@@ -57,7 +64,8 @@ def navigate(truth: TruthTrajectory, *, delta_psi_nb_n0=(0.0, 0.0, 0.0),
     nav = strapdown_navgrade(truth.omega_ib_b + np.asarray(gyro_bias_b, dtype=float),
                              truth.f_ib_b + np.asarray(accel_bias_b, dtype=float),
                              start, truth.tau_i,
-                             meas_h_b=truth.h_b if baro else None)
+                             meas_h_b=(truth.h_b if meas_h_b is None else meas_h_b)
+                             if baro else None)
     # --8<-- [end:navigate]
     delta_r_eb_n = position_error(nav.L_b, nav.lambda_b, nav.h_b,
                                   truth.L_b, truth.lambda_b, truth.h_b)
@@ -182,8 +190,7 @@ def vertical_channel(delta_v_D: float = 1.0, duration_s: float = 3000.0,
     truth = stationary_truth(duration_s, tau_i)
     free = navigate(truth, delta_v_eb_n0=(0.0, 0.0, delta_v_D), baro=False)
     aided = navigate(truth, delta_v_eb_n0=(0.0, 0.0, delta_v_D), baro=True)
-    tau_v = float(1.0 / np.sqrt(2.0 * normal_gravity(0.0, 0.0) / WGS84_A
-                                - 4.0 * WGS84_OMEGA**2))
+    tau_v = vertical_time_constant()
     predicted = -delta_v_D * tau_v * np.sinh(free.t / tau_v)
     # e-folding time from the slope of ln|δh| over the last third of the run
     late = free.t > 2.0 * duration_s / 3.0
@@ -191,6 +198,108 @@ def vertical_channel(delta_v_D: float = 1.0, duration_s: float = 3000.0,
     return SimpleNamespace(t=free.t, free=free.nav.h_b - truth.h_b,
                            aided=aided.nav.h_b - truth.h_b, predicted=predicted,
                            tau_v_predicted=tau_v, tau_v_measured=float(1.0 / slope))
+
+
+# --------------------------------------------------------------------------
+# Barometric altimeter errors through the damping loop
+# --------------------------------------------------------------------------
+
+def vertical_time_constant(L_b: float = 0.0) -> float:
+    """tau_v = 1/sqrt(2g/R_0 − 4·ω_ie²·cos²L_b), the free-inertial e-folding time [s]."""
+    return float(1.0 / np.sqrt(2.0 * normal_gravity(L_b, 0.0) / WGS84_A
+                               - 4.0 * WGS84_OMEGA**2 * np.cos(L_b)**2))
+
+
+def baro_loop_transfer(baro_tau: float = 100.0, L_b: float = 0.0):
+    """Transfer function from barometer error to INS height error, as (num, den).
+
+    Linearizing the damped vertical channel with r = δh − e (e the
+    barometer error) gives
+
+        δh(s)/e(s) = (K1·s² + K2·s + K3) / (s³ + K1·s² + (K2 − 1/τ_v²)·s + K3),
+
+    with K1 = 3/τ, K2 = 3/τ², K3 = 1/τ³. Its gain at s = 0 is exactly 1:
+    a constant barometer error ends up, in full, in the INS height.
+    """
+    # --8<-- [start:baro_transfer]
+    K1, K2, K3 = 3.0 / baro_tau, 3.0 / baro_tau**2, 1.0 / baro_tau**3
+    tau_v = vertical_time_constant(L_b)
+    num = [K1, K2, K3]
+    den = [1.0, K1, K2 - 1.0 / tau_v**2, K3]
+    # --8<-- [end:baro_transfer]
+    return num, den
+
+
+def _baro_run(spec: BaroSpec, duration_s: float, tau_i: float,
+              rng: np.random.Generator) -> SimpleNamespace:
+    """A level IMU at rest at the equator, aided by a barometer with errors `spec`."""
+    truth = stationary_truth(duration_s, tau_i)
+    meas_h_b = generate_baro_samples(truth, spec, rng)
+    run = navigate(truth, meas_h_b=meas_h_b)
+    return SimpleNamespace(t=truth.t, baro_error=meas_h_b - truth.h_b,
+                           height_error=run.nav.h_b - truth.h_b)
+
+
+def baro_bias(b_bs: float = 10.0, duration_s: float = 3000.0,
+              tau_i: float = 1.0) -> SimpleNamespace:
+    """A constant barometer error of 10 m, and no other error.
+
+    The loop pulls the INS height onto the barometer's: the steady-state
+    height error is the barometer bias itself, reached through the loop's
+    step response.
+    """
+    truth = stationary_truth(duration_s, tau_i)
+    run = navigate(truth, meas_h_b=truth.h_b + b_bs)
+    predicted = lsim(baro_loop_transfer(), np.full_like(truth.t, b_bs), truth.t)[1]
+    height_error = run.nav.h_b - truth.h_b
+    return SimpleNamespace(t=truth.t, simulated=height_error, predicted=predicted,
+                           bias=b_bs, end_measured=float(height_error[-1]))
+
+
+def baro_drift(drift_std: float = 10.0, drift_tau: float = 600.0,
+               duration_s: float = 2 * 3600.0, tau_i: float = 1.0,
+               seed: int = 3) -> SimpleNamespace:
+    """One realization of a Gauss-Markov barometer drift, and no other error.
+
+    The INS height follows the drift, lagging it through the loop. The
+    prediction passes the same drift through the loop's transfer function.
+    """
+    spec = BaroSpec(drift_std=drift_std, drift_tau=drift_tau)
+    run = _baro_run(spec, duration_s, tau_i, np.random.default_rng(seed))
+    predicted = lsim(baro_loop_transfer(), run.baro_error, run.t)[1]
+    lag_sim = run.height_error - run.baro_error
+    lag_pred = predicted - run.baro_error
+    return SimpleNamespace(t=run.t, drift=run.baro_error, simulated=run.height_error,
+                           predicted=predicted,
+                           lag_rms_measured=float(np.sqrt(np.mean(lag_sim**2))),
+                           lag_rms_predicted=float(np.sqrt(np.mean(lag_pred**2))),
+                           max_difference=float(np.abs(run.height_error - predicted).max()))
+
+
+def baro_noise(noise_density: float = 0.1, tau_i: float = 1.0,
+               duration_s: float = 3600.0, n_runs: int = 200,
+               seed: int = 0) -> SimpleNamespace:
+    """White barometer noise, and no other error: how much reaches the INS height.
+
+    For white noise of density N the INS height error is stationary with
+    variance N²·∫h(t)² dt, h the loop's impulse response; the integral is
+    found exactly from the state-space form with a Lyapunov equation. The
+    loop attenuates the barometer's per-sample spread N/√tau_i by the
+    ratio of the two.
+    """
+    spec = BaroSpec(noise_density=noise_density)
+    runs = [_baro_run(spec, duration_s, tau_i, rng)
+            for rng in np.random.default_rng(seed).spawn(n_runs)]
+    height_error = np.array([r.height_error for r in runs])
+    t = runs[0].t
+    A, B, C, _ = tf2ss(*baro_loop_transfer())
+    W = solve_continuous_lyapunov(A, -B @ B.T)
+    predicted = noise_density * float(np.sqrt((C @ W @ C.T)[0, 0]))
+    settled = t > 1000.0        # past the start-up transient (10 loop time constants)
+    return SimpleNamespace(t=t, spread=height_error.std(axis=0), predicted=predicted,
+                           per_sample=noise_density / np.sqrt(tau_i),
+                           measured=float(height_error[:, settled].std()),
+                           n_runs=n_runs)
 
 
 # --------------------------------------------------------------------------

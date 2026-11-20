@@ -242,6 +242,13 @@ started in its steady state:
     --8<-- "ins_sim/sensors/imu.py:dynamic_bias"
     ```
 
+    The same process models the barometer's weather drift, so it lives in
+    a shared helper:
+
+    ```python
+    --8<-- "ins_sim/sensors/noise.py:gauss_markov"
+    ```
+
 **5. White noise.** The per-sample spread that integrates to \(N\sqrt{t}\):
 
 === "Equation"
@@ -328,6 +335,7 @@ times the bias instability, but it averages away; the bias does not.
 | Gauss–Markov spread | \(\sigma = B/0.6174\) | [`IMUSpec.gyro_gm_std`][ins_sim.sensors.imu.IMUSpec.gyro_gm_std], [`IMUSpec.accel_gm_std`][ins_sim.sensors.imu.IMUSpec.accel_gm_std], [`GM_ALLAN_PEAK`][ins_sim.sensors.imu.GM_ALLAN_PEAK] |
 | Sensor outputs | \(\fvec[\tilde]{ib}{b}\), \(\wvec[\tilde]{ib}{b}\) | [`generate_imu_samples`][ins_sim.sensors.imu.generate_imu_samples] |
 | Error terms of one triad | \(\mathbf{M}\), \(\mathbf{b}_s\), \(b_d\), \(w\) | `_triad_measurement` and `_error_matrix` in `ins_sim/sensors/imu.py` |
+| Gauss–Markov process | \(b_d\) | [`gauss_markov`][ins_sim.sensors.noise.gauss_markov] |
 | Initial alignment error | \(\delta\psivec{nb}{n}(0)\) | [`draw_initial_misalignment`][ins_sim.sensors.imu.draw_initial_misalignment] |
 
 This example loads the packaged spec and prints its datasheet values next

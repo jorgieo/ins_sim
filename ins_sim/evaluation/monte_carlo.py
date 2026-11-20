@@ -15,6 +15,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as Rot
 
 from ins_sim.evaluation.errors import attitude_error
+from ins_sim.sensors.baro import generate_baro_samples
 from ins_sim.sensors.imu import (IMUSpec, draw_initial_misalignment,
                                  generate_imu_samples)
 from ins_sim.navigation.strapdown import NavState, strapdown_navgrade
@@ -62,8 +63,8 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
     """Runs n_trials independent noisy-IMU strapdown realizations.
 
     Each trial has its own random stream, spawned from `seed`, and each
-    error source within a trial (initial alignment, IMU) draws from its own
-    child stream. A trial's draws therefore do not depend on `n_trials`, and
+    error source within a trial (initial alignment, IMU, barometer) draws
+    from its own child stream. A trial's draws therefore do not depend on `n_trials`, and
     changing one error source's parameters leaves the other sources'
     realizations unchanged (common random numbers).
 
@@ -77,9 +78,10 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
             progress_callback(n_done, n_trials) after each trial
             completes. Defaults to None (no reporting).
         baro_aiding: When True the strapdown runs with the baro-damped
-            vertical channel (truth height as the baro measurement);
-            when False the vertical channel is free-inertial and
-            diverges. Defaults to True.
+            vertical channel, aided by a barometer with the errors in
+            `spec.baro` (the true height when `spec.baro` is None); when
+            False the vertical channel is free-inertial and diverges.
+            Defaults to True.
 
     Returns:
         MonteCarloResult: estimates and attitude errors for every trial.
@@ -109,7 +111,7 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
     C_b_n0 = truth.C_b_n[0]
 
     for i, trial_rng in enumerate(trial_rngs):
-        rng_alignment, rng_imu = trial_rng.spawn(2)
+        rng_alignment, rng_imu, rng_baro = trial_rng.spawn(3)
         # Per-trial initial-alignment error delta_psi_nb^n: small NED tilts
         # plus an azimuth error, applied to the truth attitude (zero-mean
         # draws; exact truth initialization when the alignment stds are 0).
@@ -121,9 +123,15 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
             est_C_b_n0.as_quat(), # pyright: ignore[reportCallIssue]
         )
         meas_omega_ib_b, meas_f_ib_b = generate_imu_samples(truth, spec, rng_imu)
+        if not baro_aiding:
+            meas_h_b = None                                  # free-inertial
+        elif spec.baro is None:
+            meas_h_b = truth.h_b                             # ideal barometer
+        else:
+            meas_h_b = generate_baro_samples(truth, spec.baro, rng_baro)
         nav = strapdown_navgrade(
             meas_omega_ib_b, meas_f_ib_b, init_state, truth.tau_i,
-            meas_h_b=truth.h_b if baro_aiding else None)
+            meas_h_b=meas_h_b)
         # --8<-- [end:trial]
         est_r_lb_l[i]   = nav.r_lb_l
         est_L_b[i]      = nav.L_b

@@ -18,8 +18,11 @@ channel diverge.
       \(\tau\) = 100 s. The same 1 m/s error then causes a 23 m transient
       that dies away within about 20 minutes.
     - The loop's integrator cancels a constant vertical accelerometer bias.
-    - The barometer in ins_sim is ideal: it reports the true height. Aided
-      vertical errors are therefore optimistic.
+    - The INS height follows the barometer, errors included. A constant
+      barometer error ends up in full in the INS height, a slow drift is
+      followed with a lag, and white noise is filtered down to
+      \(1.44\,N/\sqrt\tau\). With the packaged spec the barometer, not the
+      IMU, sets the Down position error.
 
 ## Physical picture
 
@@ -128,9 +131,91 @@ sign at \(t = 2\tau\), and overshoots by \(+0.08\,\delta v_D(0)\,\tau\) at
 \(t = 3.4\,\tau\). A constant accelerometer bias leaves no steady height
 error: the integrator settles at \(a_c = -b_D\).
 
+### Barometer errors { #barometer-error-model }
+
+A pressure altimeter measures static pressure and converts it to height
+through a standard atmosphere, so its height is wrong whenever the day's
+atmosphere differs from that standard[^groves]. ins_sim models the
+barometric height as
+
+$$
+\tilde h_b = h_b + s_b\left(h_b - h_{b0}\right) + b_{bs} + b_{bd}(t) + w_b
+$$
+
+where:
+
+- \(h_{b0}\) is the height of the departure point [m]. There the altimeter
+  setting makes the barometer read correctly, apart from \(b_{bs}\);
+- \(s_b\) is the scale-factor error [dimensionless]. Air colder than
+  standard is denser, so pressure falls off faster with height, and the
+  altimeter misreads the height above the departure point by about
+  \(\Delta T/T\);
+- \(b_{bs}\) is the static bias [m], from the error in the altimeter
+  setting (QNH) and the sensor's offset;
+- \(b_{bd}\) is the weather drift [m], a first-order Gauss–Markov process,
+  the same model as the in-run biases on the
+  [IMU error model](imu-errors.md) page;
+- \(w_b\) is white noise of density \(N\) [m/√Hz].
+
+Writing \(e = \tilde h_b - h_b\) for the barometer's error, the residual is
+\(r = \delta h_b - e\). The loop equations above then give the INS height
+error as \(e\) passed through a filter:
+
+$$
+\frac{\delta h_b(s)}{e(s)}
+= \frac{K_1 s^2 + K_2 s + K_3}{s^3 + K_1 s^2 + \left(K_2 - 1/\tau_v^2\right)s + K_3}
+\approx \frac{3\tau^2 s^2 + 3\tau s + 1}{\left(\tau s + 1\right)^3}
+$$
+
+Its gain at \(s = 0\) is exactly 1, gravity gradient included. That has
+three consequences:
+
+- **A constant error ends up in full in the INS height.** After a step
+  \(e_0\), the height error is
+  \(e_0\left[1 - e^{-t/\tau}\left(1 - 2t/\tau + t^2/2\tau^2\right)\right]\).
+  It overshoots by 21% at \(t = 1.27\,\tau\), then settles on \(e_0\): the
+  navigator cannot tell a barometer bias from a true height.
+- **A slow drift is followed with a lag.** Drifts much slower than \(\tau\)
+  pass almost unchanged; the faster the drift, the further the INS height
+  lags behind it.
+- **White noise is filtered.** The INS height error becomes stationary
+  noise with the spread below, where \(h(t)\) is the filter's impulse
+  response.
+
+$$
+\sigma_{\delta h} = N\sqrt{\int_0^\infty h(t)^2\,dt}
+\approx \sqrt{\frac{33}{16}}\,\frac{N}{\sqrt\tau}
+\approx 1.44\,\frac{N}{\sqrt\tau}
+$$
+
+With \(N\) = 0.1 m/√Hz and \(\tau\) = 100 s that is 1.4 cm, against
+0.32 m per sample from the barometer itself at 10 Hz.
+
+The scale factor and the bias are fixed for a run, and the weather drift
+is much slower than the loop, so all three pass almost in full into the
+INS height. With the packaged spec, on a mission that climbs 4.5 km, the
+scale factor alone gives about 90 m (1σ).
+
 ## As implemented
 
-**1. Gains**, set once from `baro_tau`:
+**1. Barometric height.** `run_monte_carlo` draws each trial's barometer
+errors from a random stream of their own, so switching them on leaves the
+IMU and alignment errors of every trial unchanged:
+
+=== "Equation"
+
+    $$
+    \tilde h_b = h_b + s_b\left(h_b - h_{b0}\right) + b_{bs} + b_{bd} + w_b,
+    \qquad \sigma_{w_b} = N/\sqrt{\tau_i}
+    $$
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/sensors/baro.py:baro_errors"
+    ```
+
+**2. Gains**, set once from `baro_tau`:
 
 === "Equation"
 
@@ -144,7 +229,7 @@ error: the integrator settles at \(a_c = -b_D\).
     --8<-- "ins_sim/navigation/strapdown.py:baro_gains"
     ```
 
-**2. Vertical velocity and integrator.** Inside the velocity update, the
+**3. Vertical velocity and integrator.** Inside the velocity update, the
 residual corrects the Down acceleration through \(K_2\) and the
 integrator, and the integrator accumulates \(K_3\,r\):
 
@@ -162,7 +247,7 @@ integrator, and the integrator accumulates \(K_3\,r\):
     --8<-- "ins_sim/navigation/strapdown.py:velocity_update"
     ```
 
-**3. Height.** Inside the position update, the residual corrects the height
+**4. Height.** Inside the position update, the residual corrects the height
 through \(K_1\):
 
 === "Equation"
@@ -194,14 +279,24 @@ within 0.1% of \(\tau_v\). With the barometric loop it peaks at 23 m and
 decays, as the closed form above predicts. Both are checks on the
 [Validation](../validation/index.md#vertical-channel) page.
 
+![INS height error after a 10 m barometer bias, and while it tracks a barometer drift](../assets/validation/baro_tracking.png)
+
+The same IMU at rest, now with a barometer that errs. On the left, a
+constant 10 m barometer error: the INS height overshoots by about 21% and
+settles on 10 m. On the right, a fast barometer drift, 10 m correlated
+over 10 minutes: the INS height follows it a little late, as the filter
+above predicts. Both are checks on the
+[Validation](../validation/index.md#barometer-errors) page.
+
 ## Assumptions & limitations
 
 !!! warning "Assumptions & limitations"
-    - **An ideal barometer.** The aiding height is the true height, with no
-      noise, bias or lag. A real barometric altimeter's errors, from the
-      pressure setting and from non-standard temperature, typically amount
-      to tens of metres and would pass straight into the INS height. The
-      aided vertical errors in ins_sim are therefore optimistic.
+    - **A simple barometer model.** The temperature error is one scale
+      factor for the whole flight, and the weather one Gauss–Markov drift.
+      Real errors follow the route's actual weather, and an aircraft's
+      static-pressure ports add errors that change with speed and
+      attitude. Without a `baro` block in the IMU spec the barometer is
+      ideal, and the aided vertical errors are then optimistic.
     - **Fixed gains.** The loop does not adapt to the quality of the
       barometer; \(\tau\) is fixed at 100 s in the GUI. The Python API
       accepts other values through `baro_tau`.
@@ -215,7 +310,9 @@ decays, as the closed form above predicts. Both are checks on the
 | Quantity | Equation | Implemented in |
 | -------- | -------- | -------------- |
 | Loop gains and corrections | \(K_1\), \(K_2\), \(K_3\), \(a_c\) | [`strapdown_navgrade`][ins_sim.navigation.strapdown.strapdown_navgrade], arguments `meas_h_b` and `baro_tau` |
-| Barometric height | \(\tilde h_b\), the true height | [`run_monte_carlo`][ins_sim.evaluation.monte_carlo.run_monte_carlo], argument `baro_aiding` |
+| Barometric height | \(\tilde h_b\) | [`generate_baro_samples`][ins_sim.sensors.baro.generate_baro_samples]; [`run_monte_carlo`][ins_sim.evaluation.monte_carlo.run_monte_carlo], argument `baro_aiding` |
+| Barometer error spreads | \(s_b\), \(b_{bs}\), \(b_{bd}\), \(N\) | [`BaroSpec`][ins_sim.sensors.baro.BaroSpec], the `baro` block of the [IMU spec](../reference/imu-yaml.md#baro) |
+| Weather drift | \(b_{bd}\) | [`gauss_markov`][ins_sim.sensors.noise.gauss_markov] |
 | Gravity gradient | \(-2g/R_0\) | [`normal_gravity`][ins_sim.core.earth_model.normal_gravity] |
 
 This example applies a 1 m/s Down-velocity error to a level IMU at rest at

@@ -25,3 +25,13 @@ accel:
 alignment:
   tilt_std_deg:    0.0015  # N/E tilt misalignment 1σ [°]
   heading_std_deg: 0.04    # Azimuth misalignment 1σ [°]
+
+# Barometric altimeter that aids the vertical channel, typical of an
+# aircraft air-data system. Omit this section for an ideal barometer.
+# Near sea level 1 hPa of pressure is about 8.3 m of height.
+baro:
+  scale_factor_pct:   2.0     # Scale-factor error 1σ: a 6 K non-standard air temperature [%]
+  bias_m:            10.0     # Static bias 1σ: altimeter-setting (QNH) error of about 1 hPa [m]
+  drift_m:           10.0     # Weather drift 1σ: sea-level pressure changing en route [m]
+  drift_tau_s:     7200.0     # Correlation time of the weather drift [s]
+  noise_m_per_rt_hz:  0.1     # White-noise density [m/√Hz]

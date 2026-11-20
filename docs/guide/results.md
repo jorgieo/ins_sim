@@ -84,8 +84,9 @@ band peaks at about an hour and then narrows. The
 [INS error model](../theory/error-model.md#the-schuler-loop) page explains
 the oscillation.
 
-The Down velocity error stays within 0.2 m/s, held by the barometric loop.
-It is largest during the climb and the turns.
+The Down velocity error reaches about ±1.5 m/s during the climb, while the
+navigator follows the barometer's height error as it grows, and then stays
+within about 0.2 m/s, held by the barometric loop.
 
 ## Position Errors
 
@@ -93,8 +94,11 @@ It is largest during the climb and the turns.
 
 The position errors are the integral of the velocity errors. By the end of
 the 80-minute flight the bands reach about ±10 km North and ±5 km East.
-The Down error stays within about ±8 m: largest during the climb, small in
-level flight. Without baro aiding it grows exponentially instead; see
+The Down band grows to about ±250 m during the climb and then stays there.
+That is the barometer's error, which the navigator's height follows: mostly
+its temperature scale factor, which grows with the height above the
+departure point (see [Modelling an IMU](imu-specs.md#the-baro-block)).
+Without baro aiding the Down error grows exponentially instead; see
 [Your first simulation](../get-started/first-run.md#7-switch-off-the-barometer).
 
 The average error, the dark line, stays near zero in all three panels,

@@ -83,10 +83,13 @@ prints:
 ```
 
 On this flight the initial alignment and the gyro biases dominate; the
-accelerometer biases matter least. A better accelerometer would barely
-help, while a better alignment or better gyros would. The contributions do
-not add up directly: they combine roughly as the square root of the sum of
-their squares, 732 m here, against 799 m for all sources together.
+accelerometer biases matter least among the inertial sensors. A better
+accelerometer would barely help, while a better alignment or better gyros
+would. The barometer aids only the height, so it hardly touches the
+horizontal CEP; its errors show in the Down position error instead. The
+contributions do not add up directly: they combine roughly as the square
+root of the sum of their squares, 732 m here, against 796 m for all
+sources together.
 
 Which source dominates depends on the flight: errors that the Schuler
 oscillation keeps bounded, such as the accelerometer biases, matter less

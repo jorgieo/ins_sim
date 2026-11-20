@@ -57,9 +57,13 @@ def test_imu_preset_loads(path):
     # The GUI lists a file in its IMU-spec menu only if it has these sections.
     assert {"gyro", "accel"} <= set(yaml.safe_load(path.read_text(encoding="utf-8")))
     spec = load_imu_spec(str(path))
-    for field in dataclasses.fields(spec):
-        value = getattr(spec, field.name)
-        assert math.isfinite(value) and value >= 0.0, f"{path.name}: {field.name} = {value}"
+    values = {f.name: getattr(spec, f.name) for f in dataclasses.fields(spec) if f.name != "baro"}
+    if spec.baro is not None:
+        values.update({f"baro.{f.name}": getattr(spec.baro, f.name)
+                       for f in dataclasses.fields(spec.baro)})
+        assert spec.baro.drift_tau > 0.0
+    for name, value in values.items():
+        assert math.isfinite(value) and value >= 0.0, f"{path.name}: {name} = {value}"
     assert spec.gyro_bias_tau > 0.0 and spec.accel_bias_tau > 0.0
 
 

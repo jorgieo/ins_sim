@@ -32,8 +32,9 @@ The simulation models rotating-Earth effects explicitly: Earth rate, transport
 evaluated at the current latitude/altitude at every step, so the strapdown
 mechanization is consistent with true inertial navigation rather than a flat,
 non-rotating Earth approximation. The vertical channel runs either baro-damped
-(third-order fixed-gain loop) or free-inertial, where it exhibits the expected
-instability.
+(third-order fixed-gain loop, aided by a barometer with its own temperature,
+altimeter-setting, weather and noise errors) or free-inertial, where it exhibits
+the expected instability.
 
 Results are explored in a desktop GUI whose visualizations are fully
 interactive plotly pages rendered in-app.

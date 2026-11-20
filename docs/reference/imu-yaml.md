@@ -13,6 +13,7 @@ them in from a datasheet, and the
 | `gyro` | yes | The gyro errors: see [gyro](#gyro). |
 | `accel` | yes | The accelerometer errors: see [accel](#accel). |
 | `alignment` | no | The initial attitude error: see [alignment](#alignment). Without it, each trial starts from the true attitude. |
+| `baro` | no | The errors of the barometric altimeter that aids the height: see [baro](#baro). Without it, the barometer reports the true height. |
 
 The app lists a file as an IMU spec only if it has `gyro` and `accel`
 keys.
@@ -50,10 +51,25 @@ errors of that size.
 | `tilt_std_deg` | no, default 0 | ° | Initial tilt error, about North and about East | `align_tilt_std`, rad |
 | `heading_std_deg` | no, default 0 | ° | Initial heading error | `align_heading_std`, rad |
 
+## baro
+
+The barometer is used only while *Baro altitude aiding* is on. Its
+`IMUSpec` field is `baro`, a [`BaroSpec`][ins_sim.sensors.baro.BaroSpec],
+or `None` when the file has no `baro` block.
+
+| Key | Required | Unit | Meaning | `BaroSpec` field, SI unit |
+| --- | -------- | ---- | ------- | ------------------------- |
+| `scale_factor_pct` | no, default 0 | % | Scale-factor error, applied to the height above the departure point | `scale_factor_std`, dimensionless |
+| `bias_m` | no, default 0 | m | Static bias: the constant error of each run | `bias_std`, m |
+| `drift_m` | no, default 0 | m | Spread of the weather drift | `drift_std`, m |
+| `drift_tau_s` | no, default 3600; above 0 | s | Correlation time of the weather drift | `drift_tau`, s |
+| `noise_m_per_rt_hz` | no, default 0 | m/√Hz | Density of the white noise | `noise_density`, m·√s |
+
 ## Rules
 
 - Every value must be 0 or more. Set a value to 0 to remove that error.
-- `bias_tau_s` must be above 0, even when its bias instability is 0.
+- `bias_tau_s` must be above 0, even when its bias instability is 0, and
+  so must `drift_tau_s` when it is given.
 - A missing required key stops the run with a message naming it, such as
   `KeyError: 'bias_tau_s'`.
 
@@ -72,4 +88,4 @@ In Python, [`load_imu_spec`][ins_sim.sensors.imu.load_imu_spec] reads a
 file into an [`IMUSpec`][ins_sim.sensors.imu.IMUSpec], in SI units. An
 `IMUSpec` can also be built directly. Its defaults are the packaged spec's
 noise and bias values, with no scale-factor, misalignment or alignment
-errors.
+errors, and an ideal barometer.

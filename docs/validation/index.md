@@ -18,6 +18,9 @@ predictions are derived on the Theory pages: the
 !!! abstract "Key results"
     - Every inertial check agrees with its prediction to within 0.3%, and
       every noise check to within statistical sampling error.
+    - Barometer errors reach the INS height exactly as the damping loop's
+      transfer function predicts: a bias in full, a drift with a lag, and
+      white noise attenuated about sevenfold at a 1 s step.
     - A 0.01 °/h gyro bias starts the position drifting at about 0.6 nmi/h,
       the classic figure for a navigation-grade INS. Over hours the
       Earth-rate loop bends that drift over, and the simulator reproduces
@@ -156,6 +159,41 @@ barometer, the third-order damping loop instead holds the error to a
 transient of a few tens of metres.
 
 ![Height error after a 1 m/s Down-velocity error, free-inertial and with an ideal barometer](../assets/validation/vertical_channel.png)
+
+## Barometer errors
+
+The damping loop pulls the INS height onto the barometer's, errors
+included. Linearized, the INS height error is the barometer error \(e\)
+passed through the filter
+
+$$
+\frac{\delta h_b(s)}{e(s)}
+= \frac{K_1 s^2 + K_2 s + K_3}{s^3 + K_1 s^2 + \left(K_2 - 1/\tau_v^2\right)s + K_3}
+$$
+
+derived on the [Vertical channel](../theory/vertical-channel.md#barometer-error-model)
+page. The checks run each kind of barometer error on its own through the
+navigator and compare the height error with that filter's response:
+
+- **A constant 10 m error** must end up in full in the INS height, after
+  the filter's step response.
+- **A drift**, here one Gauss–Markov realization with a 10 m spread and a
+  10-minute correlation time, must be followed with the filter's lag. The
+  prediction passes the same realization through the filter.
+- **White noise** of density \(N\) must leave a height-error spread of
+  \(N\sqrt{\int_0^\infty h(t)^2\,dt}\), where \(h(t)\) is the filter's
+  impulse response. The scenario computes the integral exactly from the
+  filter's state-space form.
+
+=== "Prediction"
+
+    ```python
+    --8<-- "tools/validation_scenarios.py:baro_transfer"
+    ```
+
+![INS height error after a 10 m barometer bias, and while it tracks a barometer drift](../assets/validation/baro_tracking.png)
+
+![Spread of the INS height error from white barometer noise, over 200 runs](../assets/validation/baro_noise.png)
 
 ## Angle random walk
 

@@ -219,8 +219,10 @@ and the time in hours:
 The *Position Errors* tab for 50 trials of the packaged mission with the
 navigation-grade spec. The mean error stays near zero, because every error
 source is zero-mean across trials, while the ±3σ bands grow to about 10 km
-North and 5 km East by the end of the 80-minute mission. The Down error
-stays within 10 m, held by the [barometric loop](vertical-channel.md).
+North and 5 km East by the end of the 80-minute mission. The Down band
+levels off at about ±250 m once the climb ends: it is the barometer's own
+error, which the [barometric loop](vertical-channel.md#barometer-error-model)
+passes into the height.
 
 ![Horizontal error of each of 50 trials over time, with the linear fit to the CEP](../assets/plots/cep.png)
 
@@ -242,8 +244,8 @@ up to about 0.02 °/h per axis, and each 0.01 °/h gives 0.6 nmi/h (see
     - **One trajectory.** Every trial flies the same truth trajectory. Only
       the sensor and alignment errors vary.
     - **Only the modelled errors.** A trial contains only the error sources
-      on the [IMU error model](imu-errors.md) page; for example, the
-      barometer is ideal.
+      on the [IMU error model](imu-errors.md) page, and the barometer's on
+      the [Vertical channel](vertical-channel.md#barometer-error-model) page.
     - **Normality is not assumed, but the bands read best with it.** The
       ±3σ bands hold 99.7% of trials only if the errors are normally
       distributed. The CEP and percentiles make no such assumption.

@@ -73,9 +73,10 @@ class MainWindow(QMainWindow):
         self.baro_aiding_checkbox = QCheckBox("Baro altitude aiding")
         self.baro_aiding_checkbox.setChecked(True)
         self.baro_aiding_checkbox.setToolTip(
-            "Checked: baro-damped vertical channel (third-order loop on "
-            "truth altitude).\nUnchecked: free-inertial vertical channel — "
-            "inherently unstable, altitude error diverges.")
+            "Checked: baro-damped vertical channel (third-order loop on the "
+            "barometric altitude,\nwith the errors in the IMU spec's baro "
+            "block; ideal without one).\nUnchecked: free-inertial vertical "
+            "channel — inherently unstable, altitude error diverges.")
         self.visualization_options = VisualizationOptions()
 
         trajectory_group = QGroupBox("Trajectory")

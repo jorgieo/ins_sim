@@ -141,6 +141,47 @@ def build_all(out_dir: Path, table_path: Path) -> None:
                  f"{np.abs(vert.aided).max():.1f} m, then {abs(vert.aided[-1]):.3f} m at 50 min",
                  "damped"))
 
+    # ---- Barometer errors ----------------------------------------------------
+    bias = v.baro_bias()
+    drift = v.baro_drift()
+    fig = make_subplots(rows=1, cols=2, horizontal_spacing=0.1,
+                        subplot_titles=("A constant 10 m barometer error",
+                                        "A barometer drift (10 m, correlated over 10 min)"))
+    fig.add_trace(_line(bias.t / 60.0, bias.simulated, "Simulated INS height error", SIM),
+                  row=1, col=1)
+    fig.add_trace(_line(bias.t / 60.0, bias.predicted, "Predicted, barometer error through the loop",
+                        PREDICTED, "dash"), row=1, col=1)
+    fig.add_trace(_line(drift.t / 60.0, drift.drift, "Barometer error", APPROX, "dot"), row=1, col=2)
+    fig.add_trace(go.Scatter(x=drift.t / 60.0, y=drift.simulated, mode="lines", showlegend=False,
+                             line=dict(color=SIM, width=2.5)), row=1, col=2)
+    fig.add_trace(go.Scatter(x=drift.t / 60.0, y=drift.predicted, mode="lines", showlegend=False,
+                             line=dict(color=PREDICTED, dash="dash", width=2.5)), row=1, col=2)
+    fig.update_yaxes(title_text="Height error, estimate − truth (m)", row=1, col=1)
+    fig.update_xaxes(title_text="Time (min)")
+    fig.update_layout(title="INS height error from barometer errors (IMU at rest, equator)",
+                      **PANEL_LAYOUT)
+    _save(fig, out_dir, "baro_tracking.png")
+    rows.append(("Steady INS height error from a 10 m barometer bias", f"{bias.bias:.2f} m",
+                 f"{bias.end_measured:.2f} m", _pct(bias.end_measured, bias.bias)))
+    rows.append(("RMS lag of the INS height behind a barometer drift",
+                 f"{drift.lag_rms_predicted:.2f} m", f"{drift.lag_rms_measured:.2f} m",
+                 _pct(drift.lag_rms_measured, drift.lag_rms_predicted)))
+
+    noise = v.baro_noise()
+    fig = go.Figure([
+        _line(noise.t / 60.0, noise.spread * 100.0, f"Simulated ({noise.n_runs} runs)", SIM),
+        _line(noise.t / 60.0, np.full_like(noise.t, noise.predicted * 100.0),
+              "Predicted, N·√∫h(t)²dt", PREDICTED, "dash"),
+    ])
+    fig.update_layout(title=("Spread of the INS height error from 0.1 m/√Hz of barometer noise "
+                             f"({noise.per_sample * 100:.0f} cm per sample at τ<sub>i</sub> = 1 s)"),
+                      xaxis_title="Time (min)", yaxis_title="Height-error spread (cm)",
+                      yaxis_rangemode="tozero", **LAYOUT)
+    _save(fig, out_dir, "baro_noise.png")
+    rows.append(("INS height-error spread from 0.1 m/√Hz of barometer noise",
+                 f"{noise.predicted * 100:.2f} cm", f"{noise.measured * 100:.2f} cm",
+                 _pct(noise.measured, noise.predicted)))
+
     # ---- Angle random walk ---------------------------------------------------
     arw_fast = v.angle_random_walk(tau_i=0.1)
     arw_slow = v.angle_random_walk(tau_i=1.0)

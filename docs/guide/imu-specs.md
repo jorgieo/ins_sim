@@ -143,11 +143,38 @@ Before it navigates, an INS works out its initial attitude, and the
 Leave the block out to start every trial from the true attitude. That is
 useful when you want to see the sensor errors alone.
 
+## The baro block
+
+With *Baro altitude aiding* on, a barometric altimeter holds the
+navigator's height (see [Vertical channel](../theory/vertical-channel.md)).
+The `baro` block gives that altimeter's errors. A pressure altimeter turns
+pressure into height through a standard atmosphere, so most of its error
+comes from the day's atmosphere, not from the sensor. Near sea level,
+1 hPa of pressure is about 8.3 m of height.
+
+| Key | Error | Where the packaged value comes from |
+| --- | ----- | ----------------------------------- |
+| `scale_factor_pct` | Air colder or warmer than standard: the altimeter's height above the departure point is off by this fraction | 2%: about 6 K away from standard, out of 288 K |
+| `bias_m` | The altimeter setting (QNH) and the sensor's offset, constant over a run | 10 m: about 1 hPa |
+| `drift_m`, `drift_tau_s` | The weather: sea-level pressure changing along the route and over time | 10 m over about 2 hours |
+| `noise_m_per_rt_hz` | Fast, random sensor noise | 0.1 m/√Hz: 0.3 m per sample at 10 Hz |
+
+Whatever the barometer reports, the navigator's height follows within a
+couple of minutes, so these errors pass almost in full into the Down
+position error. On the packaged mission, which climbs to 4,600 m, the
+scale factor dominates: 2% of the climb is about 90 m. The horizontal
+errors hardly change.
+
+Leave the block out for an ideal barometer that reports the true height.
+The tactical-grade and MEMS presets do that, so that comparing them
+compares the IMUs alone.
+
 ## Switching errors off
 
 Set any value to 0 to remove that error. `scale_factor_ppm`,
-`misalignment_urad` and the whole alignment block are optional and default
-to 0. Keep `bias_tau_s` positive, even when its bias instability is 0.
+`misalignment_urad`, the alignment block and the baro block are optional
+and default to 0. Keep `bias_tau_s` positive, even when its bias
+instability is 0.
 
 With every error at 0 the IMU is perfect, and the navigator follows the
 truth exactly. Switching errors off one group at a time shows which one

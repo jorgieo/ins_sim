@@ -17,7 +17,9 @@ from typing import TYPE_CHECKING, NamedTuple
 
 import numpy as np
 import yaml
-from scipy.signal import lfilter
+
+from ins_sim.sensors.baro import BaroSpec, baro_spec_from_yaml
+from ins_sim.sensors.noise import gauss_markov
 
 if TYPE_CHECKING:
     from ins_sim.trajectory.kinematics import TruthTrajectory
@@ -85,12 +87,15 @@ class IMUSpec:
         align_heading_std: Initial-alignment heading (azimuth) error std
             dev [rad]. Physically ≈ gyrocompass limit, gyro repeatability
             / (omega_ie·cos L_b).
+        baro: Errors of the barometric altimeter that aids the vertical
+            channel (see `ins_sim.sensors.baro.BaroSpec`), or None for an
+            ideal barometer that reports the true height.
 
     Note:
         The multiplicative (scale factor, misalignment) and
-        initial-alignment terms default to zero — they apply only when
-        specified — so zero-noise diagnostic specs and legacy YAMLs
-        keep their exact-passthrough behavior.
+        initial-alignment terms default to zero, and the barometer to
+        ideal — they apply only when specified — so zero-noise diagnostic
+        specs and legacy YAMLs keep their exact-passthrough behavior.
     """
     # Gyro
     gyro_arw:              float = 0.002 * np.pi/180 / 60    # rad / √s
@@ -109,6 +114,8 @@ class IMUSpec:
     # Initial alignment
     align_tilt_std:    float = 0.0                           # rad
     align_heading_std: float = 0.0                           # rad
+    # Barometric altimeter (None: ideal)
+    baro: BaroSpec | None = None
 
     @property
     def gyro_gm_std(self) -> float:
@@ -149,7 +156,9 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
 
     Args:
         yaml_path: Path to a YAML file with `gyro` and `accel` sections
-            in datasheet units (deg/√hr, deg/hr, µg, etc.).
+            in datasheet units (deg/√hr, deg/hr, µg, etc.), and optional
+            `alignment` and `baro` sections. Without a `baro` section the
+            barometer is ideal.
 
     Returns:
         IMUSpec: Equivalent error-parameter set converted to SI units.
@@ -167,6 +176,7 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
     g = cfg["gyro"]
     a = cfg["accel"]
     al = cfg.get("alignment", {})
+    baro = cfg.get("baro")
     # --8<-- [start:datasheet_units]
     DEG_HR = np.pi / 180 / 3600
     return IMUSpec(
@@ -184,6 +194,7 @@ def load_imu_spec(yaml_path: str) -> IMUSpec:
         accel_ma_std = a.get("misalignment_urad", 0.0)  * 1e-6,
         align_tilt_std    = al.get("tilt_std_deg", 0.0)    * np.pi / 180,
         align_heading_std = al.get("heading_std_deg", 0.0) * np.pi / 180,
+        baro = None if baro is None else baro_spec_from_yaml(baro),
     )
     # --8<-- [end:datasheet_units]
 
@@ -289,14 +300,8 @@ def _triad_measurement(rng: np.random.Generator, truth_triad: np.ndarray,
     # Dynamic (Gauss-Markov) bias: discrete AR(1) recursion
     #   b_d[k+1] = a·b_d[k] + √(1−a²)·σ·u[k+1],   a = exp(−tau_i/τ),
     # started in its stationary distribution, b_d[0] ~ N(0, σ²), so its
-    # variance is σ² from the first sample on. The IIR filter produces the
-    # zero-start response to u; the decaying initial state is added to it.
-    a = np.exp(-tau_i / bd_tau)
-    s = np.sqrt(1.0 - a * a) * bd_std
-    b_d0 = rng.normal(0.0, bd_std, size=3)
-    u = rng.normal(size=(n_samples, 3)); u[0] = 0.0
-    b_d = (lfilter([1.0], [1.0, -a], s * u, axis=0)
-           + a ** np.arange(n_samples)[:, None] * b_d0)
+    # variance is σ² from the first sample on.
+    b_d = gauss_markov(rng, n_samples, tau_i, bd_std, bd_tau)
     # --8<-- [end:dynamic_bias]
 
     # --8<-- [start:white_noise]

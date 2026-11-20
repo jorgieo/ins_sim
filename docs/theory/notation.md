@@ -202,6 +202,23 @@ where each bias is split into a static and a dynamic part,
 Groves' gyro model also includes a g-dependent bias, proportional to
 specific force. ins_sim does not model it.
 
+### Barometer errors
+
+The barometric altimeter that aids the vertical channel reports
+
+$$
+\tilde h_b = h_b + s_b\left(h_b - h_{b0}\right) + b_{bs} + b_{bd} + w_b
+$$
+
+where \(h_{b0}\) is the height of the departure point.
+
+| Term | Meaning | Drawn | `BaroSpec` field | YAML key |
+| ---- | ------- | ----- | ---------------- | -------- |
+| \(s_b\) | Scale-factor error, from a non-standard air temperature | Once per trial | `scale_factor_std` | `scale_factor_pct` |
+| \(b_{bs}\) | Static bias, from the altimeter setting (QNH) | Once per trial | `bias_std` | `bias_m` |
+| \(b_{bd}\) | Weather drift: a first-order Gauss–Markov process | Every sample | `drift_std`, `drift_tau` | `drift_m`, `drift_tau_s` |
+| \(w_b\) | White noise | Every sample | `noise_density` | `noise_m_per_rt_hz` |
+
 ## Symbols and code names
 
 The Python column lists the identifiers used from v0.3.0. They follow one
@@ -228,6 +245,7 @@ pattern:
 | \(\fvec{ib}{b}\) | True specific force | m/s² | `f_ib_b` | `f_b` | [Truth & ideal IMU](truth-kinematics.md) |
 | \(\wvec[\tilde]{ib}{b}\) | Gyro output | rad/s | `meas_omega_ib_b` | `omega_meas` | [IMU error model](imu-errors.md) |
 | \(\fvec[\tilde]{ib}{b}\) | Accelerometer output | m/s² | `meas_f_ib_b` | `f_meas` | [IMU error model](imu-errors.md) |
+| \(\tilde h_b\) | Barometric height | m | `meas_h_b` | `alt_truth` (true height only) | [Vertical channel](vertical-channel.md) |
 | \(\wvec{in}{n}\) | Rate of n relative to i | rad/s | `omega_in_n` | `w_in` | [Mechanization](mechanization.md) |
 | \(\wvec{nb}{b}\) | Rate of b relative to n | rad/s | `omega_nb_b` | `w_nb_b` | [Mechanization](mechanization.md) |
 | \(\vvec{eb}{n}\) | Velocity, NED | m/s | `v_eb_n` | `vel_n`, `v_n` | [Mechanization](mechanization.md) |

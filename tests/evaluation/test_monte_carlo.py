@@ -3,6 +3,7 @@ import pytest
 
 from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import percentile_envelope, run_monte_carlo
+from ins_sim.sensors.baro import BaroSpec
 from ins_sim.sensors.imu import IMUSpec, draw_initial_misalignment
 from ins_sim.trajectory.kinematics import TruthTrajectory
 from ins_sim.trajectory.spline import NEDSplinePath
@@ -24,7 +25,7 @@ def test_initial_attitude_error_is_the_alignment_draw_of_each_trial():
 
     trial_rngs = np.random.default_rng(11).spawn(4)
     for i, trial_rng in enumerate(trial_rngs):
-        rng_alignment, _ = trial_rng.spawn(2)
+        rng_alignment, _, _ = trial_rng.spawn(3)
         expected = draw_initial_misalignment(spec, rng_alignment)
         np.testing.assert_allclose(mc.delta_psi_nb_n[i, 0], expected, atol=1e-12)
 
@@ -64,6 +65,32 @@ def test_percentile_envelope_of_known_errors():
     np.testing.assert_allclose(percentile_envelope(delta_r, q=50), 3.0)
     np.testing.assert_allclose(percentile_envelope(delta_r, q=100), 5.0)
     assert percentile_envelope(delta_r).shape == (4,)
+
+
+def test_barometer_errors_reach_the_height_only_through_the_aiding():
+    truth = _short_truth()
+    ideal = run_monte_carlo(truth, IMUSpec(**ZERO_SENSORS), n_trials=2, seed=4)
+    biased = run_monte_carlo(truth, IMUSpec(**ZERO_SENSORS, baro=BaroSpec(bias_std=10.0)),
+                             n_trials=2, seed=4)
+    assert np.abs(ideal.est_h_b - truth.h_b).max() < 1e-6
+    # The loop pulls the height towards the biased barometer.
+    assert np.abs(biased.est_h_b - truth.h_b).max() > 0.5
+    # Free-inertial runs ignore the barometer altogether.
+    free = [run_monte_carlo(truth, IMUSpec(**ZERO_SENSORS, baro=baro), n_trials=2,
+                            seed=4, baro_aiding=False)
+            for baro in (None, BaroSpec(bias_std=10.0))]
+    np.testing.assert_array_equal(free[0].est_h_b, free[1].est_h_b)
+
+
+def test_barometer_errors_do_not_change_the_other_draws():
+    """Common random numbers: the barometer draws from its own stream."""
+    truth = _short_truth()
+    spec = IMUSpec(align_tilt_std=1e-4, align_heading_std=1e-3)
+    a = run_monte_carlo(truth, spec, n_trials=2, seed=6)
+    spec.baro = BaroSpec(bias_std=10.0, noise_density=0.1)
+    b = run_monte_carlo(truth, spec, n_trials=2, seed=6)
+    np.testing.assert_array_equal(a.delta_psi_nb_n[:, 0], b.delta_psi_nb_n[:, 0])
+    assert not np.array_equal(a.est_h_b, b.est_h_b)
 
 
 @pytest.mark.parametrize("baro_aiding", [True, False])
