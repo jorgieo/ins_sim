@@ -96,7 +96,7 @@ alone to study sensor errors.
 
 With perfect sensors, on the packaged mission at 0.1 s with oversampling at
 10, the basic update alone puts the track up to 1.7 km off, and the
-precision update about 3 m. The
+precision update about 2 m. The
 [Strapdown mechanization](../theory/mechanization.md#precision-mechanization)
 page explains the difference.
 

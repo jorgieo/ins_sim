@@ -23,7 +23,7 @@ Groves[^groves].
       coning, rotation and sculling corrections and a trapezoidal position
       update, for the outputs of a real, integrating IMU. On the packaged
       mission at a 0.1 s step it cuts the navigator's own error from
-      1.7 km to about 3 m.
+      1.7 km to about 2 m.
 
 ## Physical picture
 
@@ -323,10 +323,12 @@ NED and corrected for half the nav frame's rotation:
     $$
     h_{b,k+1} = h_{b,k} - \tfrac12\left(v_{D,k} + v_{D,k+1}\right)\tau_i,
     \qquad
-    L_{b,k+1} = L_{b,k} + \tfrac12\left(\frac{v_{N,k}}{R_N + h_{b,k}} + \frac{v_{N,k+1}}{R_N + h_{b,k+1}}\right)\tau_i
+    L_{b,k+1} = L_{b,k} + \tfrac12\left(\frac{v_{N,k}}{R_{N,k} + h_{b,k}} + \frac{v_{N,k+1}}{R_{N,k+1} + h_{b,k+1}}\right)\tau_i
     $$
 
-    and likewise for \(\lambda_b\), with \(R_E\) and \(\cos L_b\) at each end.
+    and likewise for \(\lambda_b\), with \(R_E\) and \(\cos L_b\) at each
+    end. The radii at the end of the step are taken at a latitude predicted
+    with the start values, which keeps the update second order.
 
 === "Code"
 
@@ -449,8 +451,8 @@ integrating IMU's outputs:
 
 Each mechanization is exact on the outputs it was built for and about
 20 km off on the other's. On the integrating IMU the precision update is
-100 times closer; the 186 m it keeps comes from the roll into each turn,
-which at 6 °/s is fast for a 1 s step. At the app's 0.1 s it is about 3 m.
+100 times closer; the 198 m it keeps comes from the roll into each turn,
+which at 6 °/s is fast for a 1 s step. At the app's 0.1 s it is about 2 m.
 
 ## References
 

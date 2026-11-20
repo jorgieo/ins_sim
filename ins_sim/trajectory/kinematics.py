@@ -258,12 +258,14 @@ class TruthTrajectory:
         # --8<-- [start:fine_position]
         for j in range(n_fine - 1):
             h.append(h[j] - 0.5 * (v_D[j] + v_D[j+1]) * tau_f)
+            # Radii at a predicted endpoint latitude keep the update second order.
+            L_pred = L[j] + v_N[j] / (R_N + h[j]) * tau_f
+            R_N_next, R_E_next = _radii(L_pred)
             L.append(L[j] + 0.5 * (v_N[j] / (R_N + h[j])
-                                   + v_N[j+1] / (R_N + h[j+1])) * tau_f)
-            R_N_next, R_E_next = _radii(L[j+1])
+                                   + v_N[j+1] / (R_N_next + h[j+1])) * tau_f)
             lam.append(lam[j] + 0.5 * (v_E[j] / ((R_E + h[j]) * cos(L[j]))
                                        + v_E[j+1] / ((R_E_next + h[j+1]) * cos(L[j+1]))) * tau_f)
-            R_N, R_E = R_N_next, R_E_next
+            R_N, R_E = _radii(L[j+1])
         # --8<-- [end:fine_position]
         L_b, lambda_b, h_b = np.array(L), np.array(lam), np.array(h)
 
@@ -283,12 +285,15 @@ class TruthTrajectory:
         #   omega_nb_b·tau_f + ∫ C_n^b(t) dt · omega_in_n
         #   ∫ C_n^b(t) dt · f_ib_n,
         # with ∫ C_n^b(t) dt = tau_f·Gamma(−phi)·C_n^b(j), phi = omega_nb_b·tau_f.
+        # Coriolis, gravity and omega_in_n change along the interval, so they
+        # take the mean of their end values, as the trapezoidal position does.
         # --8<-- [start:integrated_imu]
         phi = (C_b_n[:-1].inv() * C_b_n[1:]).as_rotvec()     # (n_fine-1, 3)
+        coriolis_minus_g = np.cross(omega_ie_n + omega_in_n, v_eb_n) - g_b_n
         f_ib_n = ((v_eb_n[1:] - v_eb_n[:-1]) / tau_f
-                  + np.cross(omega_ie_n[:-1] + omega_in_n[:-1], v_eb_n[:-1])
-                  - g_b_n[:-1])
-        alpha_fine = phi + tau_f * _gamma_apply(-phi, C_n_b.apply(omega_in_n[:-1]))
+                  + 0.5 * (coriolis_minus_g[:-1] + coriolis_minus_g[1:]))
+        omega_in_mid = 0.5 * (omega_in_n[:-1] + omega_in_n[1:])
+        alpha_fine = phi + tau_f * _gamma_apply(-phi, C_n_b.apply(omega_in_mid))
         upsilon_fine = tau_f * _gamma_apply(-phi, C_n_b.apply(f_ib_n))
         alpha = alpha_fine.reshape(n_out - 1, oversample, 3).sum(axis=1)
         upsilon = upsilon_fine.reshape(n_out - 1, oversample, 3).sum(axis=1)
@@ -328,7 +333,9 @@ class TruthTrajectory:
             lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.
             h_b0: Initial geodetic height [m]. Defaults to 100.0.
             oversample: Profile samples per IMU interval for an integrating
-                IMU; see `TruthTrajectory`. Defaults to None.
+                IMU; see `TruthTrajectory`. Defaults to None. When set, the
+                path stops at the last whole profile step, up to one step
+                short of its end.
 
         Returns:
             TruthTrajectory: Truth trajectory over the spline.
@@ -345,7 +352,11 @@ class TruthTrajectory:
         """
         T = path.length / speed
         tau_p = tau_i / (oversample or 1)                  # profile interval
-        t = np.arange(0.0, T + tau_p, tau_p)
+        if oversample is None:
+            t = np.arange(0.0, T + tau_p, tau_p)
+        else:
+            # Drop the partial last interval: clamping it reverses the velocity.
+            t = np.arange(int(np.floor(T / tau_p + 1e-9)) + 1) * tau_p
         s_of_t = np.minimum(speed * t, path.length)
         pos_profile = path.position(s_of_t)
         # An oversampled truth is integrated sample by sample, so first-order

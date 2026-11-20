@@ -145,6 +145,15 @@ def test_oversampled_outputs_are_interval_averages_for_steady_flight():
     np.testing.assert_allclose(averaged.omega_ib_b[1:n], exact.omega_ib_b[1:n], atol=1e-9)
 
 
+def test_oversampled_spline_keeps_its_speed_to_the_end():
+    """A path that ends part-way through a profile step must not end with a
+    reversed velocity (and a large false specific-force pulse)."""
+    path = NEDSplinePath([[0.0, 0.0, 0.0], [4991.0, 0.0, 0.0]])
+    truth = TruthTrajectory.from_spline(path, speed=100.0, tau_i=1.0, oversample=10)
+    np.testing.assert_allclose(truth.v_eb_n[-3:, 0], 100.0, atol=1e-6)
+    np.testing.assert_allclose(truth.f_ib_b[-3:, 0], 0.0, atol=1e-6)
+
+
 def test_gamma_is_the_mean_rotation_over_the_interval():
     from ins_sim.trajectory.kinematics import _gamma_apply
     psi = np.array([[0.3, -0.2, 0.5], [1e-6, 0.0, 2e-6]])

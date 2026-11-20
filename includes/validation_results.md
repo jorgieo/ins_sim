@@ -17,7 +17,7 @@
 | East acceleration error from sculling, basic mechanization | −23.40 µg | −23.38 µg | −0.09% |
 | East acceleration error from sculling, precision mechanization | −0.0738 µg | −0.0738 µg | −0.07% |
 | Order of the basic mechanization's error, \(\tau_i\) = 1 → 0.5 s | 1 | 1.14 | first order |
-| Order of the precision mechanization's error, \(\tau_i\) = 1 → 0.5 s | ≥ 2 | 4.10 | higher order |
+| Order of the precision mechanization's error, \(\tau_i\) = 1 → 0.5 s | ≥ 2 | 4.06 | higher order |
 | Integrated-angle spread after 30 min, \(\tau_i\) = 0.1 s | 5.09″ | 5.04″ | −0.91% |
 | Integrated-angle spread after 30 min, \(\tau_i\) = 1 s | 5.09″ | 5.08″ | −0.23% |
 | Gauss–Markov bias spread at the first sample | σ | 0.997 σ | −0.34% |

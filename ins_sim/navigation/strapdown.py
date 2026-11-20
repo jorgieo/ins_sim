@@ -290,9 +290,10 @@ def strapdown_navgrade(meas_omega_ib_b: np.ndarray, meas_f_ib_b: np.ndarray,
             # --8<-- [start:precision_position]
             R_N, R_E = wgs84_radii(L_b[k])
             h_b[k+1] = h_b[k] - 0.5 * (v_eb_n[k, 2] + v_eb_n[k+1, 2]) * tau_i
+            L_pred = L_b[k] + v_eb_n[k, 0] / (R_N + h_b[k]) * tau_i
+            R_N_next, R_E_next = wgs84_radii(L_pred)
             L_b[k+1] = L_b[k] + 0.5 * (v_eb_n[k, 0] / (R_N + h_b[k])
-                                       + v_eb_n[k+1, 0] / (R_N + h_b[k+1])) * tau_i
-            R_E_next = wgs84_radii(L_b[k+1])[1]
+                                       + v_eb_n[k+1, 0] / (R_N_next + h_b[k+1])) * tau_i
             lambda_b[k+1] = lambda_b[k] + 0.5 * (
                 v_eb_n[k, 1] / ((R_E + h_b[k]) * np.cos(L_b[k]))
                 + v_eb_n[k+1, 1] / ((R_E_next + h_b[k+1]) * np.cos(L_b[k+1]))) * tau_i

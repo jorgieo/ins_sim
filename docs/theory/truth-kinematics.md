@@ -234,7 +234,8 @@ each interval. With `oversample` set to \(M\), the mission is built at the
 finer step \(\tau_f = \tau_i/M\), and the truth is the continuous motion
 through those fine samples: between two of them the body turns relative to
 NED at a constant rate, the velocity changes at a constant rate, and the
-specific force in NED is constant. The states are kept every \(M\)-th
+specific force in NED is constant, with gravity and the Coriolis term at
+the mean of their values at the two samples. The states are kept every \(M\)-th
 sample, and the outputs are the averages of \(\wvec{ib}{b}\) and
 \(\fvec{ib}{b}\) over each interval \(\tau_i\), which is what an integrating
 IMU reports.
@@ -247,10 +248,12 @@ linearly between fine samples:
     $$
     h_{b,j+1} = h_{b,j} - \tfrac12\left(v_{D,j} + v_{D,j+1}\right)\tau_f,
     \qquad
-    L_{b,j+1} = L_{b,j} + \tfrac12\left(\frac{v_{N,j}}{R_N + h_{b,j}} + \frac{v_{N,j+1}}{R_N + h_{b,j+1}}\right)\tau_f
+    L_{b,j+1} = L_{b,j} + \tfrac12\left(\frac{v_{N,j}}{R_{N,j} + h_{b,j}} + \frac{v_{N,j+1}}{R_{N,j+1} + h_{b,j+1}}\right)\tau_f
     $$
 
-    and likewise for \(\lambda_b\).
+    and likewise for \(\lambda_b\). The radii at the end of the step are
+    taken at a latitude predicted with the start values, which keeps the
+    update second order.
 
 === "Code"
 
@@ -270,13 +273,15 @@ the way through it. Averaging that over the step gives the matrix
 === "Equation"
 
     $$
-    \avec{ib,j}{b} = \boldsymbol{\phi}_j + \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\wvec{in}{n}(j),
+    \avec{ib,j}{b} = \boldsymbol{\phi}_j + \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\bar{\boldsymbol{\omega}}_{in}^n(j),
     \qquad
     \uvec{ib,j}{b} = \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\fvec{ib}{n}(j)
     $$
 
-    with \(\fvec{ib}{n}(j)\) as in step 4 above, at the fine step. The
-    outputs are the sums over the \(M\) fine steps of each interval,
+    with \(\fvec{ib}{n}(j)\) as in step 4 above, at the fine step, but with
+    gravity and the Coriolis term averaged over the two samples, and
+    \(\bar{\boldsymbol{\omega}}_{in}^n(j)\) the mean of \(\wvec{in}{n}\) at
+    the two samples. The outputs are the sums over the \(M\) fine steps of each interval,
     divided by \(\tau_i\).
 
 === "Code"
@@ -288,8 +293,8 @@ the way through it. Averaging that over the step gives the matrix
 The truth is still built from fine samples, so it is continuous motion only
 to the extent that the fine step resolves it. Against it, a navigator at
 \(\tau_i\) shows its own error plus a floor from the fine step that falls
-with \(\tau_f^2\): on the packaged mission, about 3 m of horizontal error at
-\(\tau_f\) = 0.01 s, and 1 m at 0.005 s. Keep \(M\) large enough that the
+as \(\tau_f\) shrinks: on the packaged mission, about 2 m of horizontal
+error at \(\tau_f\) = 0.01 s, and 0.6 m at 0.005 s. Keep \(M\) large enough that the
 floor stays below the error you want to see. The
 [Strapdown mechanization](mechanization.md#precision-mechanization) page
 describes the navigator that integrates these outputs accurately.
