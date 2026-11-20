@@ -16,10 +16,14 @@ Groves[^groves].
       gravity and the radii of curvature at the current state.
     - The attitude update applies the exact rotation-vector exponential of
       the body's rate relative to NED.
-    - The velocity and position updates are first-order (forward Euler), on
-      purpose: the truth generator inverts exactly these steps.
-    - There are no coning or sculling corrections. The truth's
-      piecewise-constant IMU outputs leave them nothing to correct.
+    - The basic velocity and position updates are first-order (forward
+      Euler), on purpose: the default truth generator inverts exactly these
+      steps.
+    - The optional [precision mechanization](#precision-mechanization) adds
+      coning, rotation and sculling corrections and a trapezoidal position
+      update, for the outputs of a real, integrating IMU. On the packaged
+      mission at a 0.1 s step it cuts the navigator's own error from
+      1.7 km to about 3 m.
 
 ## Physical picture
 
@@ -207,12 +211,149 @@ Finally, the new position is also converted to metres from the start point,
       order and keeps the attitude a pure rotation.
     - **Position.** Groves averages the velocities at the start and end of
       the step; ins_sim uses the velocity at the start.
-    - **No precision corrections.** Groves' precision mechanization adds
-      coning and sculling corrections and a mid-step attitude for
-      resolving the specific force[^savage]. ins_sim does not.
+    - **Precision corrections are optional.** Groves' precision
+      mechanization corrects for the body turning within each step. ins_sim
+      offers it as a [separate mode](#precision-mechanization).
 
     The first-order choices keep the navigator the exact inverse of the
-    [truth generator](truth-kinematics.md#as-implemented).
+    default [truth generator](truth-kinematics.md#as-implemented).
+
+## Precision mechanization
+
+A real IMU does not sample the angular rate and specific force at an
+instant. It integrates them over each interval and reports the increments:
+the attitude increment \(\avec{ib}{b} = \int \wvec{ib}{b}\,dt\) and the
+velocity increment \(\uvec{ib}{b} = \int \fvec{ib}{b}\,dt\), both in body
+axes. The basic update treats them as rates held constant over the step,
+and that misses three effects of the body turning while the IMU
+integrates:
+
+- **Rotation.** The specific force is integrated in body axes that keep
+  turning, so resolving the whole increment with the start attitude is
+  wrong by about \(\tfrac12\,\avec{ib}{b}\times\uvec{ib}{b}\). In a turn at
+  rate \(\dot\psi\) and speed \(v\) this is a velocity error along the
+  flight path that grows at \(\tfrac12 v\dot\psi^2\tau_i\), 0.03 m/s² for an
+  airliner's 3 °/s turn at a 0.1 s step.
+- **Coning.** When the rotation axis itself moves within the step, the
+  rotation is not \(\avec{ib}{b}\): rotations do not commute. A vibration
+  that cones the IMU drifts the attitude even though no gyro has a bias.
+- **Sculling.** When a rotation oscillates in phase with a specific force
+  along another axis, the true velocity increment differs from
+  \(\uvec{ib}{b}\) in a way that does not average out.
+
+ins_sim's precision mechanization corrects all three with Savage's
+one-sample-plus-previous algorithms[^savage], which estimate how the rates
+change within the step from the previous step's increments. It also
+updates the position with the velocities at both ends of the step. The
+steps below replace steps 2 to 6; step 1 is unchanged.
+
+**P1. Midpoint rates.** The nav-frame rate, gravity and Coriolis term are
+needed over the whole step, so each is extrapolated to its middle from this
+step and the previous one:
+
+=== "Equation"
+
+    $$
+    \bar{\mathbf{x}} = \tfrac32\,\mathbf{x}_k - \tfrac12\,\mathbf{x}_{k-1},
+    \qquad \mathbf{x} \in \left\{\wvec{in}{n},\ \gvec{b}{n} - \left(2\wvec{ie}{n} + \wvec{en}{n}\right)\times\vvec{eb}{n}\right\}
+    $$
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/navigation/strapdown.py:precision_midpoint"
+    ```
+
+**P2. Attitude**, with the coning correction on the body side and the
+nav frame's rotation over the step on the other:
+
+=== "Equation"
+
+    $$
+    \boldsymbol{\phi}_k = \avec{ib,k}{b} + \tfrac{1}{12}\,\avec{ib,k-1}{b}\times\avec{ib,k}{b},
+    \qquad
+    \Cmat{b}{n}(k+1) = \exp\left(-\skew{\boldsymbol{\zeta}}\right)\Cmat{b}{n}(k)\exp\left(\skew{\boldsymbol{\phi}_k}\right),
+    \qquad
+    \boldsymbol{\zeta} = \wvec[\bar]{in}{n}\,\tau_i
+    $$
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/navigation/strapdown.py:coning"
+    ```
+
+    ```python
+    --8<-- "ins_sim/navigation/strapdown.py:precision_attitude"
+    ```
+
+**P3. Velocity.** The rotation and sculling corrections give the velocity
+increment in the body axes at the start of the step, which is resolved in
+NED and corrected for half the nav frame's rotation:
+
+=== "Equation"
+
+    $$
+    \Delta\mathbf{v}^{b} = \uvec{ib,k}{b} + \tfrac12\,\avec{ib,k}{b}\times\uvec{ib,k}{b}
+    + \tfrac{1}{12}\left(\avec{ib,k-1}{b}\times\uvec{ib,k}{b} + \uvec{ib,k-1}{b}\times\avec{ib,k}{b}\right)
+    $$
+
+    $$
+    \vvec{eb}{n}(k+1) = \vvec{eb}{n}(k) + \Cmat{b}{n}(k)\,\Delta\mathbf{v}^{b}
+    - \tfrac12\,\boldsymbol{\zeta}\times\Cmat{b}{n}(k)\,\uvec{ib,k}{b}
+    + \overline{\gvec{b}{n} - \left(2\wvec{ie}{n} + \wvec{en}{n}\right)\times\vvec{eb}{n}}\;\tau_i
+    $$
+
+    where the overlined term is the midpoint value from P1.
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/navigation/strapdown.py:sculling"
+    ```
+
+    ```python
+    --8<-- "ins_sim/navigation/strapdown.py:precision_velocity"
+    ```
+
+**P4. Position**, by the trapezoidal rule:
+
+=== "Equation"
+
+    $$
+    h_{b,k+1} = h_{b,k} - \tfrac12\left(v_{D,k} + v_{D,k+1}\right)\tau_i,
+    \qquad
+    L_{b,k+1} = L_{b,k} + \tfrac12\left(\frac{v_{N,k}}{R_N + h_{b,k}} + \frac{v_{N,k+1}}{R_N + h_{b,k+1}}\right)\tau_i
+    $$
+
+    and likewise for \(\lambda_b\), with \(R_E\) and \(\cos L_b\) at each end.
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/navigation/strapdown.py:precision_position"
+    ```
+
+At the first step there is no previous step: the corrections that need one
+are left out, and the midpoint rates are the start values.
+
+!!! warning "Pair the precision mechanization with an integrating IMU"
+    The default truth's outputs are the exact inverse of the *basic*
+    update, so the basic mechanization reproduces that truth exactly and
+    the precision corrections would only add an error. They pay off on
+    the outputs of an integrating IMU, which ins_sim generates when the
+    truth is [oversampled](truth-kinematics.md#integrating-imu): set
+    `oversample` in [`build_trajectory`][ins_sim.trajectory.kinematics.build_trajectory],
+    `--oversample` on the command line, or *Truth oversampling* under
+    *Advanced* in the app. The GUI and the command line print a note when
+    the precision mechanization runs without it.
+
+On an integrating IMU, the basic mechanization's error is first order in
+\(\tau_i\): it halves when the step halves. The precision mechanization's
+falls at least four times as fast. The
+[Validation](../validation/index.md#precision-mechanization) page checks
+each correction against the classical coning and sculling motions, and
+compares the two mechanizations on the packaged mission.
 
 ## What it looks like
 
@@ -236,13 +377,19 @@ step 5. A 0.01 °/h gyro bias moves it 1.3 km in an hour.
 ## Assumptions & limitations
 
 !!! warning "Assumptions & limitations"
-    - **First-order integration.** The velocity and position updates are
-      forward Euler, the specific force is resolved with the attitude at
+    - **First-order basic update.** The basic velocity and position updates
+      are forward Euler, the specific force is resolved with the attitude at
       the start of each step, and there are no coning or sculling
-      corrections. In a real INS, or against a truth that varies within each
-      step, these would add errors in fast manoeuvres. In ins_sim they are
-      invisible, because the truth inverts them exactly (see
+      corrections. Against the default truth these errors are invisible,
+      because the truth inverts them exactly (see
       [Truth trajectory & ideal IMU](truth-kinematics.md#assumptions-limitations)).
+      An oversampled truth exposes them, and the precision mechanization
+      removes most of them.
+    - **Precision update to second order.** The precision mechanization's
+      remaining error falls with the square of the step or faster. Its
+      corrections assume the rates change smoothly over two steps, so a
+      manoeuvre much shorter than that, such as a 6 °/s roll-in sampled at
+      1 s, still leaves an error.
     - **Known start.** Each run starts from the true position and velocity.
       Only the attitude starts in error, by the drawn alignment error; the
       alignment itself is not simulated.
@@ -257,7 +404,9 @@ step 5. A 0.01 °/h gyro bias moves it 1.3 km in an hour.
 
 | Quantity | Equation | Implemented in |
 | -------- | -------- | -------------- |
-| The whole mechanization | Steps 1 to 6 | [`strapdown_navgrade`][ins_sim.navigation.strapdown.strapdown_navgrade] |
+| The whole mechanization | Steps 1 to 6, or 1 and P1 to P4 with `mechanization="precision"` | [`strapdown_navgrade`][ins_sim.navigation.strapdown.strapdown_navgrade] |
+| Coning correction | \(\boldsymbol{\phi}_k\) | [`coning_correction`][ins_sim.navigation.strapdown.coning_correction] |
+| Rotation and sculling corrections | \(\Delta\mathbf{v}^{b}\) | [`sculling_correction`][ins_sim.navigation.strapdown.sculling_correction] |
 | Initial state | \(L_b\), \(\lambda_b\), \(h_b\), \(\vvec{eb}{n}\), \(\qvec{b}{n}\) | [`NavState`][ins_sim.navigation.strapdown.NavState] |
 | Output history | Every state, plus \(\rvec{lb}{l}\) | [`NavSolution`][ins_sim.navigation.strapdown.NavSolution] |
 | Earth rate, transport rate, gravity, radii | Step 1 | [`earth_rate_n`][ins_sim.core.earth_model.earth_rate_n], [`transport_rate_n`][ins_sim.core.earth_model.transport_rate_n], [`normal_gravity`][ins_sim.core.earth_model.normal_gravity], [`wgs84_radii`][ins_sim.core.earth_model.wgs84_radii] |
@@ -282,6 +431,27 @@ The 1.3 km is close to the single-channel prediction for a gyro bias,
 \(R\,b_g\,(t - \sin\omega_s t/\omega_s)\) = 1.35 km after an hour (see
 [INS error model](error-model.md#gyro-bias)).
 
+This example runs both mechanizations on the packaged mission at 1 s steps
+with perfect sensors, first on the default truth and then on an
+integrating IMU's outputs:
+
+=== "Script"
+
+    ```python
+    --8<-- "docs/examples/precision_mechanization.py"
+    ```
+
+=== "Output"
+
+    ```text
+    --8<-- "docs/examples/precision_mechanization.txt"
+    ```
+
+Each mechanization is exact on the outputs it was built for and about
+20 km off on the other's. On the integrating IMU the precision update is
+100 times closer; the 186 m it keeps comes from the roll into each turn,
+which at 6 °/s is fast for a 1 s step. At the app's 0.1 s it is about 3 m.
+
 ## References
 
 [^groves]: [Groves (2013)](../reference/bibliography.md#groves2013), Chapter 5,
@@ -290,4 +460,6 @@ The 1.3 km is close to the single-channel prediction for a gyro bias,
 
 [^savage]: [Savage (1998a)](../reference/bibliography.md#savage1998a) and
     [Savage (1998b)](../reference/bibliography.md#savage1998b) derive the
-    coning and sculling algorithms.
+    coning and sculling algorithms, including the one-sample-plus-previous
+    forms used here. Groves (2013), Chapter 5, presents them within the
+    precision navigation equations.

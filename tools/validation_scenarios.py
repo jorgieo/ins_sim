@@ -303,6 +303,185 @@ def baro_noise(noise_density: float = 0.1, tau_i: float = 1.0,
 
 
 # --------------------------------------------------------------------------
+# Precision mechanization
+# --------------------------------------------------------------------------
+
+def _integrating_imu(rates, n_samples: int, tau_i: float, n_nodes: int = 8):
+    """Integrating-IMU outputs: the averages of omega_ib^b and f_ib^b over each interval.
+
+    `rates(t)` returns (omega_ib_b, f_ib_b), each shape (len(t), 3), for an
+    array of times; the averages use Gauss-Legendre quadrature, exact to
+    rounding for these smooth motions. The last sample repeats the one
+    before, as in `TruthTrajectory`.
+    """
+    nodes, weights = np.polynomial.legendre.leggauss(n_nodes)
+    t_start = np.arange(n_samples - 1) * tau_i
+    t = (t_start[:, None] + 0.5 * (nodes[None, :] + 1.0) * tau_i).ravel()
+    omega_ib_b, f_ib_b = rates(t)
+    shape = (n_samples - 1, n_nodes, 3)
+    avg = lambda x: 0.5 * np.einsum('knj,n->kj', x.reshape(shape), weights)
+    omega_avg, f_avg = avg(omega_ib_b), avg(f_ib_b)
+    return np.vstack([omega_avg, omega_avg[-1:]]), np.vstack([f_avg, f_avg[-1:]])
+
+
+def _navigate_both(meas_omega_ib_b, meas_f_ib_b, C_b_n0, tau_i, n_samples):
+    """Runs the basic and the precision navigator from rest at the equator, with an ideal barometer."""
+    start = NavState(0.0, 0.0, 0.0, np.zeros(3), C_b_n0.as_quat())
+    return {mech: strapdown_navgrade(meas_omega_ib_b, meas_f_ib_b, start, tau_i,
+                                     meas_h_b=np.zeros(n_samples), mechanization=mech)
+            for mech in ("basic", "precision")}
+
+
+def oscillation_drift(x: float, compensated: bool) -> float:
+    """Drift per interval, divided by the oscillation's amplitude, from coning or sculling.
+
+    Rotation about one axis oscillating in phase with rotation (coning) or
+    specific force (sculling) about or along a second axis, at frequency
+    Ω, rectifies a drift along the third. Over an interval tau_i, with
+    x = Ω·tau_i, the part an uncorrected update misses is ½(x − sin x) per
+    unit amplitude. The one-sample-plus-previous correction removes
+    (2 sin x − sin 2x)/12 of it, leaving x⁵/60 to leading order.
+    """
+    # --8<-- [start:oscillation_drift]
+    missed = 0.5 * (x - np.sin(x))
+    if compensated:
+        missed -= (2.0 * np.sin(x) - np.sin(2.0 * x)) / 12.0
+    return float(missed)
+    # --8<-- [end:oscillation_drift]
+
+
+def _slope(t, y):
+    return float(np.polyfit(t, y, 1)[0])
+
+
+def coning(beta_deg: float = 1.0, freq_hz: float = 2.0, tau_i: float = 0.01,
+           duration_s: float = 60.0) -> SimpleNamespace:
+    """Classical coning motion at rest at the equator: the heading drift of each mechanization.
+
+    The body's z axis traces a cone of half-angle beta about Down at
+    frequency Ω, C_b^n(t) = exp(beta·[u(t) ×]) with u = (cos Ωt, sin Ωt, 0).
+    The heading drifts at −(Ω/x)·sin²beta times `oscillation_drift`,
+    where x = Ω·tau_i.
+    """
+    beta, Omega = np.deg2rad(beta_deg), 2.0 * np.pi * freq_hz
+    g = normal_gravity(0.0, 0.0)
+    omega_ie_n = np.array([WGS84_OMEGA, 0.0, 0.0])                # at the equator
+    C_b_n = lambda t: Rot.from_rotvec(beta * np.column_stack(
+        [np.cos(Omega * t), np.sin(Omega * t), np.zeros_like(t)]))
+
+    def rates(t):
+        C_n_b = C_b_n(t).inv()
+        omega_nb_b = Omega * np.column_stack([-np.sin(beta) * np.sin(Omega * t),
+                                              np.sin(beta) * np.cos(Omega * t),
+                                              np.full_like(t, np.cos(beta) - 1.0)])
+        return (omega_nb_b + C_n_b.apply(omega_ie_n),
+                C_n_b.apply(np.array([0.0, 0.0, -g])))
+
+    n = int(round(duration_s / tau_i)) + 1
+    t = np.arange(n) * tau_i
+    omega, f = _integrating_imu(rates, n, tau_i)
+    navs = _navigate_both(omega, f, C_b_n(t[:1]), tau_i, n)
+    x = Omega * tau_i
+    heading = {m: attitude_error(Rot.from_quat(nav.q_b_n), C_b_n(t))[:, 2]
+               for m, nav in navs.items()}
+    rate = lambda comp: -np.sin(beta) ** 2 * oscillation_drift(x, comp) / tau_i
+    return SimpleNamespace(
+        t=t, heading_basic=heading["basic"], heading_precision=heading["precision"],
+        rate_basic=_slope(t, heading["basic"]), rate_precision=_slope(t, heading["precision"]),
+        predicted_basic=rate(False), predicted_precision=rate(True), x=x)
+
+
+def sculling(theta_deg: float = 1.0, accel: float = 10.0, freq_hz: float = 2.0,
+             tau_i: float = 0.01, duration_s: float = 60.0) -> SimpleNamespace:
+    """Classical sculling motion at rest at the equator: the East velocity drift of each mechanization.
+
+    The body yaws by theta(t) = theta0·cos Ωt while accelerating North at
+    A·cos Ωt, so on average it stays where it is. The East velocity
+    drifts at −(theta0·A/tau_i)/Ω times `oscillation_drift`.
+    """
+    theta0, Omega = np.deg2rad(theta_deg), 2.0 * np.pi * freq_hz
+    R_N, R_E = wgs84_radii(0.0)
+    omega_ie_n = np.array([WGS84_OMEGA, 0.0, 0.0])                # at the equator
+    C_b_n = lambda t: Rot.from_rotvec(np.column_stack(
+        [np.zeros_like(t), np.zeros_like(t), theta0 * np.cos(Omega * t)]))
+
+    def rates(t):
+        C_n_b = C_b_n(t).inv()
+        zero = np.zeros_like(t)
+        v_N = accel / Omega * np.sin(Omega * t)
+        h_b = zero                                    # North motion is millimetres
+        L_b = accel / Omega**2 * (1.0 - np.cos(Omega * t)) / R_N
+        v_eb_n = np.column_stack([v_N, zero, zero])
+        omega_en_n = np.column_stack([zero, -v_N / R_N, zero])
+        g_b_n = np.column_stack([zero, zero, normal_gravity(L_b, h_b)])
+        f_ib_n = (np.column_stack([accel * np.cos(Omega * t), zero, zero])
+                  + np.cross(2.0 * omega_ie_n + omega_en_n, v_eb_n) - g_b_n)
+        omega_nb_b = np.column_stack([zero, zero, -theta0 * Omega * np.sin(Omega * t)])
+        return omega_nb_b + C_n_b.apply(omega_ie_n + omega_en_n), C_n_b.apply(f_ib_n)
+
+    n = int(round(duration_s / tau_i)) + 1
+    t = np.arange(n) * tau_i
+    omega, f = _integrating_imu(rates, n, tau_i)
+    navs = _navigate_both(omega, f, C_b_n(t[:1]), tau_i, n)
+    v_N = accel / Omega * np.sin(Omega * t)
+    x = Omega * tau_i
+    v_E = {m: nav.v_eb_n[:, 1] for m, nav in navs.items()}
+    dv_N = {m: nav.v_eb_n[:, 0] - v_N for m, nav in navs.items()}
+    rate = lambda comp: -theta0 * accel / Omega * oscillation_drift(x, comp) / tau_i
+    return SimpleNamespace(
+        t=t, v_E_basic=v_E["basic"], v_E_precision=v_E["precision"],
+        dv_N_basic=dv_N["basic"], dv_N_precision=dv_N["precision"],
+        rate_basic=_slope(t, v_E["basic"]), rate_precision=_slope(t, v_E["precision"]),
+        predicted_basic=rate(False), predicted_precision=rate(True), x=x)
+
+
+def zero_noise_horizontal_error(truth: TruthTrajectory, mechanization: str) -> np.ndarray:
+    """Horizontal position error of a zero-noise run with an ideal barometer [m]."""
+    start = NavState(truth.L_b[0], truth.lambda_b[0], truth.h_b[0],
+                     truth.v_eb_n[0].copy(), truth.C_b_n[0].as_quat())
+    nav = strapdown_navgrade(truth.omega_ib_b, truth.f_ib_b, start, truth.tau_i,
+                             meas_h_b=truth.h_b, mechanization=mechanization)
+    delta_r_eb_n = position_error(nav.L_b, nav.lambda_b, nav.h_b,
+                                  truth.L_b, truth.lambda_b, truth.h_b)
+    return np.hypot(delta_r_eb_n[:, 0], delta_r_eb_n[:, 1])
+
+
+def mission_mechanizations(tau_i: float = 0.1, oversample: int = 10) -> SimpleNamespace:
+    """The packaged mission with integrated IMU outputs, through both mechanizations.
+
+    With no sensor errors, the position error is the mechanization's own.
+    """
+    truth = build_trajectory(str(default_trajectory_path()), tau_i=tau_i,
+                             oversample=oversample).truth
+    return SimpleNamespace(
+        t=truth.t, tau_i=tau_i, oversample=oversample,
+        basic=zero_noise_horizontal_error(truth, "basic"),
+        precision=zero_noise_horizontal_error(truth, "precision"))
+
+
+def mechanization_convergence(tau_values=(1.0, 0.5, 0.25, 0.1),
+                              tau_fine: float = 0.005,
+                              build=None) -> SimpleNamespace:
+    """Largest zero-noise horizontal error of each mechanization against the IMU interval.
+
+    Every truth is built at the same fine step `tau_fine`, so the motion is
+    the same and only the IMU interval changes. `build(tau_i, oversample)`
+    returns the truth; it defaults to the packaged mission.
+    """
+    if build is None:
+        build = lambda tau_i, oversample: build_trajectory(
+            str(default_trajectory_path()), tau_i=tau_i, oversample=oversample).truth
+    tau = np.asarray(tau_values, dtype=float)
+    basic, precision = [], []
+    for tau_i in tau:
+        truth = build(tau_i, int(round(tau_i / tau_fine)))
+        basic.append(zero_noise_horizontal_error(truth, "basic").max())
+        precision.append(zero_noise_horizontal_error(truth, "precision").max())
+    return SimpleNamespace(tau=tau, tau_fine=tau_fine,
+                           basic=np.array(basic), precision=np.array(precision))
+
+
+# --------------------------------------------------------------------------
 # Sensor noise models
 # --------------------------------------------------------------------------
 

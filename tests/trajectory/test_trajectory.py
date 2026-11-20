@@ -121,6 +121,40 @@ def test_build_trajectory_overrides_dt():
     assert truth.tau_i == 0.25
 
 
+def test_oversampled_truth_keeps_the_imu_interval_and_whole_intervals():
+    truth, *_ = build_trajectory(FIXTURE_YAML, tau_i=0.5, oversample=5)
+    fine, *_ = build_trajectory(FIXTURE_YAML, tau_i=0.1)
+    assert truth.tau_i == 0.5 and truth.oversample == 5
+    np.testing.assert_allclose(np.diff(truth.t), 0.5)
+    assert len(truth.t) == (len(fine.t) - 1) // 5 + 1
+    for name in ("r_lb_l", "v_eb_n", "omega_ib_b", "f_ib_b", "euler_nb"):
+        assert getattr(truth, name).shape[0] == len(truth.t)
+    # The states are the fine profile's, every fifth sample.
+    np.testing.assert_array_equal(truth.v_eb_n, fine.v_eb_n[::5][:len(truth.t)])
+
+
+def test_oversampled_outputs_are_interval_averages_for_steady_flight():
+    """In straight, level, unaccelerated flight the rates barely change, so
+    the averaged outputs equal the instantaneous ones (the transport rate
+    drifts by about 1e-9 rad/s per second as the latitude changes)."""
+    path = NEDSplinePath([[0.0, 0.0, -1000.0], [10000.0, 0.0, -1000.0]])
+    exact = TruthTrajectory.from_spline(path, speed=200.0, tau_i=0.5)
+    averaged = TruthTrajectory.from_spline(path, speed=200.0, tau_i=0.5, oversample=10)
+    n = min(len(exact.t), len(averaged.t)) - 2
+    np.testing.assert_allclose(averaged.f_ib_b[1:n], exact.f_ib_b[1:n], atol=1e-6)
+    np.testing.assert_allclose(averaged.omega_ib_b[1:n], exact.omega_ib_b[1:n], atol=1e-9)
+
+
+def test_gamma_is_the_mean_rotation_over_the_interval():
+    from ins_sim.trajectory.kinematics import _gamma_apply
+    psi = np.array([[0.3, -0.2, 0.5], [1e-6, 0.0, 2e-6]])
+    x = np.array([[1.0, 2.0, 3.0], [0.5, -1.0, 2.0]])
+    s = (np.arange(4000) + 0.5) / 4000                 # midpoint rule over [0, 1]
+    for p, v in zip(psi, x):
+        mean = Rot.from_rotvec(s[:, None] * p).apply(v).mean(axis=0)
+        np.testing.assert_allclose(_gamma_apply(p[None], v[None])[0], mean, atol=1e-7)
+
+
 FT = 0.3048
 
 

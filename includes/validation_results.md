@@ -12,6 +12,12 @@
 | Steady INS height error from a 10 m barometer bias | 10.00 m | 10.00 m | 0.00% |
 | RMS lag of the INS height behind a barometer drift | 2.53 m | 2.56 m | +1.26% |
 | INS height-error spread from 0.1 m/√Hz of barometer noise | 1.44 cm | 1.45 cm | +1.00% |
+| Heading drift from coning, basic mechanization | −1.038 °/h | −1.038 °/h | 0.00% |
+| Heading drift from coning, precision mechanization | −0.00328 °/h | −0.00328 °/h | 0.00% |
+| East acceleration error from sculling, basic mechanization | −23.40 µg | −23.38 µg | −0.09% |
+| East acceleration error from sculling, precision mechanization | −0.0738 µg | −0.0738 µg | −0.07% |
+| Order of the basic mechanization's error, \(\tau_i\) = 1 → 0.5 s | 1 | 1.14 | first order |
+| Order of the precision mechanization's error, \(\tau_i\) = 1 → 0.5 s | ≥ 2 | 4.10 | higher order |
 | Integrated-angle spread after 30 min, \(\tau_i\) = 0.1 s | 5.09″ | 5.04″ | −0.91% |
 | Integrated-angle spread after 30 min, \(\tau_i\) = 1 s | 5.09″ | 5.08″ | −0.23% |
 | Gauss–Markov bias spread at the first sample | σ | 0.997 σ | −0.34% |

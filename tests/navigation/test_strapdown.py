@@ -1,10 +1,45 @@
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as Rot
 
 from ins_sim.core.earth_model import earth_rate_n, normal_gravity
-from ins_sim.navigation.strapdown import NavSolution, NavState, strapdown_navgrade
+from ins_sim.navigation.strapdown import (NavSolution, NavState, coning_correction,
+                                          sculling_correction, strapdown_navgrade)
 from ins_sim.trajectory.spline import NEDSplinePath
 from ins_sim.trajectory.kinematics import TruthTrajectory
+
+
+def test_precision_strapdown_at_rest_stays_at_rest():
+    """The precision update's Earth-rate terms cancel for a body at rest."""
+    L_b0, h_b0, tau_i, M = np.deg2rad(38.97), 100.0, 0.1, 1000
+    gyro = np.tile(earth_rate_n(L_b0), (M, 1))
+    accel = np.tile([0.0, 0.0, -normal_gravity(L_b0, h_b0)], (M, 1))
+    start = NavState(L_b0, 0.0, h_b0, np.zeros(3), Rot.identity().as_quat())
+    nav = strapdown_navgrade(gyro, accel, start, tau_i, mechanization="precision")
+    assert np.abs(nav.v_eb_n).max() < 1e-12
+    assert np.abs(nav.r_lb_l).max() < 1e-9
+    assert np.abs((Rot.from_quat(nav.q_b_n[-1])).as_rotvec()).max() < 1e-12
+
+
+def test_unknown_mechanization_is_rejected():
+    start = NavState(0.0, 0.0, 0.0, np.zeros(3), Rot.identity().as_quat())
+    with pytest.raises(ValueError, match="mechanization"):
+        strapdown_navgrade(np.zeros((3, 3)), np.zeros((3, 3)), start, 1.0,
+                           mechanization="fancy")
+
+
+def test_coning_and_sculling_corrections_need_a_changing_rotation_axis():
+    alpha = np.array([0.01, -0.02, 0.03])
+    upsilon = np.array([0.5, 0.1, -9.8])
+    # A rotation axis that does not change: no coning, and the sculling
+    # terms cancel, leaving only the rotation term.
+    np.testing.assert_array_equal(coning_correction(alpha, alpha), alpha)
+    np.testing.assert_allclose(sculling_correction(alpha, upsilon, alpha, upsilon),
+                               upsilon + 0.5 * np.cross(alpha, upsilon), atol=1e-15)
+    # A changing axis: the classical one-sample-plus-previous terms.
+    prev = np.array([0.02, 0.01, 0.0])
+    np.testing.assert_allclose(coning_correction(prev, alpha),
+                               alpha + np.cross(prev, alpha) / 12.0)
 
 
 def test_stationary_strapdown_is_exactly_stationary():

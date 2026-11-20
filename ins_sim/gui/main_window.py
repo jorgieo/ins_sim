@@ -28,6 +28,7 @@ from PySide6.QtWidgets import (
 from ins_sim.gui.canvas import VisualizationPanel
 from ins_sim.gui.paths import imu_specs_dir, trajectories_dir
 from ins_sim.gui.widgets import (
+    AdvancedOptions,
     DEFAULT_IMU_SPEC_NAME,
     DEFAULT_TRAJECTORY_NAME,
     DtSpinBox,
@@ -77,6 +78,7 @@ class MainWindow(QMainWindow):
             "barometric altitude,\nwith the errors in the IMU spec's baro "
             "block; ideal without one).\nUnchecked: free-inertial vertical "
             "channel — inherently unstable, altitude error diverges.")
+        self.advanced_options = AdvancedOptions()
         self.visualization_options = VisualizationOptions()
 
         trajectory_group = QGroupBox("Trajectory")
@@ -89,6 +91,7 @@ class MainWindow(QMainWindow):
         simulation_layout.addRow("Monte Carlo iterations:", self.iterations_spinbox)
         simulation_layout.addRow("Time step (dt):", self.dt_spinbox)
         simulation_layout.addRow("", self.baro_aiding_checkbox)
+        simulation_layout.addRow(self.advanced_options)
 
         self.run_button = QPushButton("Run Simulation")
         self.progress_bar = QProgressBar()
@@ -126,6 +129,7 @@ class MainWindow(QMainWindow):
         self.iterations_spinbox.valueChanged.connect(self._on_config_changed)
         self.dt_spinbox.valueChanged.connect(self._on_config_changed)
         self.baro_aiding_checkbox.toggled.connect(self._on_config_changed)
+        self.advanced_options.optionsChanged.connect(self._on_config_changed)
         self.visualization_options.optionsChanged.connect(self._on_config_changed)
         self.run_button.clicked.connect(self._on_run_clicked)
 
@@ -135,8 +139,9 @@ class MainWindow(QMainWindow):
         Returns:
             dict: ``trajectory_path`` (str | None), ``imu_spec_path``
                 (str | None), ``n_iterations`` (int), ``dt_s`` (float),
-                ``baro_aiding`` (bool), and ``visualizations``
-                ({key: bool}).
+                ``baro_aiding`` (bool), ``mechanization`` ("basic" or
+                "precision"), ``oversample`` (int | None), and
+                ``visualizations`` ({key: bool}).
         """
         return {
             "trajectory_path": self.file_selector.current_path(),
@@ -144,6 +149,8 @@ class MainWindow(QMainWindow):
             "n_iterations": self.iterations_spinbox.value(),
             "dt_s": self.dt_spinbox.value(),
             "baro_aiding": self.baro_aiding_checkbox.isChecked(),
+            "mechanization": self.advanced_options.mechanization(),
+            "oversample": self.advanced_options.oversample(),
             "visualizations": self.visualization_options.selected_options(),
         }
 
@@ -186,7 +193,7 @@ class MainWindow(QMainWindow):
     def _set_controls_enabled(self, enabled: bool) -> None:
         for widget in (self.file_selector, self.imu_spec_selector,
                        self.iterations_spinbox, self.dt_spinbox,
-                       self.baro_aiding_checkbox,
+                       self.baro_aiding_checkbox, self.advanced_options,
                        self.visualization_options, self.run_button):
             widget.setEnabled(enabled)
 

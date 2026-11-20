@@ -12,7 +12,8 @@ error source. The test suite asserts every agreement on each commit, and
 the figures and table below are regenerated from the same scenarios. The
 predictions are derived on the Theory pages: the
 [INS error model](../theory/error-model.md), the
-[Vertical channel](../theory/vertical-channel.md) and the
+[Vertical channel](../theory/vertical-channel.md), the
+[Strapdown mechanization](../theory/mechanization.md) and the
 [IMU error model](../theory/imu-errors.md).
 
 !!! abstract "Key results"
@@ -21,6 +22,10 @@ predictions are derived on the Theory pages: the
     - Barometer errors reach the INS height exactly as the damping loop's
       transfer function predicts: a bias in full, a drift with a lag, and
       white noise attenuated about sevenfold at a 1 s step.
+    - On an integrating IMU's outputs, the coning and sculling drifts of the
+      basic mechanization match their closed-form predictions, and the
+      precision mechanization cuts each by more than 300 times, again as
+      predicted. Its error falls with at least the square of the step.
     - A 0.01 °/h gyro bias starts the position drifting at about 0.6 nmi/h,
       the classic figure for a navigation-grade INS. Over hours the
       Earth-rate loop bends that drift over, and the simulator reproduces
@@ -194,6 +199,68 @@ navigator and compare the height error with that filter's response:
 ![INS height error after a 10 m barometer bias, and while it tracks a barometer drift](../assets/validation/baro_tracking.png)
 
 ![Spread of the INS height error from white barometer noise, over 200 runs](../assets/validation/baro_noise.png)
+
+## Precision mechanization
+
+These checks feed the navigator the outputs of an integrating IMU, the
+averages of the angular rate and specific force over each interval,
+computed exactly for motions with a closed form. The basic mechanization
+then shows the errors that the
+[precision mechanization](../theory/mechanization.md#precision-mechanization)
+exists to remove.
+
+**Coning and sculling.** In classical coning, the body's z axis traces a
+cone of half-angle \(\beta\) at frequency \(\Omega\). In classical sculling,
+the body yaws by \(\theta_0\cos\Omega t\) while accelerating North at
+\(A\cos\Omega t\). Both rectify: a rotation that oscillates in phase with a
+second rotation, or with a specific force, drives a steady drift along a
+third axis. Over each interval, with \(x = \Omega\tau_i\), an update that
+treats the increments as constant misses
+
+$$
+d_0(x) = \tfrac12\left(x - \sin x\right)
+$$
+
+per unit amplitude, and the one-sample-plus-previous correction leaves
+
+$$
+d_1(x) = \tfrac12\left(x - \sin x\right) - \tfrac{1}{12}\left(2\sin x - \sin 2x\right)
+\approx \frac{x^5}{60}.
+$$
+
+The heading therefore drifts at \(-\sin^2\beta\,d(x)/\tau_i\) under
+coning, and the East velocity at \(-(\theta_0 A/\Omega)\,d(x)/\tau_i\)
+under sculling, with \(d = d_0\) for the basic mechanization and
+\(d = d_1\) for the precision one. The derivation keeps the
+lowest order in \(\beta\) and \(\theta_0\), which is exact to well within
+the checks' tolerance at 1°.
+
+=== "Prediction"
+
+    ```python
+    --8<-- "tools/validation_scenarios.py:oscillation_drift"
+    ```
+
+![Heading error under coning and East velocity error under sculling, for both mechanizations, with the predicted drifts](../assets/validation/coning_sculling.png)
+
+**The packaged mission.** Built with its truth oversampled ten times per
+step, the packaged mission becomes the output of an integrating IMU. With
+perfect sensors, the remaining position error is the mechanization's own:
+
+![Horizontal position error with perfect sensors on the packaged mission, basic and precision mechanizations](../assets/validation/mission_mechanizations.png)
+
+The basic mechanization's error grows in every turn, as the rotation term
+\(\tfrac12\,\avec{ib}{b}\times\uvec{ib}{b}\) it leaves out predicts. The
+precision mechanization stays within a few metres, the floor set by the
+truth's own fine step (see
+[Integrating IMU](../theory/truth-kinematics.md#integrating-imu)).
+
+**Convergence.** Building every truth at the same fine step and changing
+only the IMU interval shows each mechanization's order: the basic error is
+proportional to \(\tau_i\), and the precision error falls at least as fast
+as \(\tau_i^2\) until it meets the floor.
+
+![Largest horizontal error against the IMU interval, both mechanizations, with first- and second-order reference lines](../assets/validation/mechanization_convergence.png)
 
 ## Angle random walk
 

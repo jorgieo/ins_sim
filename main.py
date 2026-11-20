@@ -8,7 +8,8 @@ import matplotlib.pyplot as plt
 
 from ins_sim.trajectory.kinematics import build_trajectory
 from ins_sim.sensors.imu import IMUSpec, load_imu_spec
-from ins_sim.navigation.strapdown import NavState, strapdown_navgrade
+from ins_sim.navigation.strapdown import (PRECISION_WITHOUT_OVERSAMPLING, NavState,
+                                          strapdown_navgrade)
 from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import run_monte_carlo, percentile_envelope
 from ins_sim.evaluation.visualization import build_summary_figure
@@ -18,18 +19,20 @@ from ins_sim.config import default_trajectory_path, default_imu_spec_path
 NM = 1852.0
 
 
-def run_self_consistency_check(truth, tau_i):
+def run_self_consistency_check(truth, tau_i, mechanization="basic"):
     """Runs a zero-noise strapdown integration to verify truth IMU self-consistency.
 
     Feeds the truth trajectory's own omega_ib^b and f_ib^b directly into
     strapdown_navgrade and compares the result against the truth
-    position, verifying that the two are self-consistent under the
-    same mechanization. Pure function, no I/O.
+    position. For the default truth and the basic mechanization the two
+    agree to rounding; for an oversampled truth the difference is the
+    mechanization's own error. Pure function, no I/O.
 
     Args:
         truth: Truth trajectory exposing L_b, lambda_b, h_b, v_eb_n,
             C_b_n, omega_ib_b, f_ib_b and r_lb_l.
         tau_i: Integration interval [s].
+        mechanization: "basic" or "precision". Defaults to "basic".
 
     Returns:
         tuple[numpy.ndarray, numpy.ndarray]: (zero_err, zero_r_lb_l) where
@@ -41,12 +44,14 @@ def run_self_consistency_check(truth, tau_i):
                           truth.v_eb_n[0].copy(),
                           truth.C_b_n[0].as_quat()) # pyright: ignore[reportCallIssue]
     zero_r_lb_l = strapdown_navgrade(truth.omega_ib_b, truth.f_ib_b, init_state,
-                                     tau_i, meas_h_b=truth.h_b).r_lb_l
+                                     tau_i, meas_h_b=truth.h_b,
+                                     mechanization=mechanization).r_lb_l
     zero_err = np.linalg.norm(zero_r_lb_l - truth.r_lb_l, axis=1)
     return zero_err, zero_r_lb_l
 
 
-def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0):
+def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0,
+             mechanization: str = "basic"):
     """Runs the noisy-IMU Monte Carlo ensemble and the 95th-pct error envelope.
 
     Truth-agnostic -- works with any duck-typed truth object
@@ -58,12 +63,14 @@ def simulate(truth, spec: IMUSpec, n_trials: int, seed: int = 0):
         spec: IMU error-parameter set.
         n_trials: Number of independent Monte Carlo trials.
         seed: Seed for the master random generator. Defaults to 0.
+        mechanization: "basic" or "precision". Defaults to "basic".
 
     Returns:
         tuple: (mc, r95), the MonteCarloResult and the 95th-percentile 3D
             position-error envelope, shape (M,) [m].
     """
-    mc = run_monte_carlo(truth, spec, n_trials=n_trials, seed=seed)
+    mc = run_monte_carlo(truth, spec, n_trials=n_trials, seed=seed,
+                         mechanization=mechanization)
     delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
                                   truth.L_b, truth.lambda_b, truth.h_b)
     r95 = percentile_envelope(delta_r_eb_n, q=95)
@@ -115,7 +122,8 @@ def parse_args(argv=None):
         argv: Argument list, or None for sys.argv.
 
     Returns:
-        argparse.Namespace: config, imu_spec, trials, dt, seed.
+        argparse.Namespace: config, imu_spec, trials, dt, seed,
+            mechanization, oversample.
     """
     parser = argparse.ArgumentParser(
         description="Headless INS Monte Carlo run: summary figure + "
@@ -132,6 +140,16 @@ def parse_args(argv=None):
                         help="Integration time step [s] (default 0.1)")
     parser.add_argument("--seed", type=int, default=42,
                         help="Master RNG seed (default 42)")
+    parser.add_argument("--mechanization", choices=("basic", "precision"),
+                        default="basic",
+                        help="Strapdown update: basic (first order) or "
+                             "precision (coning and sculling corrections) "
+                             "(default basic)")
+    parser.add_argument("--oversample", type=int, default=None, metavar="M",
+                        help="Build the truth M times per time step and "
+                             "give the IMU outputs as averages over each "
+                             "step, as an integrating IMU does (default: "
+                             "off, outputs exact for the basic update)")
     return parser.parse_args(argv)
 
 
@@ -152,16 +170,21 @@ def main(argv=None):
     args = parse_args(argv)
     simulation_start = datetime.now()
 
-    truth, v_sprint, R_turn = build_trajectory(args.config, tau_i=args.dt)
+    truth, v_sprint, R_turn = build_trajectory(args.config, tau_i=args.dt,
+                                               oversample=args.oversample)
     print_trajectory_summary(truth)
+    if args.mechanization == "precision" and args.oversample is None:
+        print(f"Note: {PRECISION_WITHOUT_OVERSAMPLING}.")
 
     # Diagnostic: zero-noise strapdown verifies truth IMU self-consistency
-    zero_err, _ = run_self_consistency_check(truth, truth.tau_i)
+    zero_err, _ = run_self_consistency_check(truth, truth.tau_i,
+                                             mechanization=args.mechanization)
     print_self_consistency_summary(truth, zero_err)
 
     n_trials = args.trials
     spec = load_imu_spec(args.imu_spec)
-    mc, r95 = simulate(truth, spec, n_trials=n_trials, seed=args.seed)
+    mc, r95 = simulate(truth, spec, n_trials=n_trials, seed=args.seed,
+                       mechanization=args.mechanization)
     print(f"95th-pct error  start: {r95[0]:6.3f} m   end: {r95[-1]:6.1f} m")
 
     elapsed = datetime.now() - simulation_start

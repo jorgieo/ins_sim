@@ -14,6 +14,7 @@ accurately the mechanization integrates continuous motion. See the
 [Truth trajectory & ideal IMU][truth-trajectory-ideal-imu] theory page.
 """
 
+from math import cos, sin, sqrt
 from typing import NamedTuple
 
 import numpy as np
@@ -22,7 +23,7 @@ from scipy.ndimage import gaussian_filter1d
 from scipy.spatial.transform import Rotation as Rot
 
 from ins_sim.core.earth_model import (
-    WGS84_A, wgs84_radii, earth_rate_n, transport_rate_n, normal_gravity,
+    WGS84_A, WGS84_E2, wgs84_radii, earth_rate_n, transport_rate_n, normal_gravity,
 )
 from ins_sim.trajectory.spline import NEDSplinePath
 
@@ -30,7 +31,7 @@ from ins_sim.trajectory.spline import NEDSplinePath
 # =========================================================================
 # 1. Navigation-grade truth trajectory
 # =========================================================================
-def _euler_from_velocity(v_eb_n, tau_i, g_ref):
+def _euler_from_velocity(v_eb_n, tau_i, g_ref, edge_order=1):
     """Derives roll/pitch/heading Euler angles from a NED velocity profile.
 
     Heading and pitch come directly from the velocity direction; roll
@@ -43,6 +44,8 @@ def _euler_from_velocity(v_eb_n, tau_i, g_ref):
         tau_i: Sample interval [s].
         g_ref: Reference local gravity used in the coordinated-turn
             bank-angle formula [m/s²].
+        edge_order: Accuracy order of the heading-rate differences at the
+            two end samples (`numpy.gradient`). Defaults to 1.
 
     Returns:
         numpy.ndarray: Euler angles [phi_nb (roll), theta_nb (pitch),
@@ -52,10 +55,35 @@ def _euler_from_velocity(v_eb_n, tau_i, g_ref):
     psi   = np.unwrap(np.arctan2(v_eb_n[:, 1], v_eb_n[:, 0]))
     v_h   = np.linalg.norm(v_eb_n[:, :2], axis=1)
     theta = np.arctan2(-v_eb_n[:, 2], np.maximum(v_h, 1e-6))
-    psi_dot = np.gradient(psi, tau_i)
+    psi_dot = np.gradient(psi, tau_i, edge_order=edge_order)
     phi   = np.arctan2(v_h * psi_dot, g_ref)
     # --8<-- [end:attitude_from_velocity]
     return np.column_stack([phi, theta, psi])
+
+
+def _radii(L_b: float) -> tuple[float, float]:
+    """Meridian and transverse radii (R_N, R_E) at one latitude, in plain floats.
+
+    The same formulas as `wgs84_radii`, without NumPy's per-call overhead.
+    """
+    den = sqrt(1.0 - WGS84_E2 * sin(L_b) ** 2)
+    return WGS84_A * (1.0 - WGS84_E2) / den ** 3, WGS84_A / den
+
+
+def _gamma_apply(psi: np.ndarray, x: np.ndarray) -> np.ndarray:
+    """Applies the mean of exp([s·psi ×]) over s in [0, 1] to x, row by row.
+
+    That mean is I + a·[psi ×] + b·[psi ×]², with a = (1 − cos θ)/θ² and
+    b = (θ − sin θ)/θ³, θ = |psi|; small angles use the series.
+    """
+    theta2 = np.einsum('ij,ij->i', psi, psi)[:, None]
+    theta = np.sqrt(theta2)
+    small = theta < 1e-4
+    safe = np.where(small, 1.0, theta)
+    a = np.where(small, 0.5 - theta2 / 24.0, (1.0 - np.cos(safe)) / safe ** 2)
+    b = np.where(small, 1.0 / 6.0 - theta2 / 120.0, (safe - np.sin(safe)) / safe ** 3)
+    psi_x = np.cross(psi, x)
+    return x + a * psi_x + b * np.cross(psi, psi_x)
 
 
 class TruthTrajectory:
@@ -98,11 +126,14 @@ class TruthTrajectory:
             (M, 3) [m/s²].
         g (numpy.ndarray): Local gravity magnitude g(L_b, h_b), shape
             (M,) [m/s²].
+        oversample (int | None): Profile samples per IMU interval for
+            integrated IMU outputs, or None for the exact inverse of the
+            basic strapdown update.
     """
     def __init__(self, pos_profile: np.ndarray, v_eb_n: np.ndarray,
                  euler_nb: np.ndarray, tau_i: float,
                  L_b0_deg: float = 38.97, lambda_b0_deg: float = -76.49,
-                 h_b0: float = 100.0):
+                 h_b0: float = 100.0, oversample: int | None = None):
         """Builds the truth trajectory from raw position/velocity/Euler-angle profiles.
 
         Args:
@@ -117,7 +148,21 @@ class TruthTrajectory:
             L_b0_deg: Initial geodetic latitude [deg]. Defaults to 38.97.
             lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.
             h_b0: Initial geodetic height [m]. Defaults to 100.0.
+            oversample: When None (the default) the IMU outputs are the
+                exact inverse of the basic strapdown update, as described
+                above. When an integer M, the profiles are sampled M times
+                per IMU interval, at tau_i/M, and the truth is the continuous
+                motion through them: the body turns at a constant rate and
+                the velocity changes at a constant rate between profile
+                samples. The IMU outputs are the averages of omega_ib^b and
+                f_ib^b over each interval tau_i, as an integrating IMU
+                reports them, and the states are kept every M-th sample.
         """
+        if oversample is not None:
+            self._init_integrating(v_eb_n, euler_nb, tau_i, int(oversample),
+                                   np.deg2rad(L_b0_deg), np.deg2rad(lambda_b0_deg), h_b0)
+            return
+        self.oversample = None
         self.tau_i = tau_i
         L_b0 = np.deg2rad(L_b0_deg)
         lambda_b0 = np.deg2rad(lambda_b0_deg)
@@ -190,10 +235,89 @@ class TruthTrajectory:
         r_lb_l[:, 2] = -(h_b - h_b0)
         self.r_lb_l = r_lb_l
 
+    def _init_integrating(self, v_eb_n, euler_nb, tau_i, oversample, L_b0,
+                          lambda_b0, h_b0):
+        """Builds the truth from profiles sampled at tau_i/oversample, with integrated IMU outputs."""
+        if oversample < 1:
+            raise ValueError("oversample must be a positive integer")
+        self.oversample = oversample
+        self.tau_i = tau_i
+        tau_f = tau_i / oversample
+        # Keep whole IMU intervals only.
+        n_out = (len(v_eb_n) - 1) // oversample + 1
+        n_fine = (n_out - 1) * oversample + 1
+        v_eb_n = np.asarray(v_eb_n, dtype=float)[:n_fine]
+        euler_nb = np.asarray(euler_nb, dtype=float)[:n_fine]
+
+        # ---- Curvilinear position: trapezoidal rule, since the velocity
+        # changes linearly between profile samples ------------------------
+        # The loop runs on plain floats: it can be millions of steps long.
+        v_N, v_E, v_D = v_eb_n.T.tolist()
+        L = [L_b0]; lam = [lambda_b0]; h = [h_b0]
+        R_N, R_E = (float(r) for r in wgs84_radii(L_b0))
+        # --8<-- [start:fine_position]
+        for j in range(n_fine - 1):
+            h.append(h[j] - 0.5 * (v_D[j] + v_D[j+1]) * tau_f)
+            L.append(L[j] + 0.5 * (v_N[j] / (R_N + h[j])
+                                   + v_N[j+1] / (R_N + h[j+1])) * tau_f)
+            R_N_next, R_E_next = _radii(L[j+1])
+            lam.append(lam[j] + 0.5 * (v_E[j] / ((R_E + h[j]) * cos(L[j]))
+                                       + v_E[j+1] / ((R_E_next + h[j+1]) * cos(L[j+1]))) * tau_f)
+            R_N, R_E = R_N_next, R_E_next
+        # --8<-- [end:fine_position]
+        L_b, lambda_b, h_b = np.array(L), np.array(lam), np.array(h)
+
+        C_b_n = Rot.from_euler(
+            'ZYX', np.column_stack([euler_nb[:, 2], euler_nb[:, 1], euler_nb[:, 0]]))
+        C_n_b = C_b_n[:-1].inv()
+        omega_ie_n = earth_rate_n(L_b)
+        omega_in_n = omega_ie_n + transport_rate_n(v_eb_n, L_b, h_b)
+        g = normal_gravity(L_b, h_b)
+        g_b_n = np.zeros((n_fine, 3)); g_b_n[:, 2] = g
+
+        # ---- Integrated IMU outputs ---------------------------------------
+        # Between profile samples j and j+1 the body turns relative to NED
+        # at the constant rate omega_nb_b, and the specific force in NED,
+        # f_ib_n, is constant. Over that sub-interval the gyro and the
+        # accelerometer therefore integrate
+        #   omega_nb_b·tau_f + ∫ C_n^b(t) dt · omega_in_n
+        #   ∫ C_n^b(t) dt · f_ib_n,
+        # with ∫ C_n^b(t) dt = tau_f·Gamma(−phi)·C_n^b(j), phi = omega_nb_b·tau_f.
+        # --8<-- [start:integrated_imu]
+        phi = (C_b_n[:-1].inv() * C_b_n[1:]).as_rotvec()     # (n_fine-1, 3)
+        f_ib_n = ((v_eb_n[1:] - v_eb_n[:-1]) / tau_f
+                  + np.cross(omega_ie_n[:-1] + omega_in_n[:-1], v_eb_n[:-1])
+                  - g_b_n[:-1])
+        alpha_fine = phi + tau_f * _gamma_apply(-phi, C_n_b.apply(omega_in_n[:-1]))
+        upsilon_fine = tau_f * _gamma_apply(-phi, C_n_b.apply(f_ib_n))
+        alpha = alpha_fine.reshape(n_out - 1, oversample, 3).sum(axis=1)
+        upsilon = upsilon_fine.reshape(n_out - 1, oversample, 3).sum(axis=1)
+        # --8<-- [end:integrated_imu]
+        # The last sample has no interval after it; repeat the one before.
+        self.omega_ib_b = np.vstack([alpha, alpha[-1:]]) / tau_i
+        self.f_ib_b = np.vstack([upsilon, upsilon[-1:]]) / tau_i
+
+        # ---- States at the IMU interval -----------------------------------
+        keep = slice(None, None, oversample)
+        self.t = np.arange(n_out) * tau_i
+        self.v_eb_n = v_eb_n[keep]
+        self.v_eb_n_dot = np.gradient(v_eb_n, tau_f, axis=0)[keep]
+        self.euler_nb = euler_nb[keep]
+        self.L_b, self.lambda_b, self.h_b = L_b[keep], lambda_b[keep], h_b[keep]
+        self.C_b_n = C_b_n[keep]
+        self.g = g[keep]
+        R_N0, R_E0 = wgs84_radii(L_b0)
+        r_lb_l = np.zeros((n_out, 3))
+        r_lb_l[:, 0] = (self.L_b - L_b0) * (R_N0 + h_b0)
+        r_lb_l[:, 1] = (self.lambda_b - lambda_b0) * (R_E0 + h_b0) * np.cos(L_b0)
+        r_lb_l[:, 2] = -(self.h_b - h_b0)
+        self.r_lb_l = r_lb_l
+
     @classmethod
     def from_spline(cls, path: NEDSplinePath, speed: float, tau_i: float,
                      L_b0_deg: float = 38.97, lambda_b0_deg: float = -76.49,
-                     h_b0: float = 100.0) -> "TruthTrajectory":
+                     h_b0: float = 100.0,
+                     oversample: int | None = None) -> "TruthTrajectory":
         """Builds a truth trajectory by traversing a spline path at constant speed.
 
         Args:
@@ -203,6 +327,8 @@ class TruthTrajectory:
             L_b0_deg: Initial geodetic latitude [deg]. Defaults to 38.97.
             lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.
             h_b0: Initial geodetic height [m]. Defaults to 100.0.
+            oversample: Profile samples per IMU interval for an integrating
+                IMU; see `TruthTrajectory`. Defaults to None.
 
         Returns:
             TruthTrajectory: Truth trajectory over the spline.
@@ -218,17 +344,22 @@ class TruthTrajectory:
             [100.0, 0.0, 0.0]
         """
         T = path.length / speed
-        t = np.arange(0.0, T + tau_i, tau_i)
+        tau_p = tau_i / (oversample or 1)                  # profile interval
+        t = np.arange(0.0, T + tau_p, tau_p)
         s_of_t = np.minimum(speed * t, path.length)
         pos_profile = path.position(s_of_t)
-        v_eb_n = np.gradient(pos_profile, tau_i, axis=0)
+        # An oversampled truth is integrated sample by sample, so first-order
+        # differences at the ends would show up as a jump in roll there.
+        edge_order = 1 if oversample is None else 2
+        v_eb_n = np.gradient(pos_profile, tau_p, axis=0, edge_order=edge_order)
         # Coordinated-turn bank uses local gravity at the start; for short
         # trajectories using a mean g is well within the rounding error
         # of the heading-rate derivative itself.
         g_ref = normal_gravity(np.deg2rad(L_b0_deg), h_b0)
-        euler_nb = _euler_from_velocity(v_eb_n, tau_i, g_ref)
+        euler_nb = _euler_from_velocity(v_eb_n, tau_p, g_ref, edge_order)
         return cls(pos_profile, v_eb_n, euler_nb, tau_i,
-                   L_b0_deg=L_b0_deg, lambda_b0_deg=lambda_b0_deg, h_b0=h_b0)
+                   L_b0_deg=L_b0_deg, lambda_b0_deg=lambda_b0_deg, h_b0=h_b0,
+                   oversample=oversample)
 
 
 # =========================================================================
@@ -577,7 +708,8 @@ class MissionTrajectory(NamedTuple):
     R_turn: float | None
 
 
-def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTrajectory:
+def build_trajectory(yaml_path: str, tau_i: float | None = None,
+                     oversample: int | None = None) -> MissionTrajectory:
     """Builds a phase-by-phase truth trajectory from a YAML mission definition.
 
     Each phase in the YAML maps to a helper function; fields omitted
@@ -588,6 +720,11 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
         yaml_path: Path to the YAML mission-phase definition file.
         tau_i: Sample interval [s]. When None, defaults to the file's
             `simulation_time.dt_s` value.
+        oversample: When None (the default), the truth IMU outputs are the
+            exact inverse of the basic strapdown update. When an integer M,
+            the mission is built at tau_i/M and the IMU outputs are the
+            averages over each interval tau_i, as an integrating IMU
+            reports them; see `TruthTrajectory`.
 
     Returns:
         MissionTrajectory: (truth, v_sprint, R_turn); unpacks
@@ -637,6 +774,8 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
 
     if tau_i is None:
         tau_i = float(sim["dt_s"])
+    tau_imu = tau_i
+    tau_i = tau_i / (oversample or 1)       # the phases are built at this step
 
     def _isa_speed(mach, alt_m_msl):
         T_isa = 288.15 - 0.0065 * alt_m_msl
@@ -794,11 +933,14 @@ def build_trajectory(yaml_path: str, tau_i: float | None = None) -> MissionTraje
     # --8<-- [end:velocity_smoothing]
 
     g_ref = normal_gravity(np.deg2rad(lat0_deg), alt0_msl)
-    euler = _euler_from_velocity(all_vel, tau_i, g_ref)
+    # An oversampled truth is integrated sample by sample, so first-order
+    # differences at the ends would show up as a jump in roll there.
+    euler = _euler_from_velocity(all_vel, tau_i, g_ref,
+                                 edge_order=1 if oversample is None else 2)
 
     # The departure elevation is given above mean sea level; with no geoid
     # model it is used directly as the geodetic height h_b.
-    truth = TruthTrajectory(all_pos, all_vel, euler, tau_i,
+    truth = TruthTrajectory(all_pos, all_vel, euler, tau_imu,
                             L_b0_deg=lat0_deg, lambda_b0_deg=lon0_deg,
-                            h_b0=alt0_msl)
+                            h_b0=alt0_msl, oversample=oversample)
     return MissionTrajectory(truth, v_sprint, R_turn_global)

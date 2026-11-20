@@ -9,7 +9,7 @@ position-error percentile over time. See the
 """
 
 from collections.abc import Callable
-from typing import TYPE_CHECKING, NamedTuple
+from typing import TYPE_CHECKING, Literal, NamedTuple
 
 import numpy as np
 from scipy.spatial.transform import Rotation as Rot
@@ -59,7 +59,9 @@ class MonteCarloResult(NamedTuple):
 def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
                     n_trials: int, seed: int = 0,
                     progress_callback: Callable[[int, int], None] | None = None,
-                    baro_aiding: bool = True) -> MonteCarloResult:
+                    baro_aiding: bool = True,
+                    mechanization: Literal["basic", "precision"] = "basic",
+                    ) -> MonteCarloResult:
     """Runs n_trials independent noisy-IMU strapdown realizations.
 
     Each trial has its own random stream, spawned from `seed`, and each
@@ -82,6 +84,8 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
             `spec.baro` (the true height when `spec.baro` is None); when
             False the vertical channel is free-inertial and diverges.
             Defaults to True.
+        mechanization: Strapdown update, "basic" or "precision"; see
+            `strapdown_navgrade`. Defaults to "basic".
 
     Returns:
         MonteCarloResult: estimates and attitude errors for every trial.
@@ -131,7 +135,7 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
             meas_h_b = generate_baro_samples(truth, spec.baro, rng_baro)
         nav = strapdown_navgrade(
             meas_omega_ib_b, meas_f_ib_b, init_state, truth.tau_i,
-            meas_h_b=meas_h_b)
+            meas_h_b=meas_h_b, mechanization=mechanization)
         # --8<-- [end:trial]
         est_r_lb_l[i]   = nav.r_lb_l
         est_L_b[i]      = nav.L_b

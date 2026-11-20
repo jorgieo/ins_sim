@@ -182,6 +182,85 @@ def build_all(out_dir: Path, table_path: Path) -> None:
                  f"{noise.predicted * 100:.2f} cm", f"{noise.measured * 100:.2f} cm",
                  _pct(noise.measured, noise.predicted)))
 
+    # ---- Precision mechanization ---------------------------------------------
+    con = v.coning()
+    scu = v.sculling()
+    fig = make_subplots(rows=1, cols=2, horizontal_spacing=0.1,
+                        subplot_titles=("Coning: heading error",
+                                        "Sculling: East velocity error"))
+    for col, (r, sim_b, sim_p, scale) in enumerate(
+            [(con, con.heading_basic, con.heading_precision, ARCSEC_PER_RAD),
+             (scu, scu.v_E_basic, scu.v_E_precision, 1e3)], start=1):
+        legend = col == 1
+        fig.add_trace(go.Scatter(x=r.t, y=sim_b * scale, name="Basic mechanization", mode="lines",
+                                 showlegend=legend, line=dict(color=SIM_2, width=2.5)),
+                      row=1, col=col)
+        fig.add_trace(go.Scatter(x=r.t, y=sim_p * scale, name="Precision mechanization", mode="lines",
+                                 showlegend=legend, line=dict(color=SIM, width=2.5)),
+                      row=1, col=col)
+        for rate, name in ((r.predicted_basic, "Predicted drift"),
+                           (r.predicted_precision, "Predicted drift")):
+            fig.add_trace(go.Scatter(x=r.t, y=rate * r.t * scale, name=name, mode="lines",
+                                     showlegend=bool(legend and rate == r.predicted_basic),
+                                     line=dict(color=PREDICTED, dash="dash", width=2)),
+                          row=1, col=col)
+    fig.update_yaxes(title_text="Heading error (″)", row=1, col=1)
+    fig.update_yaxes(title_text="East velocity error (mm/s)", row=1, col=2)
+    fig.update_xaxes(title_text="Time (s)")
+    fig.update_layout(title=("Classical coning (1° cone at 2 Hz) and sculling (1° yaw with 1 g "
+                             "at 2 Hz), IMU sampled at 100 Hz"), **PANEL_LAYOUT)
+    _save(fig, out_dir, "coning_sculling.png")
+    to_deg_h = 1.0 / v.DEG_PER_HOUR
+    rows.append(("Heading drift from coning, basic mechanization",
+                 f"{_num(con.predicted_basic * to_deg_h, '.3f')} °/h",
+                 f"{_num(con.rate_basic * to_deg_h, '.3f')} °/h",
+                 _pct(con.rate_basic, con.predicted_basic)))
+    rows.append(("Heading drift from coning, precision mechanization",
+                 f"{_num(con.predicted_precision * to_deg_h, '.5f')} °/h",
+                 f"{_num(con.rate_precision * to_deg_h, '.5f')} °/h",
+                 _pct(con.rate_precision, con.predicted_precision)))
+    rows.append(("East acceleration error from sculling, basic mechanization",
+                 f"{_num(scu.predicted_basic / v.MICRO_G, '.2f')} µg",
+                 f"{_num(scu.rate_basic / v.MICRO_G, '.2f')} µg",
+                 _pct(scu.rate_basic, scu.predicted_basic)))
+    rows.append(("East acceleration error from sculling, precision mechanization",
+                 f"{_num(scu.predicted_precision / v.MICRO_G, '.4f')} µg",
+                 f"{_num(scu.rate_precision / v.MICRO_G, '.4f')} µg",
+                 _pct(scu.rate_precision, scu.predicted_precision)))
+
+    mis = v.mission_mechanizations()
+    fig = go.Figure([_line(mis.t / 60.0, mis.basic, "Basic mechanization", SIM_2),
+                     _line(mis.t / 60.0, mis.precision, "Precision mechanization", SIM)])
+    fig.update_layout(title=(f"Horizontal position error with perfect sensors, packaged mission "
+                             f"(τ<sub>i</sub> = {mis.tau_i} s, truth oversampled {mis.oversample}×)"),
+                      xaxis_title="Time (min)", yaxis_title="Horizontal error (m)",
+                      yaxis_type="log", **LAYOUT)
+    _save(fig, out_dir, "mission_mechanizations.png")
+
+    conv = v.mechanization_convergence()
+    fig = go.Figure([
+        go.Scatter(x=conv.tau, y=conv.basic, name="Basic mechanization", mode="lines+markers",
+                   line=dict(color=SIM_2, width=2.5), marker=dict(size=10)),
+        go.Scatter(x=conv.tau, y=conv.precision, name="Precision mechanization",
+                   mode="lines+markers", line=dict(color=SIM, width=2.5),
+                   marker=dict(size=10, symbol="square")),
+        _line(conv.tau, conv.basic[0] * conv.tau / conv.tau[0], "First order, ∝ τ<sub>i</sub>",
+              APPROX, "dot"),
+        _line(conv.tau, conv.precision[0] * (conv.tau / conv.tau[0]) ** 2,
+              "Second order, ∝ τ<sub>i</sub>²", APPROX, "dash"),
+    ])
+    fig.update_layout(title=("Largest horizontal error with perfect sensors, packaged mission "
+                             f"(truth built at {conv.tau_fine} s)"),
+                      xaxis_title="IMU interval τ<sub>i</sub> (s)",
+                      yaxis_title="Largest horizontal error (m)",
+                      xaxis_type="log", yaxis_type="log", **LAYOUT)
+    _save(fig, out_dir, "mechanization_convergence.png")
+    order = lambda e: float(np.log(e[0] / e[1]) / np.log(conv.tau[0] / conv.tau[1]))
+    rows.append((rf"Order of the basic mechanization's error, \(\tau_i\) = {conv.tau[0]:g} → {conv.tau[1]:g} s",
+                 "1", f"{order(conv.basic):.2f}", "first order"))
+    rows.append((rf"Order of the precision mechanization's error, \(\tau_i\) = {conv.tau[0]:g} → {conv.tau[1]:g} s",
+                 "≥ 2", f"{order(conv.precision):.2f}", "higher order"))
+
     # ---- Angle random walk ---------------------------------------------------
     arw_fast = v.angle_random_walk(tau_i=0.1)
     arw_slow = v.angle_random_walk(tau_i=1.0)

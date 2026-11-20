@@ -17,6 +17,16 @@ version may change the API.
   `IMUSpec.baro` takes a `BaroSpec`, and `generate_baro_samples` draws the
   measurements. Each trial draws its barometer errors from a random stream
   of its own, so they leave the IMU and alignment errors unchanged.
+- **A precision mechanization and an integrating IMU**, to test the
+  navigation algorithm itself. `strapdown_navgrade(..., mechanization="precision")`
+  adds coning, rotation and sculling corrections and a trapezoidal
+  position update. `build_trajectory(..., oversample=M)` and
+  `TruthTrajectory(..., oversample=M)` build the truth M times per IMU
+  interval and give the IMU outputs as averages over each interval, as a
+  real integrating IMU reports them. `run_monte_carlo` takes
+  `mechanization` too; the app has both under **Advanced**, and
+  `main.py` has `--mechanization` and `--oversample`. Both default to the
+  previous behaviour, which gives the same results as before.
 
 ### Changed
 

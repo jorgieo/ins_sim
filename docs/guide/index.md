@@ -77,6 +77,29 @@ aiding the height error grows exponentially: try it in
 [Your first simulation](../get-started/first-run.md#7-switch-off-the-barometer).
 The [Vertical channel](../theory/vertical-channel.md) page explains why.
 
+**Advanced** (collapsed by default; click it to open) holds two settings
+that change how the navigation algorithm itself is tested. Leave them
+alone to study sensor errors.
+
+- **Truth oversampling** (Off, or 2–100 per step). Off, the perfect IMU's
+  outputs are built to match the navigator's basic update exactly, so the
+  only errors are the sensors'. Set to N, the mission is built N times per
+  time step and the IMU reports averages over each step, as a real
+  integrating IMU does. The navigator's own error then shows too. Larger N
+  is more faithful but slower to build: N = 10 at a 0.1 s step adds about
+  8 s to the run.
+- **Mechanization**: *Basic* or *Precision*. The precision update corrects
+  for the vehicle turning within each step (coning, sculling and rotation
+  corrections) and takes about 1.4 times as long. It belongs with truth
+  oversampling; without it the log prints a note, because the precision
+  corrections then add an error of their own.
+
+With perfect sensors, on the packaged mission at 0.1 s with oversampling at
+10, the basic update alone puts the track up to 1.7 km off, and the
+precision update about 3 m. The
+[Strapdown mechanization](../theory/mechanization.md#precision-mechanization)
+page explains the difference.
+
 **Output Visualizations** selects the result tabs to build. Each tab takes
 a moment to build when the run finishes, so unchecking the ones you do not
 need saves a little time.

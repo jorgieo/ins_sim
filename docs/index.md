@@ -67,7 +67,9 @@ error grows over time for a given IMU.
   initial alignment errors.
 - **Rotating-Earth strapdown mechanization**: Earth rate, transport rate,
   WGS-84 radii of curvature and normal gravity, evaluated at the current
-  position every step, not a flat-Earth approximation.
+  position every step, not a flat-Earth approximation. An optional
+  precision update, with coning and sculling corrections, can be tested
+  against the outputs of an integrating IMU.
 - **Vertical channel physics**: a third-order baro-damped loop by default,
   aided by a barometer with its own errors (temperature, altimeter setting,
   weather, noise), or free-inertial to watch the channel's instability.

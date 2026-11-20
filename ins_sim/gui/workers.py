@@ -15,6 +15,7 @@ from PySide6.QtCore import QObject, Signal
 from ins_sim.config import default_imu_spec_path
 from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import percentile_envelope, run_monte_carlo
+from ins_sim.navigation.strapdown import PRECISION_WITHOUT_OVERSAMPLING
 from ins_sim.sensors.imu import load_imu_spec
 from ins_sim.trajectory.kinematics import build_trajectory
 
@@ -83,10 +84,16 @@ class SimulationWorker(QObject):
         imu_spec_path = self._config.get("imu_spec_path") or str(default_imu_spec_path())
         dt = self._config.get("dt_s", 0.1)
         n_trials = self._config["n_iterations"]
+        oversample = self._config.get("oversample")
+        mechanization = self._config.get("mechanization", "basic")
 
+        sampling = "" if oversample is None else f", truth oversampled {oversample}x"
         self.log_message.emit(f"Loading trajectory: {Path(trajectory_path).name} "
-                              f"(dt = {dt} s)")
-        truth, _, _ = build_trajectory(str(trajectory_path), tau_i=dt)
+                              f"(dt = {dt} s{sampling})")
+        truth, _, _ = build_trajectory(str(trajectory_path), tau_i=dt,
+                                       oversample=oversample)
+        if mechanization == "precision" and oversample is None:
+            self.log_message.emit(f"Note: {PRECISION_WITHOUT_OVERSAMPLING}.")
 
         total_dist = np.sum(np.linalg.norm(np.diff(truth.r_lb_l, axis=0), axis=1))
         self.log_message.emit(
@@ -104,10 +111,12 @@ class SimulationWorker(QObject):
         else:
             vertical = "baro-damped"
         self.log_message.emit(f"Running {n_trials} Monte Carlo trials "
-                              f"({vertical} vertical channel)...")
+                              f"({mechanization} mechanization, "
+                              f"{vertical} vertical channel)...")
         mc = run_monte_carlo(
             truth, spec, n_trials=n_trials, seed=self._seed,
-            progress_callback=self._on_progress, baro_aiding=baro_aiding)
+            progress_callback=self._on_progress, baro_aiding=baro_aiding,
+            mechanization=mechanization)
         delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
                                       truth.L_b, truth.lambda_b, truth.h_b)
         r95 = percentile_envelope(delta_r_eb_n, q=95)

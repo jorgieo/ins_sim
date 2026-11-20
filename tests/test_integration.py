@@ -58,3 +58,10 @@ def test_pipeline_via_main_functions_runs_fast_and_consistently():
 
     # Generous headroom over the measured ~0.3s cost for this scenario size.
     assert elapsed < 10.0
+
+
+def test_cli_parses_the_mechanization_and_oversampling():
+    args = main_module.parse_args([])
+    assert args.mechanization == "basic" and args.oversample is None
+    args = main_module.parse_args(["--mechanization", "precision", "--oversample", "10"])
+    assert args.mechanization == "precision" and args.oversample == 10

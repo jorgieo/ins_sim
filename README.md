@@ -31,7 +31,10 @@ The simulation models rotating-Earth effects explicitly: Earth rate, transport
 (craft) rate, WGS-84 radii of curvature, and Somigliana normal gravity are all
 evaluated at the current latitude/altitude at every step, so the strapdown
 mechanization is consistent with true inertial navigation rather than a flat,
-non-rotating Earth approximation. The vertical channel runs either baro-damped
+non-rotating Earth approximation. An optional precision mechanization adds
+coning, rotation and sculling corrections, and the truth can be oversampled to
+give the outputs of an integrating IMU, against which the navigator's own
+integration error shows. The vertical channel runs either baro-damped
 (third-order fixed-gain loop, aided by a barometer with its own temperature,
 altimeter-setting, weather and noise errors) or free-inertial, where it exhibits
 the expected instability.
@@ -131,7 +134,7 @@ spec = load_imu_spec("path/to/your_imu_spec.yaml")
 | `ins_sim/core` | Earth & gravity model | WGS-84 ellipsoid, radii of curvature, Earth/transport rates, Somigliana gravity + free-air correction |
 | `ins_sim/trajectory` | Truth generation | Phase-based mission builder (ground roll, takeoff, climb, waypoints, loiters, speed ramps), ISA Mach conversion |
 | `ins_sim/sensors` | IMU error model | ARW/VRW white noise, Gauss-Markov bias instability, turn-on repeatability, scale factor & misalignment |
-| `ins_sim/navigation` | Strapdown mechanization | Quaternion attitude propagation, Coriolis/transport-rate compensation, baro-damped or free-inertial vertical channel |
+| `ins_sim/navigation` | Strapdown mechanization | Quaternion attitude propagation, Coriolis/transport-rate compensation, optional coning/sculling corrections, baro-damped or free-inertial vertical channel |
 | `ins_sim/evaluation` | Monte Carlo statistics | Empirical ensemble runs, percentile envelopes, CEP |
 | `ins_sim/gui` | Desktop interface | PySide6 + QThread background workers, interactive plotly views in QtWebEngine |
 

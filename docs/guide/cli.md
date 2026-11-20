@@ -22,9 +22,12 @@ python main.py --trials 100 --dt 0.1 --imu-spec my_imu.yaml
 | `--trials` | 20 | Number of Monte Carlo trials |
 | `--dt` | 0.1 | Time step [s] |
 | `--seed` | 42 | Random seed; the app always uses 42 |
+| `--mechanization` | `basic` | Strapdown update, `basic` or `precision` |
+| `--oversample` | off | Build the truth this many times per step, for an integrating IMU |
 
-Baro altitude aiding is always on. `python main.py --help` lists the
-options.
+The last two match the app's **Advanced** settings (see the
+[User guide](index.md#simulation-settings)); use them together. Baro
+altitude aiding is always on. `python main.py --help` lists the options.
 
 ## What it prints
 
@@ -55,7 +58,8 @@ Interactive map saved: .../ins_sim/maps/trajectory_map.html
   of the flight. It is 0.0 m for any mission, because the perfect outputs
   are built to match the navigator, so it checks the software rather than
   your mission; see
-  [Validation](../validation/index.md#zero-noise-round-trip).
+  [Validation](../validation/index.md#zero-noise-round-trip). With
+  `--oversample` it is instead the navigator's own integration error.
 - **The largest acceleration and specific force** along the mission, a
   check that the flight is physically reasonable. 11.36 m/s² is about
   1.16 g, in the holding patterns' 30° turns.

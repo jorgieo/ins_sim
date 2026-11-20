@@ -251,7 +251,7 @@ pattern:
 | \(\vvec{eb}{n}\) | Velocity, NED | m/s | `v_eb_n` | `vel_n`, `v_n` | [Mechanization](mechanization.md) |
 | \(\rvec{lb}{l}\) | Position relative to the start point | m | `r_lb_l` | `pos_n` | [Mechanization](mechanization.md) |
 | \(\tau_i\) | IMU and integration interval | s | `tau_i` | `dt` | [Mechanization](mechanization.md) |
-| \(\avec{ib}{b}\), \(\uvec{ib}{b}\) | Attitude and velocity increments | rad, m/s | – (not used yet) | – | – |
+| \(\avec{ib}{b}\), \(\uvec{ib}{b}\) | Attitude and velocity increments over one IMU interval | rad, m/s | `alpha`, `upsilon` | – | [Mechanization](mechanization.md#precision-mechanization) |
 | \(\delta\psivec{nb}{n}\) | Attitude error | rad | `delta_psi_nb_n` | `mis_rotvec` (initial only) | [INS error model](error-model.md) |
 | \(\delta\vvec{eb}{n}\) | Velocity error | m/s | `delta_v_eb_n` | – | [INS error model](error-model.md) |
 | \(\delta\rvec{eb}{n}\) | Position error, local NED | m | `delta_r_eb_n` | – | [INS error model](error-model.md) |

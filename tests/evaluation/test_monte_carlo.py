@@ -17,6 +17,20 @@ def _short_truth():
     return TruthTrajectory.from_spline(path, speed=200.0, tau_i=0.1)
 
 
+def test_the_mechanization_reaches_the_navigator():
+    """On an integrating IMU's outputs the precision update is much closer to the truth."""
+    path = NEDSplinePath([[0.0, 0.0, 0.0], [2000.0, 800.0, -50.0], [4000.0, 1000.0, -80.0]])
+    truth = TruthTrajectory.from_spline(path, speed=200.0, tau_i=0.5, oversample=20)
+    spec = IMUSpec(**ZERO_SENSORS, align_tilt_std=0.0, align_heading_std=0.0)
+    horizontal = {}
+    for mech in ("basic", "precision"):
+        mc = run_monte_carlo(truth, spec, n_trials=1, seed=0, mechanization=mech)
+        delta_r = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
+                                 truth.L_b, truth.lambda_b, truth.h_b)
+        horizontal[mech] = np.hypot(delta_r[..., 0], delta_r[..., 1]).max()
+    assert horizontal["precision"] < horizontal["basic"] / 20
+
+
 def test_initial_attitude_error_is_the_alignment_draw_of_each_trial():
     """Trial i's alignment error comes from its own alignment stream."""
     truth = _short_truth()

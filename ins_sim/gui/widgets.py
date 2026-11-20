@@ -10,17 +10,19 @@ from pathlib import Path
 from importlib import resources
 
 import yaml
-from PySide6.QtCore import Signal
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtWidgets import (
     QCheckBox,
     QComboBox,
     QDoubleSpinBox,
     QFileDialog,
+    QFormLayout,
     QGroupBox,
     QHBoxLayout,
     QMessageBox,
     QPushButton,
     QSpinBox,
+    QToolButton,
     QVBoxLayout,
     QWidget,
 )
@@ -209,6 +211,83 @@ class DtSpinBox(QDoubleSpinBox):
         self.setSingleStep(0.05)
         self.setValue(0.1)
         self.setSuffix(" s")
+
+
+class AdvancedOptions(QWidget):
+    """Collapsible "Advanced" section: strapdown mechanization and truth oversampling.
+
+    Collapsed by default; its arrow button shows and hides the controls.
+
+    Signals:
+        optionsChanged: Emitted when either control changes.
+    """
+
+    optionsChanged = Signal()
+
+    #: Combo-box labels -> `strapdown_navgrade` mechanization values.
+    MECHANIZATIONS = {"Basic": "basic", "Precision": "precision"}
+
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.toggle_button = QToolButton(self)
+        self.toggle_button.setText("Advanced")
+        self.toggle_button.setCheckable(True)
+        self.toggle_button.setToolButtonStyle(Qt.ToolButtonStyle.ToolButtonTextBesideIcon)
+        self.toggle_button.setArrowType(Qt.ArrowType.RightArrow)
+        self.toggle_button.setAutoRaise(True)
+
+        self.mechanization_combo = QComboBox(self)
+        self.mechanization_combo.addItems(list(self.MECHANIZATIONS))
+        self.mechanization_combo.setToolTip(
+            "Basic: first-order strapdown update. With truth oversampling off\n"
+            "it reproduces the truth exactly, so only the IMU errors remain.\n"
+            "Precision: coning, rotation and sculling corrections for an\n"
+            "integrating IMU. Use it with truth oversampling.")
+        self.oversample_spinbox = QSpinBox(self)
+        self.oversample_spinbox.setRange(1, 100)
+        self.oversample_spinbox.setSpecialValueText("Off")
+        self.oversample_spinbox.setSuffix("× per step")
+        self.oversample_spinbox.setToolTip(
+            "Off: the truth's IMU outputs are the exact inverse of the basic\n"
+            "update, so the basic mechanization adds no error of its own.\n"
+            "N: the truth is built N times per time step and the IMU outputs\n"
+            "are averages over each step, as an integrating IMU reports them.\n"
+            "The basic mechanization then shows its first-order error; the\n"
+            "precision mechanization removes most of it. Larger N is more\n"
+            "faithful and slower to build.")
+
+        self.content = QWidget(self)
+        form = QFormLayout(self.content)
+        form.setContentsMargins(0, 0, 0, 0)
+        form.addRow("Mechanization:", self.mechanization_combo)
+        form.addRow("Truth oversampling:", self.oversample_spinbox)
+        self.content.setVisible(False)
+
+        layout = QVBoxLayout(self)
+        layout.setContentsMargins(0, 0, 0, 0)
+        layout.addWidget(self.toggle_button)
+        layout.addWidget(self.content)
+
+        self.toggle_button.toggled.connect(self._on_toggled)
+        self.mechanization_combo.currentIndexChanged.connect(self._on_changed)
+        self.oversample_spinbox.valueChanged.connect(self._on_changed)
+
+    def mechanization(self) -> str:
+        """Returns "basic" or "precision"."""
+        return self.MECHANIZATIONS[self.mechanization_combo.currentText()]
+
+    def oversample(self) -> int | None:
+        """Returns the truth oversampling factor, or None when it is off."""
+        value = self.oversample_spinbox.value()
+        return None if value == self.oversample_spinbox.minimum() else value
+
+    def _on_toggled(self, expanded: bool) -> None:
+        self.toggle_button.setArrowType(
+            Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow)
+        self.content.setVisible(expanded)
+
+    def _on_changed(self, *_args) -> None:
+        self.optionsChanged.emit()
 
 
 class VisualizationOptions(QGroupBox):

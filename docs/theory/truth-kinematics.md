@@ -15,11 +15,15 @@ pick in the GUI is the one this page builds.
     - The attitude follows the velocity: the nose points along the flight
       path, and every turn is coordinated. There is no angle of attack, no
       sideslip and no wind.
-    - The ideal IMU outputs are computed as the exact inverse of the
-      navigator's update. Fed back through the navigator, they reproduce the
-      truth to about \(10^{-8}\) m over the whole mission.
-    - The simulator therefore measures how sensor errors propagate, not how
+    - By default the ideal IMU outputs are computed as the exact inverse of
+      the navigator's basic update. Fed back through the navigator, they
+      reproduce the truth to about \(10^{-8}\) m over the whole mission.
+    - The simulator then measures how sensor errors propagate, not how
       accurately the navigator integrates continuous motion.
+    - An [oversampled truth](#integrating-imu) instead reports what a real,
+      integrating IMU would: the average rates over each interval of a
+      motion that is continuous within it. Against it the navigator's own
+      integration error shows up.
 
 ## Physical picture
 
@@ -221,6 +225,75 @@ next sample to difference against, repeats the previous outputs.
     navigator's own first-order update, so the truth and the navigator
     agree exactly when the sensors are perfect.
 
+### Integrating IMU { #integrating-imu }
+
+The default outputs describe a vehicle that moves in jumps, one step at a
+time. To test how well the navigator integrates continuous motion, ins_sim
+can instead give the outputs of a real IMU, which integrates the rates over
+each interval. With `oversample` set to \(M\), the mission is built at the
+finer step \(\tau_f = \tau_i/M\), and the truth is the continuous motion
+through those fine samples: between two of them the body turns relative to
+NED at a constant rate, the velocity changes at a constant rate, and the
+specific force in NED is constant. The states are kept every \(M\)-th
+sample, and the outputs are the averages of \(\wvec{ib}{b}\) and
+\(\fvec{ib}{b}\) over each interval \(\tau_i\), which is what an integrating
+IMU reports.
+
+**1. Position**, by the trapezoidal rule, since the velocity changes
+linearly between fine samples:
+
+=== "Equation"
+
+    $$
+    h_{b,j+1} = h_{b,j} - \tfrac12\left(v_{D,j} + v_{D,j+1}\right)\tau_f,
+    \qquad
+    L_{b,j+1} = L_{b,j} + \tfrac12\left(\frac{v_{N,j}}{R_N + h_{b,j}} + \frac{v_{N,j+1}}{R_N + h_{b,j+1}}\right)\tau_f
+    $$
+
+    and likewise for \(\lambda_b\).
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/trajectory/kinematics.py:fine_position"
+    ```
+
+**2. Integrated outputs.** Over the fine step \(j\) the body turns through
+\(\boldsymbol{\phi}_j = \operatorname{rotvec}(\Cmat{n}{b}(j)\,\Cmat{b}{n}(j+1))\)
+relative to NED, so the NED-to-body matrix is
+\(\exp(-s\skew{\boldsymbol{\phi}_j})\Cmat{n}{b}(j)\) a fraction \(s\) of
+the way through it. Averaging that over the step gives the matrix
+\(\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\Cmat{n}{b}(j)\), with
+\(\boldsymbol{\Gamma}(\mathbf{x}) = \Ithree + \frac{1 - \cos x}{x^2}\skew{\mathbf{x}} +
+\frac{x - \sin x}{x^3}\skew{\mathbf{x}}^2\) and \(x = |\mathbf{x}|\):
+
+=== "Equation"
+
+    $$
+    \avec{ib,j}{b} = \boldsymbol{\phi}_j + \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\wvec{in}{n}(j),
+    \qquad
+    \uvec{ib,j}{b} = \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\fvec{ib}{n}(j)
+    $$
+
+    with \(\fvec{ib}{n}(j)\) as in step 4 above, at the fine step. The
+    outputs are the sums over the \(M\) fine steps of each interval,
+    divided by \(\tau_i\).
+
+=== "Code"
+
+    ```python
+    --8<-- "ins_sim/trajectory/kinematics.py:integrated_imu"
+    ```
+
+The truth is still built from fine samples, so it is continuous motion only
+to the extent that the fine step resolves it. Against it, a navigator at
+\(\tau_i\) shows its own error plus a floor from the fine step that falls
+with \(\tau_f^2\): on the packaged mission, about 3 m of horizontal error at
+\(\tau_f\) = 0.01 s, and 1 m at 0.005 s. Keep \(M\) large enough that the
+floor stays below the error you want to see. The
+[Strapdown mechanization](mechanization.md#precision-mechanization) page
+describes the navigator that integrates these outputs accurately.
+
 ## What it looks like
 
 ![The ideal gyro and accelerometer outputs, in body axes, along the packaged mission](../assets/theory/truth_imu.png)
@@ -257,11 +330,12 @@ that residual.
     - **Point-mass flight.** The body axes follow the velocity: no angle of
       attack, no sideslip, no wind, no vibration, and no lever arm between
       the IMU and the vehicle's reference point.
-    - **No integration error to find.** The outputs are piecewise constant
-      over each step and invert the navigator's own discretization. The
-      navigator's integration errors, such as coning, sculling and its
-      first-order velocity update, are therefore invisible: the simulator
-      behaves as if the navigation algorithm were perfect.
+    - **No integration error to find, by default.** The default outputs are
+      piecewise constant over each step and invert the navigator's own
+      basic discretization. The navigator's integration errors, such as
+      coning, sculling and its first-order velocity update, are therefore
+      invisible: the simulator behaves as if the navigation algorithm were
+      perfect. An [oversampled truth](#integrating-imu) makes them visible.
     - **The sample interval shows up in turns.** The specific force is the
       forward difference across a step, so during a turn it has a small
       component along the direction of flight, about
@@ -283,6 +357,7 @@ that residual.
 | Attitude from velocity | \(\psi_{nb}\), \(\theta_{nb}\), \(\phi_{nb}\) | `_euler_from_velocity` in `ins_sim/trajectory/kinematics.py` |
 | Curvilinear position | Forward-Euler \(L_b\), \(\lambda_b\), \(h_b\) | [`TruthTrajectory`][ins_sim.trajectory.kinematics.TruthTrajectory] |
 | Ideal IMU outputs | \(\fvec{ib}{b}\), \(\wvec{ib}{b}\) | [`TruthTrajectory`][ins_sim.trajectory.kinematics.TruthTrajectory] |
+| Integrating IMU | \(\avec{ib}{b}\), \(\uvec{ib}{b}\) over each interval | `oversample` in [`TruthTrajectory`][ins_sim.trajectory.kinematics.TruthTrajectory] and [`build_trajectory`][ins_sim.trajectory.kinematics.build_trajectory] |
 | Smooth test paths | Cubic spline through NED waypoints, flown at constant speed | [`NEDSplinePath`][ins_sim.trajectory.spline.NEDSplinePath], [`TruthTrajectory.from_spline`][ins_sim.trajectory.kinematics.TruthTrajectory.from_spline] |
 
 This example builds the packaged mission at \(\tau_i\) = 1 s, prints the
