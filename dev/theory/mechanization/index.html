@@ -1158,6 +1158,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#precision-mechanization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precision mechanization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-it-looks-like" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1971,6 +1982,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#precision-mechanization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precision mechanization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#what-it-looks-like" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2052,10 +2074,14 @@ Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></su
   gravity and the radii of curvature at the current state.</li>
 <li>The attitude update applies the exact rotation-vector exponential of
   the body's rate relative to <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>.</li>
-<li>The velocity and position updates are first-order (forward Euler), on
-  purpose: the truth generator inverts exactly these steps.</li>
-<li>There are no coning or sculling corrections. The truth's
-  piecewise-constant <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs leave them nothing to correct.</li>
+<li>The basic velocity and position updates are first-order (forward
+  Euler), on purpose: the default truth generator inverts exactly these
+  steps.</li>
+<li>The optional <a href="#precision-mechanization">precision mechanization</a> adds
+  coning, rotation and sculling corrections and a trapezoidal position
+  update, for the outputs of a real, integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>. On the packaged
+  mission at a 0.1 s step it cuts the navigator's own error from
+  1.7 km to about 2 m.</li>
 </ul>
 </div>
 <h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
@@ -2260,13 +2286,165 @@ three deliberate differences:</p>
   order and keeps the attitude a pure rotation.</li>
 <li><strong>Position.</strong> Groves averages the velocities at the start and end of
   the step; ins_sim uses the velocity at the start.</li>
-<li><strong>No precision corrections.</strong> Groves' precision mechanization adds
-  coning and sculling corrections and a mid-step attitude for
-  resolving the specific force<sup id="fnref:savage"><a class="footnote-ref" href="#fn:savage">2</a></sup>. ins_sim does not.</li>
+<li><strong>Precision corrections are optional.</strong> Groves' precision
+  mechanization corrects for the body turning within each step. ins_sim
+  offers it as a <a href="#precision-mechanization">separate mode</a>.</li>
 </ul>
 <p>The first-order choices keep the navigator the exact inverse of the
-<a href="../truth-kinematics/#as-implemented">truth generator</a>.</p>
+default <a href="../truth-kinematics/#as-implemented">truth generator</a>.</p>
 </div>
+<h2 id="precision-mechanization">Precision mechanization<a class="headerlink" href="#precision-mechanization" title="Permanent link">&para;</a></h2>
+<p>A real <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> does not sample the angular rate and specific force at an
+instant. It integrates them over each interval and reports the increments:
+the attitude increment <span class="arithmatex">\(\avec{ib}{b} = \int \wvec{ib}{b}\,dt\)</span> and the
+velocity increment <span class="arithmatex">\(\uvec{ib}{b} = \int \fvec{ib}{b}\,dt\)</span>, both in body
+axes. The basic update treats them as rates held constant over the step,
+and that misses three effects of the body turning while the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>
+integrates:</p>
+<ul>
+<li><strong>Rotation.</strong> The specific force is integrated in body axes that keep
+  turning, so resolving the whole increment with the start attitude is
+  wrong by about <span class="arithmatex">\(\tfrac12\,\avec{ib}{b}\times\uvec{ib}{b}\)</span>. In a turn at
+  rate <span class="arithmatex">\(\dot\psi\)</span> and speed <span class="arithmatex">\(v\)</span> this is a velocity error along the
+  flight path that grows at <span class="arithmatex">\(\tfrac12 v\dot\psi^2\tau_i\)</span>, 0.03 m/s² for an
+  airliner's 3 °/s turn at a 0.1 s step.</li>
+<li><strong>Coning.</strong> When the rotation axis itself moves within the step, the
+  rotation is not <span class="arithmatex">\(\avec{ib}{b}\)</span>: rotations do not commute. A vibration
+  that cones the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> drifts the attitude even though no gyro has a bias.</li>
+<li><strong>Sculling.</strong> When a rotation oscillates in phase with a specific force
+  along another axis, the true velocity increment differs from
+  <span class="arithmatex">\(\uvec{ib}{b}\)</span> in a way that does not average out.</li>
+</ul>
+<p>ins_sim's precision mechanization corrects all three with Savage's
+one-sample-plus-previous algorithms<sup id="fnref:savage"><a class="footnote-ref" href="#fn:savage">2</a></sup>, which estimate how the rates
+change within the step from the previous step's increments. It also
+updates the position with the velocities at both ends of the step. The
+steps below replace steps 2 to 6; step 1 is unchanged.</p>
+<p><strong>P1. Midpoint rates.</strong> The nav-frame rate, gravity and Coriolis term are
+needed over the whole step, so each is extrapolated to its middle from this
+step and the previous one:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Equation</label><label for="__tabbed_7_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\bar{\mathbf{x}} = \tfrac32\,\mathbf{x}_k - \tfrac12\,\mathbf{x}_{k-1},
+\qquad \mathbf{x} \in \left\{\wvec{in}{n},\ \gvec{b}{n} - \left(2\wvec{ie}{n} + \wvec{en}{n}\right)\times\vvec{eb}{n}\right\}
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># The nav-frame rate, gravity and Coriolis at the middle of the</span>
+<span class="c1"># interval, extrapolated from this step and the previous one.</span>
+<span class="n">gravity_coriolis</span> <span class="o">=</span> <span class="n">g_b_n</span> <span class="o">-</span> <span class="n">_cross</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+    <span class="n">omega_in_prev</span><span class="p">,</span> <span class="n">gravity_coriolis_prev</span> <span class="o">=</span> <span class="n">omega_in_n</span><span class="p">,</span> <span class="n">gravity_coriolis</span>
+<span class="n">omega_in_mid</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">omega_in_n</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">omega_in_prev</span>
+<span class="n">gravity_coriolis_mid</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">gravity_coriolis</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">gravity_coriolis_prev</span>
+<span class="n">omega_in_prev</span><span class="p">,</span> <span class="n">gravity_coriolis_prev</span> <span class="o">=</span> <span class="n">omega_in_n</span><span class="p">,</span> <span class="n">gravity_coriolis</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>P2. Attitude</strong>, with the coning correction on the body side and the
+nav frame's rotation over the step on the other:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Equation</label><label for="__tabbed_8_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\boldsymbol{\phi}_k = \avec{ib,k}{b} + \tfrac{1}{12}\,\avec{ib,k-1}{b}\times\avec{ib,k}{b},
+\qquad
+\Cmat{b}{n}(k+1) = \exp\left(-\skew{\boldsymbol{\zeta}}\right)\Cmat{b}{n}(k)\exp\left(\skew{\boldsymbol{\phi}_k}\right),
+\qquad
+\boldsymbol{\zeta} = \wvec[\bar]{in}{n}\,\tau_i
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">_cross</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="mf">12.0</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">alpha</span> <span class="o">=</span> <span class="n">meas_omega_ib_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>                 <span class="c1"># alpha_ib^b</span>
+<span class="n">upsilon</span> <span class="o">=</span> <span class="n">meas_f_ib_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>                   <span class="c1"># upsilon_ib^b</span>
+<span class="n">zeta</span> <span class="o">=</span> <span class="n">omega_in_mid</span> <span class="o">*</span> <span class="n">tau_i</span>                        <span class="c1"># nav-frame rotation</span>
+<span class="n">phi</span> <span class="o">=</span> <span class="n">coning_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+<span class="n">C_b_n_next</span> <span class="o">=</span> <span class="n">Rot</span><span class="o">.</span><span class="n">from_rotvec</span><span class="p">(</span><span class="o">-</span><span class="n">zeta</span><span class="p">)</span> <span class="o">*</span> <span class="n">C_b_n</span> <span class="o">*</span> <span class="n">Rot</span><span class="o">.</span><span class="n">from_rotvec</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>P3. Velocity.</strong> The rotation and sculling corrections give the velocity
+increment in the body axes at the start of the step, which is resolved in
+<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> and corrected for half the nav frame's rotation:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="9:2"><input checked="checked" id="__tabbed_9_1" name="__tabbed_9" type="radio" /><input id="__tabbed_9_2" name="__tabbed_9" type="radio" /><div class="tabbed-labels"><label for="__tabbed_9_1">Equation</label><label for="__tabbed_9_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\Delta\mathbf{v}^{b} = \uvec{ib,k}{b} + \tfrac12\,\avec{ib,k}{b}\times\uvec{ib,k}{b}
++ \tfrac{1}{12}\left(\avec{ib,k-1}{b}\times\uvec{ib,k}{b} + \uvec{ib,k-1}{b}\times\avec{ib,k}{b}\right)
+\]</div>
+<div class="arithmatex">\[
+\vvec{eb}{n}(k+1) = \vvec{eb}{n}(k) + \Cmat{b}{n}(k)\,\Delta\mathbf{v}^{b}
+- \tfrac12\,\boldsymbol{\zeta}\times\Cmat{b}{n}(k)\,\uvec{ib,k}{b}
++ \overline{\gvec{b}{n} - \left(2\wvec{ie}{n} + \wvec{en}{n}\right)\times\vvec{eb}{n}}\;\tau_i
+\]</div>
+<p>where the overlined term is the midpoint value from P1.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">rotation</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">_cross</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">)</span>
+<span class="n">sculling</span> <span class="o">=</span> <span class="p">(</span><span class="n">_cross</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">)</span> <span class="o">+</span> <span class="n">_cross</span><span class="p">(</span><span class="n">upsilon_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span> <span class="o">/</span> <span class="mf">12.0</span>
+<span class="k">return</span> <span class="n">upsilon</span> <span class="o">+</span> <span class="n">rotation</span> <span class="o">+</span> <span class="n">sculling</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><span class="n">dv_b</span> <span class="o">=</span> <span class="n">sculling_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">upsilon_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">)</span>
+<span class="n">dv_sf_n</span> <span class="o">=</span> <span class="n">C_b_n</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dv_b</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">_cross</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">C_b_n</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">upsilon</span><span class="p">))</span>
+<span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">dv_sf_n</span> <span class="o">+</span> <span class="n">gravity_coriolis_mid</span> <span class="o">*</span> <span class="n">tau_i</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>P4. Position</strong>, by the trapezoidal rule:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="10:2"><input checked="checked" id="__tabbed_10_1" name="__tabbed_10" type="radio" /><input id="__tabbed_10_2" name="__tabbed_10" type="radio" /><div class="tabbed-labels"><label for="__tabbed_10_1">Equation</label><label for="__tabbed_10_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+h_{b,k+1} = h_{b,k} - \tfrac12\left(v_{D,k} + v_{D,k+1}\right)\tau_i,
+\qquad
+L_{b,k+1} = L_{b,k} + \tfrac12\left(\frac{v_{N,k}}{R_{N,k} + h_{b,k}} + \frac{v_{N,k+1}}{R_{N,k+1} + h_{b,k+1}}\right)\tau_i
+\]</div>
+<p>and likewise for <span class="arithmatex">\(\lambda_b\)</span>, with <span class="arithmatex">\(R_E\)</span> and <span class="arithmatex">\(\cos L_b\)</span> at each
+end. The radii at the end of the step are taken at a latitude predicted
+with the start values, which keeps the update second order.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+<span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="n">L_pred</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="n">R_N_next</span><span class="p">,</span> <span class="n">R_E_next</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_pred</span><span class="p">)</span>
+<span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                           <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N_next</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_i</span>
+<span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+    <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+    <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E_next</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_i</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>At the first step there is no previous step: the corrections that need one
+are left out, and the midpoint rates are the start values.</p>
+<div class="admonition warning">
+<p class="admonition-title">Pair the precision mechanization with an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></p>
+<p>The default truth's outputs are the exact inverse of the <em>basic</em>
+update, so the basic mechanization reproduces that truth exactly and
+the precision corrections would only add an error. They pay off on
+the outputs of an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, which ins_sim generates when the
+truth is <a href="../truth-kinematics/#integrating-imu">oversampled</a>: set
+<code>oversample</code> in <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;build_trajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.build_trajectory"><code>build_trajectory</code></a>,
+<code>--oversample</code> on the command line, or <em>Truth oversampling</em> under
+<em>Advanced</em> in the app. The GUI and the command line print a note when
+the precision mechanization runs without it.</p>
+</div>
+<p>On an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, the basic mechanization's error is first order in
+<span class="arithmatex">\(\tau_i\)</span>: it halves when the step halves. The precision mechanization's
+falls at least four times as fast. The
+<a href="../../validation/#precision-mechanization">Validation</a> page checks
+each correction against the classical coning and sculling motions, and
+compares the two mechanizations on the packaged mission.</p>
 <h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
 <p><img alt="Navigator minus truth, on a logarithmic scale, when the navigator is fed the truth's own IMU outputs" src="../../assets/theory/round_trip.png" /></p>
 <p>The navigator, fed the ideal outputs of the packaged mission's truth,
@@ -2286,13 +2464,19 @@ step 5. A 0.01 °/h gyro bias moves it 1.3 km in an hour.</p>
 <div class="admonition warning">
 <p class="admonition-title">Assumptions &amp; limitations</p>
 <ul>
-<li><strong>First-order integration.</strong> The velocity and position updates are
-  forward Euler, the specific force is resolved with the attitude at
+<li><strong>First-order basic update.</strong> The basic velocity and position updates
+  are forward Euler, the specific force is resolved with the attitude at
   the start of each step, and there are no coning or sculling
-  corrections. In a real <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>, or against a truth that varies within each
-  step, these would add errors in fast manoeuvres. In ins_sim they are
-  invisible, because the truth inverts them exactly (see
-  <a href="../truth-kinematics/#assumptions-limitations">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>).</li>
+  corrections. Against the default truth these errors are invisible,
+  because the truth inverts them exactly (see
+  <a href="../truth-kinematics/#assumptions-limitations">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>).
+  An oversampled truth exposes them, and the precision mechanization
+  removes most of them.</li>
+<li><strong>Precision update to second order.</strong> The precision mechanization's
+  remaining error falls with the square of the step or faster. Its
+  corrections assume the rates change smoothly over two steps, so a
+  manoeuvre much shorter than that, such as a 6 °/s roll-in sampled at
+  1 s, still leaves an error.</li>
 <li><strong>Known start.</strong> Each run starts from the true position and velocity.
   Only the attitude starts in error, by the drawn alignment error; the
   alignment itself is not simulated.</li>
@@ -2316,8 +2500,18 @@ step 5. A 0.01 °/h gyro bias moves it 1.3 km in an hour.</p>
 <tbody>
 <tr>
 <td>The whole mechanization</td>
-<td>Steps 1 to 6</td>
+<td>Steps 1 to 6, or 1 and P1 to P4 with <code>mechanization="precision"</code></td>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;strapdown_navgrade&lt;/span&gt;" href="../../reference/api/navigation/#ins_sim.navigation.strapdown.strapdown_navgrade"><code>strapdown_navgrade</code></a></td>
+</tr>
+<tr>
+<td>Coning correction</td>
+<td><span class="arithmatex">\(\boldsymbol{\phi}_k\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;coning_correction&lt;/span&gt;" href="../../reference/api/navigation/#ins_sim.navigation.strapdown.coning_correction"><code>coning_correction</code></a></td>
+</tr>
+<tr>
+<td>Rotation and sculling corrections</td>
+<td><span class="arithmatex">\(\Delta\mathbf{v}^{b}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;sculling_correction&lt;/span&gt;" href="../../reference/api/navigation/#ins_sim.navigation.strapdown.sculling_correction"><code>sculling_correction</code></a></td>
 </tr>
 <tr>
 <td>Initial state</td>
@@ -2339,7 +2533,7 @@ step 5. A 0.01 °/h gyro bias moves it 1.3 km in an hour.</p>
 <p>This example runs the navigator for an hour on a level <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> at rest at 45° N,
 first with perfect sensors and then with a 0.01 °/h bias on the gyro that
 points East:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Script</label><label for="__tabbed_7_2">Output</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="11:2"><input checked="checked" id="__tabbed_11_1" name="__tabbed_11" type="radio" /><input id="__tabbed_11_2" name="__tabbed_11" type="radio" /><div class="tabbed-labels"><label for="__tabbed_11_1">Script</label><label for="__tabbed_11_2">Output</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="sd">"""The navigator on a level IMU at rest at 45° N: perfect sensors, then a gyro bias."""</span>
@@ -2380,6 +2574,53 @@ points East:</p>
 <p>The 1.3 km is close to the single-channel prediction for a gyro bias,
 <span class="arithmatex">\(R\,b_g\,(t - \sin\omega_s t/\omega_s)\)</span> = 1.35 km after an hour (see
 <a href="../error-model/#gyro-bias"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a>).</p>
+<p>This example runs both mechanizations on the packaged mission at 1 s steps
+with perfect sensors, first on the default truth and then on an
+integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>'s outputs:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="12:2"><input checked="checked" id="__tabbed_12_1" name="__tabbed_12" type="radio" /><input id="__tabbed_12_2" name="__tabbed_12" type="radio" /><div class="tabbed-labels"><label for="__tabbed_12_1">Script</label><label for="__tabbed_12_2">Output</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="sd">"""Both mechanizations on an integrating IMU's outputs, with perfect sensors."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_trajectory_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.evaluation.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">position_error</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.navigation.strapdown</span><span class="w"> </span><span class="kn">import</span> <span class="n">NavState</span><span class="p">,</span> <span class="n">strapdown_navgrade</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.trajectory.kinematics</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_trajectory</span>
+
+<span class="k">for</span> <span class="n">oversample</span> <span class="ow">in</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mi">10</span><span class="p">):</span>
+    <span class="c1"># The packaged mission at 1 s steps; oversampled, the IMU outputs are</span>
+    <span class="c1"># averages over each step of a mission built ten times as finely.</span>
+    <span class="n">truth</span> <span class="o">=</span> <span class="n">build_trajectory</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">default_trajectory_path</span><span class="p">()),</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
+                             <span class="n">oversample</span><span class="o">=</span><span class="n">oversample</span><span class="p">)</span><span class="o">.</span><span class="n">truth</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="n">NavState</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">L_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">truth</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                     <span class="n">truth</span><span class="o">.</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">truth</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_quat</span><span class="p">())</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Truth oversampling: </span><span class="si">{</span><span class="n">oversample</span><span class="w"> </span><span class="ow">or</span><span class="w"> </span><span class="s1">'off'</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">mechanization</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"basic"</span><span class="p">,</span> <span class="s2">"precision"</span><span class="p">):</span>
+        <span class="n">nav</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">omega_ib_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">f_ib_b</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">tau_i</span><span class="p">,</span>
+                                 <span class="n">meas_h_b</span><span class="o">=</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">,</span> <span class="n">mechanization</span><span class="o">=</span><span class="n">mechanization</span><span class="p">)</span>
+        <span class="n">delta_r_eb_n</span> <span class="o">=</span> <span class="n">position_error</span><span class="p">(</span><span class="n">nav</span><span class="o">.</span><span class="n">L_b</span><span class="p">,</span> <span class="n">nav</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">,</span> <span class="n">nav</span><span class="o">.</span><span class="n">h_b</span><span class="p">,</span>
+                                      <span class="n">truth</span><span class="o">.</span><span class="n">L_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">)</span>
+        <span class="n">largest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">delta_r_eb_n</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">])</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+        <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">mechanization</span><span class="si">:</span><span class="s2">9s</span><span class="si">}</span><span class="s2">  largest horizontal error </span><span class="si">{</span><span class="n">largest</span><span class="si">:</span><span class="s2">7.0f</span><span class="si">}</span><span class="s2"> m"</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Truth oversampling: off
+  basic      largest horizontal error       0 m
+  precision  largest horizontal error   20321 m
+Truth oversampling: 10
+  basic      largest horizontal error   19936 m
+  precision  largest horizontal error     198 m
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>Each mechanization is exact on the outputs it was built for and about
+20 km off on the other's. On the integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> the precision update is
+100 times closer; the 198 m it keeps comes from the roll into each turn,
+which at 6 °/s is fast for a 1 s step. At the app's 0.1 s it is about 2 m.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
 <div class="footnote">
 <hr />
@@ -2392,7 +2633,9 @@ and their precision versions.&#160;<a class="footnote-backref" href="#fnref:grov
 <li id="fn:savage">
 <p><a href="../../reference/bibliography/#savage1998a">Savage (1998a)</a> and
 <a href="../../reference/bibliography/#savage1998b">Savage (1998b)</a> derive the
-coning and sculling algorithms.&#160;<a class="footnote-backref" href="#fnref:savage" title="Jump back to footnote 2 in the text">&#8617;</a></p>
+coning and sculling algorithms, including the one-sample-plus-previous
+forms used here. Groves (2013), Chapter 5, presents them within the
+precision navigation equations.&#160;<a class="footnote-backref" href="#fnref:savage" title="Jump back to footnote 2 in the text">&#8617;</a></p>
 </li>
 </ol>
 </div>

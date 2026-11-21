@@ -2208,6 +2208,16 @@ version may change the API.</p>
   <code>IMUSpec.baro</code> takes a <code>BaroSpec</code>, and <code>generate_baro_samples</code> draws the
   measurements. Each trial draws its barometer errors from a random stream
   of its own, so they leave the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> and alignment errors unchanged.</li>
+<li><strong>A precision mechanization and an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></strong>, to test the
+  navigation algorithm itself. <code>strapdown_navgrade(..., mechanization="precision")</code>
+  adds coning, rotation and sculling corrections and a trapezoidal
+  position update. <code>build_trajectory(..., oversample=M)</code> and
+  <code>TruthTrajectory(..., oversample=M)</code> build the truth M times per <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>
+  interval and give the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs as averages over each interval, as a
+  real integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> reports them. <code>run_monte_carlo</code> takes
+  <code>mechanization</code> too; the app has both under <strong>Advanced</strong>, and
+  <code>main.py</code> has <code>--mechanization</code> and <code>--oversample</code>. Both default to the
+  previous behaviour, which gives the same results as before.</li>
 </ul>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
 <ul>

@@ -1534,6 +1534,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ins_sim.navigation.strapdown.coning_correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;coning_correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.navigation.strapdown.sculling_correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;sculling_correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ins_sim.navigation.strapdown.strapdown_navgrade" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -1949,6 +1971,28 @@
 </li>
         
           <li class="md-nav__item">
+  <a href="#ins_sim.navigation.strapdown.coning_correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;coning_correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.navigation.strapdown.sculling_correction" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;sculling_correction
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
   <a href="#ins_sim.navigation.strapdown.strapdown_navgrade" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2229,12 +2273,309 @@ start point's <abbr title="North-East-Down: the local navigation frame (n) used 
 <div class="doc doc-object doc-function">
 
 
+<h3 id="ins_sim.navigation.strapdown.coning_correction" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">coning_correction</span>
+
+
+<a href="#ins_sim.navigation.strapdown.coning_correction" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">coning_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Body rotation vector over one <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval, with the coning correction.</p>
+<p>Adds to the integrated gyro output the coning term of Savage's
+one-sample-plus-previous algorithm, which estimates from the previous
+interval's increment how much the rotation axis turned within this one.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>alpha_prev</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Attitude increment alpha_ib^b of the previous
+interval, shape (3,) [rad]; zeros at the first interval.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>alpha</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Attitude increment alpha_ib^b of this interval, the
+integral of omega_ib^b over it, shape (3,) [rad].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>numpy.ndarray: Rotation vector of the body relative to inertial
+space over the interval, shape (3,) [rad].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>A rotation about a fixed axis has no coning:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.navigation.strapdown</span><span class="w"> </span><span class="kn">import</span> <span class="n">coning_correction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">coning_correction</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.1</span><span class="p">]))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[0.0, 0.0, 0.1]</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/navigation/strapdown.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 76</span>
+<span class="normal"> 77</span>
+<span class="normal"> 78</span>
+<span class="normal"> 79</span>
+<span class="normal"> 80</span>
+<span class="normal"> 81</span>
+<span class="normal"> 82</span>
+<span class="normal"> 83</span>
+<span class="normal"> 84</span>
+<span class="normal"> 85</span>
+<span class="normal"> 86</span>
+<span class="normal"> 87</span>
+<span class="normal"> 88</span>
+<span class="normal"> 89</span>
+<span class="normal"> 90</span>
+<span class="normal"> 91</span>
+<span class="normal"> 92</span>
+<span class="normal"> 93</span>
+<span class="normal"> 94</span>
+<span class="normal"> 95</span>
+<span class="normal"> 96</span>
+<span class="normal"> 97</span>
+<span class="normal"> 98</span>
+<span class="normal"> 99</span>
+<span class="normal">100</span>
+<span class="normal">101</span>
+<span class="normal">102</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">coning_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Body rotation vector over one IMU interval, with the coning correction.</span>
+
+<span class="sd">    Adds to the integrated gyro output the coning term of Savage's</span>
+<span class="sd">    one-sample-plus-previous algorithm, which estimates from the previous</span>
+<span class="sd">    interval's increment how much the rotation axis turned within this one.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        alpha_prev: Attitude increment alpha_ib^b of the previous</span>
+<span class="sd">            interval, shape (3,) [rad]; zeros at the first interval.</span>
+<span class="sd">        alpha: Attitude increment alpha_ib^b of this interval, the</span>
+<span class="sd">            integral of omega_ib^b over it, shape (3,) [rad].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray: Rotation vector of the body relative to inertial</span>
+<span class="sd">            space over the interval, shape (3,) [rad].</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        A rotation about a fixed axis has no coning:</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.navigation.strapdown import coning_correction</span>
+<span class="sd">        &gt;&gt;&gt; coning_correction(np.array([0.0, 0.0, 0.1]), np.array([0.0, 0.0, 0.1])).tolist()</span>
+<span class="sd">        [0.0, 0.0, 0.1]</span>
+<span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:coning]</span>
+    <span class="k">return</span> <span class="n">alpha</span> <span class="o">+</span> <span class="n">_cross</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span> <span class="o">/</span> <span class="mf">12.0</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ins_sim.navigation.strapdown.sculling_correction" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">sculling_correction</span>
+
+
+<a href="#ins_sim.navigation.strapdown.sculling_correction" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">sculling_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">upsilon_prev</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">alpha</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">upsilon</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Velocity increment over one <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval, with rotation and sculling corrections.</p>
+<p>Resolves the integrated accelerometer output in the body axes at the
+start of the interval. The rotation term accounts for the body turning
+while the specific force is integrated; the sculling term (Savage's
+one-sample-plus-previous algorithm) for rotation and specific force
+oscillating together within the interval.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>alpha_prev</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Attitude increment of the previous interval, shape (3,)
+[rad]; zeros at the first interval.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>upsilon_prev</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Specific-force increment of the previous interval,
+shape (3,) [m/s]; zeros at the first interval.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>alpha</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Attitude increment alpha_ib^b of this interval, shape (3,)
+[rad].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>upsilon</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Specific-force increment upsilon_ib^b of this interval,
+the integral of f_ib^b over it, shape (3,) [m/s].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>numpy.ndarray: Specific-force velocity increment resolved in the
+body axes at the start of the interval, shape (3,) [m/s].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>Rolling through 0.1 rad while sensing 1 m/s along the body y axis
+turns part of that increment towards z:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.navigation.strapdown</span><span class="w"> </span><span class="kn">import</span> <span class="n">sculling_correction</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">zero</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">sculling_correction</span><span class="p">(</span><span class="n">zero</span><span class="p">,</span> <span class="n">zero</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.1</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]),</span>
+<span class="gp">... </span>                    <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]))</span><span class="o">.</span><span class="n">tolist</span><span class="p">()</span>
+<span class="go">[0.0, 1.0, 0.05]</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/navigation/strapdown.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">106</span>
+<span class="normal">107</span>
+<span class="normal">108</span>
+<span class="normal">109</span>
+<span class="normal">110</span>
+<span class="normal">111</span>
+<span class="normal">112</span>
+<span class="normal">113</span>
+<span class="normal">114</span>
+<span class="normal">115</span>
+<span class="normal">116</span>
+<span class="normal">117</span>
+<span class="normal">118</span>
+<span class="normal">119</span>
+<span class="normal">120</span>
+<span class="normal">121</span>
+<span class="normal">122</span>
+<span class="normal">123</span>
+<span class="normal">124</span>
+<span class="normal">125</span>
+<span class="normal">126</span>
+<span class="normal">127</span>
+<span class="normal">128</span>
+<span class="normal">129</span>
+<span class="normal">130</span>
+<span class="normal">131</span>
+<span class="normal">132</span>
+<span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">sculling_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">upsilon_prev</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+                        <span class="n">alpha</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Velocity increment over one IMU interval, with rotation and sculling corrections.</span>
+
+<span class="sd">    Resolves the integrated accelerometer output in the body axes at the</span>
+<span class="sd">    start of the interval. The rotation term accounts for the body turning</span>
+<span class="sd">    while the specific force is integrated; the sculling term (Savage's</span>
+<span class="sd">    one-sample-plus-previous algorithm) for rotation and specific force</span>
+<span class="sd">    oscillating together within the interval.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        alpha_prev: Attitude increment of the previous interval, shape (3,)</span>
+<span class="sd">            [rad]; zeros at the first interval.</span>
+<span class="sd">        upsilon_prev: Specific-force increment of the previous interval,</span>
+<span class="sd">            shape (3,) [m/s]; zeros at the first interval.</span>
+<span class="sd">        alpha: Attitude increment alpha_ib^b of this interval, shape (3,)</span>
+<span class="sd">            [rad].</span>
+<span class="sd">        upsilon: Specific-force increment upsilon_ib^b of this interval,</span>
+<span class="sd">            the integral of f_ib^b over it, shape (3,) [m/s].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray: Specific-force velocity increment resolved in the</span>
+<span class="sd">            body axes at the start of the interval, shape (3,) [m/s].</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        Rolling through 0.1 rad while sensing 1 m/s along the body y axis</span>
+<span class="sd">        turns part of that increment towards z:</span>
+
+<span class="sd">        &gt;&gt;&gt; import numpy as np</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.navigation.strapdown import sculling_correction</span>
+<span class="sd">        &gt;&gt;&gt; zero = np.zeros(3)</span>
+<span class="sd">        &gt;&gt;&gt; sculling_correction(zero, zero, np.array([0.1, 0.0, 0.0]),</span>
+<span class="sd">        ...                     np.array([0.0, 1.0, 0.0])).tolist()</span>
+<span class="sd">        [0.0, 1.0, 0.05]</span>
+<span class="sd">    """</span>
+    <span class="c1"># --8&lt;-- [start:sculling]</span>
+    <span class="n">rotation</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">_cross</span><span class="p">(</span><span class="n">alpha</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">)</span>
+    <span class="n">sculling</span> <span class="o">=</span> <span class="p">(</span><span class="n">_cross</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">)</span> <span class="o">+</span> <span class="n">_cross</span><span class="p">(</span><span class="n">upsilon_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">))</span> <span class="o">/</span> <span class="mf">12.0</span>
+    <span class="k">return</span> <span class="n">upsilon</span> <span class="o">+</span> <span class="n">rotation</span> <span class="o">+</span> <span class="n">sculling</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
 <h3 id="ins_sim.navigation.strapdown.strapdown_navgrade" class="doc doc-heading">
 <code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">strapdown_navgrade</span>
 
 
 <a href="#ins_sim.navigation.strapdown.strapdown_navgrade" class="headerlink" title="Permanent link">&para;</a></h3>
-<div class="doc-signature highlight"><pre><span></span><code><span class="nf">strapdown_navgrade</span><span class="p">(</span><span class="n">meas_omega_ib_b</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">init_state</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NavState&lt;/span&gt; (&lt;code&gt;ins_sim.navigation.strapdown.NavState&lt;/code&gt;)" href="#ins_sim.navigation.strapdown.NavState">NavState</a></span> <span class="o">|</span> <span class="n"><span title="collections.abc.Sequence">Sequence</span></span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">meas_h_b</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">baro_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NavSolution&lt;/span&gt; (&lt;code&gt;ins_sim.navigation.strapdown.NavSolution&lt;/code&gt;)" href="#ins_sim.navigation.strapdown.NavSolution">NavSolution</a></span>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">strapdown_navgrade</span><span class="p">(</span><span class="n">meas_omega_ib_b</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">init_state</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NavState&lt;/span&gt; (&lt;code&gt;ins_sim.navigation.strapdown.NavState&lt;/code&gt;)" href="#ins_sim.navigation.strapdown.NavState">NavState</a></span> <span class="o">|</span> <span class="n"><span title="collections.abc.Sequence">Sequence</span></span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">meas_h_b</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">baro_tau</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span> <span class="n">mechanization</span><span class="p">:</span> <span class="n"><span title="typing.Literal">Literal</span></span><span class="p">[</span><span class="s1">'basic'</span><span class="p">,</span> <span class="s1">'precision'</span><span class="p">]</span> <span class="o">=</span> <span class="s1">'basic'</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NavSolution&lt;/span&gt; (&lt;code&gt;ins_sim.navigation.strapdown.NavSolution&lt;/code&gt;)" href="#ins_sim.navigation.strapdown.NavSolution">NavSolution</a></span>
 </code></pre></div>
 
     <div class="doc doc-contents ">
@@ -2252,6 +2593,17 @@ start point's <abbr title="North-East-Down: the local navigation frame (n) used 
    <code>dv_eb^n/dt = f_ib^n − (2·omega_ie^n + omega_en^n) × v_eb^n + g_b^n</code>.</li>
 <li>Curvilinear position update, forward Euler.</li>
 </ol>
+<p>With <code>mechanization="precision"</code> the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are read as the
+increments of an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, alpha_ib^b = omega·tau_i and
+upsilon_ib^b = f·tau_i, and steps 2 to 6 become:</p>
+<ul>
+<li>Attitude: <code>C_b^n(+) = exp(−[omega_in^n·tau_i ×])·C_b^n(−)·exp([phi ×])</code>,
+  with phi from <code>coning_correction</code>.</li>
+<li>Velocity: the increment from <code>sculling_correction</code>, resolved in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>
+  with the start attitude and corrected for half the nav frame's
+  rotation over the interval, replaces f_ib^n·tau_i.</li>
+<li>Position: the trapezoidal rule on the velocities at both ends.</li>
+</ul>
 
 
 <p><span class="doc-section-title">Parameters:</span></p>
@@ -2321,6 +2673,18 @@ gains place a triple pole at −1/baro_tau. Only used when
 meas_h_b is given. Defaults to 100.0.</p>
           </div>
         </li>
+        <li class="doc-section-item field-body">
+            <b><code>mechanization</code></b>
+              (<code><span title="typing.Literal">Literal</span>[&#39;basic&#39;, &#39;precision&#39;]</code>, default:
+                  <code>&#39;basic&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>"basic" (the steps above, first order in tau_i) or
+"precision" (coning, rotation and sculling corrections and a
+trapezoidal position update). Defaults to "basic".</p>
+          </div>
+        </li>
     </ul>
 
 
@@ -2356,94 +2720,7 @@ navigator stays exactly at rest:</p>
 
             <details class="mkdocstrings-source">
               <summary>Source code in <code>ins_sim/navigation/strapdown.py</code></summary>
-              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal"> 61</span>
-<span class="normal"> 62</span>
-<span class="normal"> 63</span>
-<span class="normal"> 64</span>
-<span class="normal"> 65</span>
-<span class="normal"> 66</span>
-<span class="normal"> 67</span>
-<span class="normal"> 68</span>
-<span class="normal"> 69</span>
-<span class="normal"> 70</span>
-<span class="normal"> 71</span>
-<span class="normal"> 72</span>
-<span class="normal"> 73</span>
-<span class="normal"> 74</span>
-<span class="normal"> 75</span>
-<span class="normal"> 76</span>
-<span class="normal"> 77</span>
-<span class="normal"> 78</span>
-<span class="normal"> 79</span>
-<span class="normal"> 80</span>
-<span class="normal"> 81</span>
-<span class="normal"> 82</span>
-<span class="normal"> 83</span>
-<span class="normal"> 84</span>
-<span class="normal"> 85</span>
-<span class="normal"> 86</span>
-<span class="normal"> 87</span>
-<span class="normal"> 88</span>
-<span class="normal"> 89</span>
-<span class="normal"> 90</span>
-<span class="normal"> 91</span>
-<span class="normal"> 92</span>
-<span class="normal"> 93</span>
-<span class="normal"> 94</span>
-<span class="normal"> 95</span>
-<span class="normal"> 96</span>
-<span class="normal"> 97</span>
-<span class="normal"> 98</span>
-<span class="normal"> 99</span>
-<span class="normal">100</span>
-<span class="normal">101</span>
-<span class="normal">102</span>
-<span class="normal">103</span>
-<span class="normal">104</span>
-<span class="normal">105</span>
-<span class="normal">106</span>
-<span class="normal">107</span>
-<span class="normal">108</span>
-<span class="normal">109</span>
-<span class="normal">110</span>
-<span class="normal">111</span>
-<span class="normal">112</span>
-<span class="normal">113</span>
-<span class="normal">114</span>
-<span class="normal">115</span>
-<span class="normal">116</span>
-<span class="normal">117</span>
-<span class="normal">118</span>
-<span class="normal">119</span>
-<span class="normal">120</span>
-<span class="normal">121</span>
-<span class="normal">122</span>
-<span class="normal">123</span>
-<span class="normal">124</span>
-<span class="normal">125</span>
-<span class="normal">126</span>
-<span class="normal">127</span>
-<span class="normal">128</span>
-<span class="normal">129</span>
-<span class="normal">130</span>
-<span class="normal">131</span>
-<span class="normal">132</span>
-<span class="normal">133</span>
-<span class="normal">134</span>
-<span class="normal">135</span>
-<span class="normal">136</span>
-<span class="normal">137</span>
-<span class="normal">138</span>
-<span class="normal">139</span>
-<span class="normal">140</span>
-<span class="normal">141</span>
-<span class="normal">142</span>
-<span class="normal">143</span>
-<span class="normal">144</span>
-<span class="normal">145</span>
-<span class="normal">146</span>
-<span class="normal">147</span>
-<span class="normal">148</span>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">148</span>
 <span class="normal">149</span>
 <span class="normal">150</span>
 <span class="normal">151</span>
@@ -2503,10 +2780,172 @@ navigator stays exactly at rest:</p>
 <span class="normal">205</span>
 <span class="normal">206</span>
 <span class="normal">207</span>
-<span class="normal">208</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">strapdown_navgrade</span><span class="p">(</span><span class="n">meas_omega_ib_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span>
+<span class="normal">237</span>
+<span class="normal">238</span>
+<span class="normal">239</span>
+<span class="normal">240</span>
+<span class="normal">241</span>
+<span class="normal">242</span>
+<span class="normal">243</span>
+<span class="normal">244</span>
+<span class="normal">245</span>
+<span class="normal">246</span>
+<span class="normal">247</span>
+<span class="normal">248</span>
+<span class="normal">249</span>
+<span class="normal">250</span>
+<span class="normal">251</span>
+<span class="normal">252</span>
+<span class="normal">253</span>
+<span class="normal">254</span>
+<span class="normal">255</span>
+<span class="normal">256</span>
+<span class="normal">257</span>
+<span class="normal">258</span>
+<span class="normal">259</span>
+<span class="normal">260</span>
+<span class="normal">261</span>
+<span class="normal">262</span>
+<span class="normal">263</span>
+<span class="normal">264</span>
+<span class="normal">265</span>
+<span class="normal">266</span>
+<span class="normal">267</span>
+<span class="normal">268</span>
+<span class="normal">269</span>
+<span class="normal">270</span>
+<span class="normal">271</span>
+<span class="normal">272</span>
+<span class="normal">273</span>
+<span class="normal">274</span>
+<span class="normal">275</span>
+<span class="normal">276</span>
+<span class="normal">277</span>
+<span class="normal">278</span>
+<span class="normal">279</span>
+<span class="normal">280</span>
+<span class="normal">281</span>
+<span class="normal">282</span>
+<span class="normal">283</span>
+<span class="normal">284</span>
+<span class="normal">285</span>
+<span class="normal">286</span>
+<span class="normal">287</span>
+<span class="normal">288</span>
+<span class="normal">289</span>
+<span class="normal">290</span>
+<span class="normal">291</span>
+<span class="normal">292</span>
+<span class="normal">293</span>
+<span class="normal">294</span>
+<span class="normal">295</span>
+<span class="normal">296</span>
+<span class="normal">297</span>
+<span class="normal">298</span>
+<span class="normal">299</span>
+<span class="normal">300</span>
+<span class="normal">301</span>
+<span class="normal">302</span>
+<span class="normal">303</span>
+<span class="normal">304</span>
+<span class="normal">305</span>
+<span class="normal">306</span>
+<span class="normal">307</span>
+<span class="normal">308</span>
+<span class="normal">309</span>
+<span class="normal">310</span>
+<span class="normal">311</span>
+<span class="normal">312</span>
+<span class="normal">313</span>
+<span class="normal">314</span>
+<span class="normal">315</span>
+<span class="normal">316</span>
+<span class="normal">317</span>
+<span class="normal">318</span>
+<span class="normal">319</span>
+<span class="normal">320</span>
+<span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">strapdown_navgrade</span><span class="p">(</span><span class="n">meas_omega_ib_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">meas_f_ib_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
                        <span class="n">init_state</span><span class="p">:</span> <span class="n">NavState</span> <span class="o">|</span> <span class="n">Sequence</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
                        <span class="n">meas_h_b</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-                       <span class="n">baro_tau</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NavSolution</span><span class="p">:</span>
+                       <span class="n">baro_tau</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span>
+                       <span class="n">mechanization</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"basic"</span><span class="p">,</span> <span class="s2">"precision"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"basic"</span><span class="p">,</span>
+                       <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">NavSolution</span><span class="p">:</span>
 <span class="w">    </span><span class="sd">"""Runs local-level (NED) strapdown integration with rotating-Earth corrections.</span>
 
 <span class="sd">    Each step (Groves notation):</span>
@@ -2520,6 +2959,17 @@ navigator stays exactly at rest:</p>
 <span class="sd">    5. Velocity update, forward Euler:</span>
 <span class="sd">       `dv_eb^n/dt = f_ib^n − (2·omega_ie^n + omega_en^n) × v_eb^n + g_b^n`.</span>
 <span class="sd">    6. Curvilinear position update, forward Euler.</span>
+
+<span class="sd">    With `mechanization="precision"` the IMU outputs are read as the</span>
+<span class="sd">    increments of an integrating IMU, alpha_ib^b = omega·tau_i and</span>
+<span class="sd">    upsilon_ib^b = f·tau_i, and steps 2 to 6 become:</span>
+
+<span class="sd">    - Attitude: `C_b^n(+) = exp(−[omega_in^n·tau_i ×])·C_b^n(−)·exp([phi ×])`,</span>
+<span class="sd">      with phi from `coning_correction`.</span>
+<span class="sd">    - Velocity: the increment from `sculling_correction`, resolved in NED</span>
+<span class="sd">      with the start attitude and corrected for half the nav frame's</span>
+<span class="sd">      rotation over the interval, replaces f_ib^n·tau_i.</span>
+<span class="sd">    - Position: the trapezoidal rule on the velocities at both ends.</span>
 
 <span class="sd">    Args:</span>
 <span class="sd">        meas_omega_ib_b: Gyro output, angular rate of the body relative to</span>
@@ -2541,6 +2991,9 @@ navigator stays exactly at rest:</p>
 <span class="sd">        baro_tau: Time constant of the baro-damping loop [s]; the three</span>
 <span class="sd">            gains place a triple pole at −1/baro_tau. Only used when</span>
 <span class="sd">            meas_h_b is given. Defaults to 100.0.</span>
+<span class="sd">        mechanization: "basic" (the steps above, first order in tau_i) or</span>
+<span class="sd">            "precision" (coning, rotation and sculling corrections and a</span>
+<span class="sd">            trapezoidal position update). Defaults to "basic".</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        NavSolution: (r_lb_l, L_b, lambda_b, h_b, v_eb_n, q_b_n) at every</span>
@@ -2573,6 +3026,11 @@ navigator stays exactly at rest:</p>
     <span class="n">h_b0</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
     <span class="n">R_N0</span><span class="p">,</span> <span class="n">R_E0</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b0</span><span class="p">)</span>     <span class="c1"># loop-invariant: L_b0 never changes</span>
     <span class="n">g_b_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>                <span class="c1"># reused each iteration</span>
+    <span class="k">if</span> <span class="n">mechanization</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">"basic"</span><span class="p">,</span> <span class="s2">"precision"</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown mechanization: </span><span class="si">{</span><span class="n">mechanization</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+    <span class="n">precision</span> <span class="o">=</span> <span class="n">mechanization</span> <span class="o">==</span> <span class="s2">"precision"</span>
+    <span class="n">alpha_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>           <span class="c1"># previous interval's increments,</span>
+    <span class="n">upsilon_prev</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>         <span class="c1"># for the precision mechanization</span>
 
     <span class="c1"># --8&lt;-- [start:baro_gains]</span>
     <span class="c1"># Third-order baro-damping gains: triple pole at -1/baro_tau for the</span>
@@ -2592,6 +3050,58 @@ navigator stays exactly at rest:</p>
         <span class="n">omega_in_n</span> <span class="o">=</span> <span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span>                   <span class="c1"># nav-frame rate</span>
         <span class="n">g_b_n</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">],</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
         <span class="c1"># --8&lt;-- [end:frame_rates]</span>
+
+        <span class="k">if</span> <span class="n">precision</span><span class="p">:</span>
+            <span class="c1"># --8&lt;-- [start:precision_midpoint]</span>
+            <span class="c1"># The nav-frame rate, gravity and Coriolis at the middle of the</span>
+            <span class="c1"># interval, extrapolated from this step and the previous one.</span>
+            <span class="n">gravity_coriolis</span> <span class="o">=</span> <span class="n">g_b_n</span> <span class="o">-</span> <span class="n">_cross</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="k">if</span> <span class="n">k</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">omega_in_prev</span><span class="p">,</span> <span class="n">gravity_coriolis_prev</span> <span class="o">=</span> <span class="n">omega_in_n</span><span class="p">,</span> <span class="n">gravity_coriolis</span>
+            <span class="n">omega_in_mid</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">omega_in_n</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">omega_in_prev</span>
+            <span class="n">gravity_coriolis_mid</span> <span class="o">=</span> <span class="mf">1.5</span> <span class="o">*</span> <span class="n">gravity_coriolis</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">gravity_coriolis_prev</span>
+            <span class="n">omega_in_prev</span><span class="p">,</span> <span class="n">gravity_coriolis_prev</span> <span class="o">=</span> <span class="n">omega_in_n</span><span class="p">,</span> <span class="n">gravity_coriolis</span>
+            <span class="c1"># --8&lt;-- [end:precision_midpoint]</span>
+
+            <span class="c1"># --8&lt;-- [start:precision_attitude]</span>
+            <span class="n">alpha</span> <span class="o">=</span> <span class="n">meas_omega_ib_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>                 <span class="c1"># alpha_ib^b</span>
+            <span class="n">upsilon</span> <span class="o">=</span> <span class="n">meas_f_ib_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>                   <span class="c1"># upsilon_ib^b</span>
+            <span class="n">zeta</span> <span class="o">=</span> <span class="n">omega_in_mid</span> <span class="o">*</span> <span class="n">tau_i</span>                        <span class="c1"># nav-frame rotation</span>
+            <span class="n">phi</span> <span class="o">=</span> <span class="n">coning_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">)</span>
+            <span class="n">C_b_n_next</span> <span class="o">=</span> <span class="n">Rot</span><span class="o">.</span><span class="n">from_rotvec</span><span class="p">(</span><span class="o">-</span><span class="n">zeta</span><span class="p">)</span> <span class="o">*</span> <span class="n">C_b_n</span> <span class="o">*</span> <span class="n">Rot</span><span class="o">.</span><span class="n">from_rotvec</span><span class="p">(</span><span class="n">phi</span><span class="p">)</span>
+            <span class="c1"># --8&lt;-- [end:precision_attitude]</span>
+            <span class="n">q_b_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">C_b_n_next</span><span class="o">.</span><span class="n">as_quat</span><span class="p">()</span> <span class="c1"># pyright: ignore[reportCallIssue]</span>
+
+            <span class="c1"># --8&lt;-- [start:precision_velocity]</span>
+            <span class="n">dv_b</span> <span class="o">=</span> <span class="n">sculling_correction</span><span class="p">(</span><span class="n">alpha_prev</span><span class="p">,</span> <span class="n">upsilon_prev</span><span class="p">,</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">upsilon</span><span class="p">)</span>
+            <span class="n">dv_sf_n</span> <span class="o">=</span> <span class="n">C_b_n</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">dv_b</span><span class="p">)</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">_cross</span><span class="p">(</span><span class="n">zeta</span><span class="p">,</span> <span class="n">C_b_n</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">upsilon</span><span class="p">))</span>
+            <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">dv_sf_n</span> <span class="o">+</span> <span class="n">gravity_coriolis_mid</span> <span class="o">*</span> <span class="n">tau_i</span>
+            <span class="c1"># --8&lt;-- [end:precision_velocity]</span>
+            <span class="k">if</span> <span class="n">meas_h_b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">baro_residual</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">meas_h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span>
+                <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+=</span> <span class="p">(</span><span class="n">K2</span> <span class="o">*</span> <span class="n">baro_residual</span> <span class="o">+</span> <span class="n">acc_corr</span><span class="p">)</span> <span class="o">*</span> <span class="n">tau_i</span>
+                <span class="n">acc_corr</span> <span class="o">+=</span> <span class="n">K3</span> <span class="o">*</span> <span class="n">baro_residual</span> <span class="o">*</span> <span class="n">tau_i</span>
+
+            <span class="c1"># --8&lt;-- [start:precision_position]</span>
+            <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+            <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_i</span>
+            <span class="n">L_pred</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_i</span>
+            <span class="n">R_N_next</span><span class="p">,</span> <span class="n">R_E_next</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_pred</span><span class="p">)</span>
+            <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+                                       <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N_next</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_i</span>
+            <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span>
+                <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span>
+                <span class="o">+</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E_next</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_i</span>
+            <span class="c1"># --8&lt;-- [end:precision_position]</span>
+            <span class="k">if</span> <span class="n">meas_h_b</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-=</span> <span class="n">K1</span> <span class="o">*</span> <span class="n">baro_residual</span> <span class="o">*</span> <span class="n">tau_i</span>
+
+            <span class="n">r_lb_l</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">L_b0</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="n">R_N0</span> <span class="o">+</span> <span class="n">h_b0</span><span class="p">)</span>
+            <span class="n">r_lb_l</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">lambda_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">R_E0</span> <span class="o">+</span> <span class="n">h_b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b0</span><span class="p">)</span>
+            <span class="n">r_lb_l</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">h_b0</span><span class="p">)</span>
+            <span class="n">alpha_prev</span><span class="p">,</span> <span class="n">upsilon_prev</span> <span class="o">=</span> <span class="n">alpha</span><span class="p">,</span> <span class="n">upsilon</span>
+            <span class="n">C_b_n</span> <span class="o">=</span> <span class="n">C_b_n_next</span>
+            <span class="k">continue</span>
 
         <span class="c1"># --8&lt;-- [start:body_rate]</span>
         <span class="c1"># --- 2. Body rate relative to the nav frame ------------------</span>

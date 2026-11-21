@@ -1127,6 +1127,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="As implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integrating-imu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integrating IMU
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2024,6 +2041,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="As implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integrating-imu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integrating IMU
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2107,11 +2141,15 @@ pick in the GUI is the one this page builds.</p>
 <li>The attitude follows the velocity: the nose points along the flight
   path, and every turn is coordinated. There is no angle of attack, no
   sideslip and no wind.</li>
-<li>The ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are computed as the exact inverse of the
-  navigator's update. Fed back through the navigator, they reproduce the
-  truth to about <span class="arithmatex">\(10^{-8}\)</span> m over the whole mission.</li>
-<li>The simulator therefore measures how sensor errors propagate, not how
+<li>By default the ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are computed as the exact inverse of
+  the navigator's basic update. Fed back through the navigator, they
+  reproduce the truth to about <span class="arithmatex">\(10^{-8}\)</span> m over the whole mission.</li>
+<li>The simulator then measures how sensor errors propagate, not how
   accurately the navigator integrates continuous motion.</li>
+<li>An <a href="#integrating-imu">oversampled truth</a> instead reports what a real,
+  integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> would: the average rates over each interval of a
+  motion that is continuous within it. Against it the navigator's own
+  integration error shows up.</li>
 </ul>
 </div>
 <h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
@@ -2244,7 +2282,7 @@ the sampled heading:</p>
 <div class="highlight"><pre><span></span><code><span class="n">psi</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">v_eb_n</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
 <span class="n">v_h</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
 <span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">v_eb_n</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">v_h</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
-<span class="n">psi_dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">)</span>
+<span class="n">psi_dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="n">edge_order</span><span class="p">)</span>
 <span class="n">phi</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">v_h</span> <span class="o">*</span> <span class="n">psi_dot</span><span class="p">,</span> <span class="n">g_ref</span><span class="p">)</span>
 </code></pre></div>
 </div>
@@ -2334,6 +2372,92 @@ What is specific to ins_sim is that they are discretized to invert the
 navigator's own first-order update, so the truth and the navigator
 agree exactly when the sensors are perfect.</p>
 </div>
+<h3 id="integrating-imu">Integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr><a class="headerlink" href="#integrating-imu" title="Permanent link">&para;</a></h3>
+<p>The default outputs describe a vehicle that moves in jumps, one step at a
+time. To test how well the navigator integrates continuous motion, ins_sim
+can instead give the outputs of a real <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, which integrates the rates over
+each interval. With <code>oversample</code> set to <span class="arithmatex">\(M\)</span>, the mission is built at the
+finer step <span class="arithmatex">\(\tau_f = \tau_i/M\)</span>, and the truth is the continuous motion
+through those fine samples: between two of them the body turns relative to
+<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> at a constant rate, the velocity changes at a constant rate, and the
+specific force in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> is constant, with gravity and the Coriolis term at
+the mean of their values at the two samples. The states are kept every <span class="arithmatex">\(M\)</span>-th
+sample, and the outputs are the averages of <span class="arithmatex">\(\wvec{ib}{b}\)</span> and
+<span class="arithmatex">\(\fvec{ib}{b}\)</span> over each interval <span class="arithmatex">\(\tau_i\)</span>, which is what an integrating
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> reports.</p>
+<p><strong>1. Position</strong>, by the trapezoidal rule, since the velocity changes
+linearly between fine samples:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Equation</label><label for="__tabbed_6_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+h_{b,j+1} = h_{b,j} - \tfrac12\left(v_{D,j} + v_{D,j+1}\right)\tau_f,
+\qquad
+L_{b,j+1} = L_{b,j} + \tfrac12\left(\frac{v_{N,j}}{R_{N,j} + h_{b,j}} + \frac{v_{N,j+1}}{R_{N,j+1} + h_{b,j+1}}\right)\tau_f
+\]</div>
+<p>and likewise for <span class="arithmatex">\(\lambda_b\)</span>. The radii at the end of the step are
+taken at a latitude predicted with the start values, which keeps the
+update second order.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_fine</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_D</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_D</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_f</span><span class="p">)</span>
+    <span class="c1"># Radii at a predicted endpoint latitude keep the update second order.</span>
+    <span class="n">L_pred</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_N</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_f</span>
+    <span class="n">R_N_next</span><span class="p">,</span> <span class="n">R_E_next</span> <span class="o">=</span> <span class="n">_radii</span><span class="p">(</span><span class="n">L_pred</span><span class="p">)</span>
+    <span class="n">L</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_N</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                           <span class="o">+</span> <span class="n">v_N</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N_next</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_f</span><span class="p">)</span>
+    <span class="n">lam</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lam</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_E</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+                               <span class="o">+</span> <span class="n">v_E</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E_next</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_f</span><span class="p">)</span>
+    <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">_radii</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>2. Integrated outputs.</strong> Over the fine step <span class="arithmatex">\(j\)</span> the body turns through
+<span class="arithmatex">\(\boldsymbol{\phi}_j = \operatorname{rotvec}(\Cmat{n}{b}(j)\,\Cmat{b}{n}(j+1))\)</span>
+relative to <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>, so the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>-to-body matrix is
+<span class="arithmatex">\(\exp(-s\skew{\boldsymbol{\phi}_j})\Cmat{n}{b}(j)\)</span> a fraction <span class="arithmatex">\(s\)</span> of
+the way through it. Averaging that over the step gives the matrix
+<span class="arithmatex">\(\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\Cmat{n}{b}(j)\)</span>, with
+<span class="arithmatex">\(\boldsymbol{\Gamma}(\mathbf{x}) = \Ithree + \frac{1 - \cos x}{x^2}\skew{\mathbf{x}} +
+\frac{x - \sin x}{x^3}\skew{\mathbf{x}}^2\)</span> and <span class="arithmatex">\(x = |\mathbf{x}|\)</span>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Equation</label><label for="__tabbed_7_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\avec{ib,j}{b} = \boldsymbol{\phi}_j + \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\bar{\boldsymbol{\omega}}_{in}^n(j),
+\qquad
+\uvec{ib,j}{b} = \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\fvec{ib}{n}(j)
+\]</div>
+<p>with <span class="arithmatex">\(\fvec{ib}{n}(j)\)</span> as in step 4 above, at the fine step, but with
+gravity and the Coriolis term averaged over the two samples, and
+<span class="arithmatex">\(\bar{\boldsymbol{\omega}}_{in}^n(j)\)</span> the mean of <span class="arithmatex">\(\wvec{in}{n}\)</span> at
+the two samples. The outputs are the sums over the <span class="arithmatex">\(M\)</span> fine steps of each interval,
+divided by <span class="arithmatex">\(\tau_i\)</span>.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">C_b_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span> <span class="o">*</span> <span class="n">C_b_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">as_rotvec</span><span class="p">()</span>     <span class="c1"># (n_fine-1, 3)</span>
+<span class="n">coriolis_minus_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_in_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">)</span> <span class="o">-</span> <span class="n">g_b_n</span>
+<span class="n">f_ib_n</span> <span class="o">=</span> <span class="p">((</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">tau_f</span>
+          <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">coriolis_minus_g</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">coriolis_minus_g</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+<span class="n">omega_in_mid</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">omega_in_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">omega_in_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<span class="n">alpha_fine</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">+</span> <span class="n">tau_f</span> <span class="o">*</span> <span class="n">_gamma_apply</span><span class="p">(</span><span class="o">-</span><span class="n">phi</span><span class="p">,</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">omega_in_mid</span><span class="p">))</span>
+<span class="n">upsilon_fine</span> <span class="o">=</span> <span class="n">tau_f</span> <span class="o">*</span> <span class="n">_gamma_apply</span><span class="p">(</span><span class="o">-</span><span class="n">phi</span><span class="p">,</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">f_ib_n</span><span class="p">))</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha_fine</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_out</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">oversample</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">upsilon</span> <span class="o">=</span> <span class="n">upsilon_fine</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_out</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">oversample</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The truth is still built from fine samples, so it is continuous motion only
+to the extent that the fine step resolves it. Against it, a navigator at
+<span class="arithmatex">\(\tau_i\)</span> shows its own error plus a floor from the fine step that falls
+as <span class="arithmatex">\(\tau_f\)</span> shrinks: on the packaged mission, about 2 m of horizontal
+error at <span class="arithmatex">\(\tau_f\)</span> = 0.01 s, and 0.6 m at 0.005 s. Keep <span class="arithmatex">\(M\)</span> large enough that the
+floor stays below the error you want to see. The
+<a href="../mechanization/#precision-mechanization">Strapdown mechanization</a> page
+describes the navigator that integrates these outputs accurately.</p>
 <h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
 <p><img alt="The ideal gyro and accelerometer outputs, in body axes, along the packaged mission" src="../../assets/theory/truth_imu.png" /></p>
 <p>What a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> measures along the packaged mission, at the app's default
@@ -2367,11 +2491,12 @@ that residual.</p>
 <li><strong>Point-mass flight.</strong> The body axes follow the velocity: no angle of
   attack, no sideslip, no wind, no vibration, and no lever arm between
   the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> and the vehicle's reference point.</li>
-<li><strong>No integration error to find.</strong> The outputs are piecewise constant
-  over each step and invert the navigator's own discretization. The
-  navigator's integration errors, such as coning, sculling and its
-  first-order velocity update, are therefore invisible: the simulator
-  behaves as if the navigation algorithm were perfect.</li>
+<li><strong>No integration error to find, by default.</strong> The default outputs are
+  piecewise constant over each step and invert the navigator's own
+  basic discretization. The navigator's integration errors, such as
+  coning, sculling and its first-order velocity update, are therefore
+  invisible: the simulator behaves as if the navigation algorithm were
+  perfect. An <a href="#integrating-imu">oversampled truth</a> makes them visible.</li>
 <li><strong>The sample interval shows up in turns.</strong> The specific force is the
   forward difference across a step, so during a turn it has a small
   component along the direction of flight, about
@@ -2417,6 +2542,11 @@ that residual.</p>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory"><code>TruthTrajectory</code></a></td>
 </tr>
 <tr>
+<td>Integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></td>
+<td><span class="arithmatex">\(\avec{ib}{b}\)</span>, <span class="arithmatex">\(\uvec{ib}{b}\)</span> over each interval</td>
+<td><code>oversample</code> in <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory"><code>TruthTrajectory</code></a> and <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;build_trajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.build_trajectory"><code>build_trajectory</code></a></td>
+</tr>
+<tr>
 <td>Smooth test paths</td>
 <td>Cubic spline through <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> waypoints, flown at constant speed</td>
 <td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NEDSplinePath&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.spline.NEDSplinePath"><code>NEDSplinePath</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-method&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;from_spline&lt;/span&gt;
@@ -2431,7 +2561,7 @@ that residual.</p>
 <p>This example builds the packaged mission at <span class="arithmatex">\(\tau_i\)</span> = 1 s, prints the
 ideal accelerometer output in level flight and in the most steeply banked
 turn, and runs the zero-noise round trip:</p>
-<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Script</label><label for="__tabbed_6_2">Output</label></div>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Script</label><label for="__tabbed_8_2">Output</label></div>
 <div class="tabbed-content">
 <div class="tabbed-block">
 <div class="highlight"><pre><span></span><code><span class="sd">"""What a perfect IMU measures along the packaged mission, and the zero-noise round trip."""</span>

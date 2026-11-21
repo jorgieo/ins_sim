@@ -1327,6 +1327,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#precision-mechanization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precision mechanization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#angle-random-walk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2087,6 +2098,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#precision-mechanization" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Precision mechanization
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#angle-random-walk" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2173,7 +2195,8 @@ error source. The test suite asserts every agreement on each commit, and
 the figures and table below are regenerated from the same scenarios. The
 predictions are derived on the Theory pages: the
 <a href="../theory/error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a>, the
-<a href="../theory/vertical-channel/">Vertical channel</a> and the
+<a href="../theory/vertical-channel/">Vertical channel</a>, the
+<a href="../theory/mechanization/">Strapdown mechanization</a> and the
 <a href="../theory/imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a>.</p>
 <div class="admonition abstract">
 <p class="admonition-title">Key results</p>
@@ -2183,6 +2206,10 @@ predictions are derived on the Theory pages: the
 <li>Barometer errors reach the <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> height exactly as the damping loop's
   transfer function predicts: a bias in full, a drift with a lag, and
   white noise attenuated about sevenfold at a 1 s step.</li>
+<li>On an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>'s outputs, the coning and sculling drifts of the
+  basic mechanization match their closed-form predictions, and the
+  precision mechanization cuts each by more than 300 times, again as
+  predicted. Its error falls with at least the square of the step.</li>
 <li>A 0.01 °/h gyro bias starts the position drifting at about 0.6 <abbr title="Nautical mile: 1,852 m.">nmi</abbr>/h,
   the classic figure for a navigation-grade <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>. Over hours the
   Earth-rate loop bends that drift over, and the simulator reproduces
@@ -2265,6 +2292,42 @@ predictions are derived on the Theory pages: the
 <td>1.44 cm</td>
 <td>1.45 cm</td>
 <td>+1.00%</td>
+</tr>
+<tr>
+<td>Heading drift from coning, basic mechanization</td>
+<td>−1.038 °/h</td>
+<td>−1.038 °/h</td>
+<td>0.00%</td>
+</tr>
+<tr>
+<td>Heading drift from coning, precision mechanization</td>
+<td>−0.00328 °/h</td>
+<td>−0.00328 °/h</td>
+<td>0.00%</td>
+</tr>
+<tr>
+<td>East acceleration error from sculling, basic mechanization</td>
+<td>−23.40 µg</td>
+<td>−23.38 µg</td>
+<td>−0.09%</td>
+</tr>
+<tr>
+<td>East acceleration error from sculling, precision mechanization</td>
+<td>−0.0738 µg</td>
+<td>−0.0738 µg</td>
+<td>−0.07%</td>
+</tr>
+<tr>
+<td>Order of the basic mechanization's error, <span class="arithmatex">\(\tau_i\)</span> = 1 → 0.5 s</td>
+<td>1</td>
+<td>1.14</td>
+<td>first order</td>
+</tr>
+<tr>
+<td>Order of the precision mechanization's error, <span class="arithmatex">\(\tau_i\)</span> = 1 → 0.5 s</td>
+<td>≥ 2</td>
+<td>4.06</td>
+<td>higher order</td>
 </tr>
 <tr>
 <td>Integrated-angle spread after 30 min, <span class="arithmatex">\(\tau_i\)</span> = 0.1 s</td>
@@ -2451,6 +2514,60 @@ navigator and compare the height error with that filter's response:</p>
 </div>
 <p><img alt="INS height error after a 10 m barometer bias, and while it tracks a barometer drift" src="../assets/validation/baro_tracking.png" /></p>
 <p><img alt="Spread of the INS height error from white barometer noise, over 200 runs" src="../assets/validation/baro_noise.png" /></p>
+<h2 id="precision-mechanization">Precision mechanization<a class="headerlink" href="#precision-mechanization" title="Permanent link">&para;</a></h2>
+<p>These checks feed the navigator the outputs of an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, the
+averages of the angular rate and specific force over each interval,
+computed exactly for motions with a closed form. The basic mechanization
+then shows the errors that the
+<a href="../theory/mechanization/#precision-mechanization">precision mechanization</a>
+exists to remove.</p>
+<p><strong>Coning and sculling.</strong> In classical coning, the body's z axis traces a
+cone of half-angle <span class="arithmatex">\(\beta\)</span> at frequency <span class="arithmatex">\(\Omega\)</span>. In classical sculling,
+the body yaws by <span class="arithmatex">\(\theta_0\cos\Omega t\)</span> while accelerating North at
+<span class="arithmatex">\(A\cos\Omega t\)</span>. Both rectify: a rotation that oscillates in phase with a
+second rotation, or with a specific force, drives a steady drift along a
+third axis. Over each interval, with <span class="arithmatex">\(x = \Omega\tau_i\)</span>, an update that
+treats the increments as constant misses</p>
+<div class="arithmatex">\[
+d_0(x) = \tfrac12\left(x - \sin x\right)
+\]</div>
+<p>per unit amplitude, and the one-sample-plus-previous correction leaves</p>
+<div class="arithmatex">\[
+d_1(x) = \tfrac12\left(x - \sin x\right) - \tfrac{1}{12}\left(2\sin x - \sin 2x\right)
+\approx \frac{x^5}{60}.
+\]</div>
+<p>The heading therefore drifts at <span class="arithmatex">\(-\sin^2\beta\,d(x)/\tau_i\)</span> under
+coning, and the East velocity at <span class="arithmatex">\(-(\theta_0 A/\Omega)\,d(x)/\tau_i\)</span>
+under sculling, with <span class="arithmatex">\(d = d_0\)</span> for the basic mechanization and
+<span class="arithmatex">\(d = d_1\)</span> for the precision one. The derivation keeps the
+lowest order in <span class="arithmatex">\(\beta\)</span> and <span class="arithmatex">\(\theta_0\)</span>, which is exact to well within
+the checks' tolerance at 1°.</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:1"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Prediction</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">missed</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">))</span>
+<span class="k">if</span> <span class="n">compensated</span><span class="p">:</span>
+    <span class="n">missed</span> <span class="o">-=</span> <span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">x</span><span class="p">))</span> <span class="o">/</span> <span class="mf">12.0</span>
+<span class="k">return</span> <span class="nb">float</span><span class="p">(</span><span class="n">missed</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><img alt="Heading error under coning and East velocity error under sculling, for both mechanizations, with the predicted drifts" src="../assets/validation/coning_sculling.png" /></p>
+<p><strong>The packaged mission.</strong> Built with its truth oversampled ten times per
+step, the packaged mission becomes the output of an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>. With
+perfect sensors, the remaining position error is the mechanization's own:</p>
+<p><img alt="Horizontal position error with perfect sensors on the packaged mission, basic and precision mechanizations" src="../assets/validation/mission_mechanizations.png" /></p>
+<p>The basic mechanization's error grows in every turn, as the rotation term
+<span class="arithmatex">\(\tfrac12\,\avec{ib}{b}\times\uvec{ib}{b}\)</span> it leaves out predicts. The
+precision mechanization stays within a few metres, the floor set by the
+truth's own fine step (see
+<a href="../theory/truth-kinematics/#integrating-imu">Integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>).</p>
+<p><strong>Convergence.</strong> Building every truth at the same fine step and changing
+only the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval shows each mechanization's order: the basic error is
+proportional to <span class="arithmatex">\(\tau_i\)</span>, and the precision error falls at least as fast
+as <span class="arithmatex">\(\tau_i^2\)</span> until it meets the floor.</p>
+<p><img alt="Largest horizontal error against the IMU interval, both mechanizations, with first- and second-order reference lines" src="../assets/validation/mechanization_convergence.png" /></p>
 <h2 id="angle-random-walk">Angle random walk<a class="headerlink" href="#angle-random-walk" title="Permanent link">&para;</a></h2>
 <p>Gyro white noise integrates into an attitude error whose spread grows with
 the square root of time, at a rate set by the angle random walk (<abbr title="Angle random walk: gyro white noise. Integrated angle uncertainty grows as ARW·√t; datasheets quote it in °/√h.">ARW</abbr>)

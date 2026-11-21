@@ -2008,6 +2008,28 @@ has none (see <a href="imu-specs/#the-baro-block">Modelling an <abbr title="Iner
 aiding the height error grows exponentially: try it in
 <a href="../get-started/first-run/#7-switch-off-the-barometer">Your first simulation</a>.
 The <a href="../theory/vertical-channel/">Vertical channel</a> page explains why.</p>
+<p><strong>Advanced</strong> (collapsed by default; click it to open) holds two settings
+that change how the navigation algorithm itself is tested. Leave them
+alone to study sensor errors.</p>
+<ul>
+<li><strong>Truth oversampling</strong> (Off, or 2–100 per step). Off, the perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>'s
+  outputs are built to match the navigator's basic update exactly, so the
+  only errors are the sensors'. Set to N, the mission is built N times per
+  time step and the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> reports averages over each step, as a real
+  integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> does. The navigator's own error then shows too. Larger N
+  is more faithful but slower to build: N = 10 at a 0.1 s step adds about
+  8 s to the run.</li>
+<li><strong>Mechanization</strong>: <em>Basic</em> or <em>Precision</em>. The precision update corrects
+  for the vehicle turning within each step (coning, sculling and rotation
+  corrections) and takes about 1.4 times as long. It belongs with truth
+  oversampling; without it the log prints a note, because the precision
+  corrections then add an error of their own.</li>
+</ul>
+<p>With perfect sensors, on the packaged mission at 0.1 s with oversampling at
+10, the basic update alone puts the track up to 1.7 km off, and the
+precision update about 2 m. The
+<a href="../theory/mechanization/#precision-mechanization">Strapdown mechanization</a>
+page explains the difference.</p>
 <p><strong>Output Visualizations</strong> selects the result tabs to build. Each tab takes
 a moment to build when the run finishes, so unchecking the ones you do not
 need saves a little time.</p>

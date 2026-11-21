@@ -2018,7 +2018,9 @@ or fly a trajectory of your own.</p>
   initial alignment errors.</li>
 <li><strong>Rotating-Earth strapdown mechanization</strong>: Earth rate, transport rate,
   <abbr title="World Geodetic System 1984: the reference ellipsoid, Earth rotation rate and gravity model used by ins_sim.">WGS-84</abbr> radii of curvature and normal gravity, evaluated at the current
-  position every step, not a flat-Earth approximation.</li>
+  position every step, not a flat-Earth approximation. An optional
+  precision update, with coning and sculling corrections, can be tested
+  against the outputs of an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>.</li>
 <li><strong>Vertical channel physics</strong>: a third-order baro-damped loop by default,
   aided by a barometer with its own errors (temperature, altimeter setting,
   weather, noise), or free-inertial to watch the channel's instability.</li>

@@ -2013,10 +2013,21 @@ python<span class="w"> </span>main.py<span class="w"> </span>--trials<span class
 <td>42</td>
 <td>Random seed; the app always uses 42</td>
 </tr>
+<tr>
+<td><code>--mechanization</code></td>
+<td><code>basic</code></td>
+<td>Strapdown update, <code>basic</code> or <code>precision</code></td>
+</tr>
+<tr>
+<td><code>--oversample</code></td>
+<td>off</td>
+<td>Build the truth this many times per step, for an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></td>
+</tr>
 </tbody>
 </table>
-<p>Baro altitude aiding is always on. <code>python main.py --help</code> lists the
-options.</p>
+<p>The last two match the app's <strong>Advanced</strong> settings (see the
+<a href="../#simulation-settings">User guide</a>); use them together. Baro
+altitude aiding is always on. <code>python main.py --help</code> lists the options.</p>
 <h2 id="what-it-prints">What it prints<a class="headerlink" href="#what-it-prints" title="Permanent link">&para;</a></h2>
 <p>With <code>--trials 10 --dt 1.0</code> it prints:</p>
 <div class="highlight"><pre><span></span><code>Total path  : 440.2 nm  (815 km)
@@ -2043,7 +2054,8 @@ Interactive map saved: .../ins_sim/maps/trajectory_map.html
   of the flight. It is 0.0 m for any mission, because the perfect outputs
   are built to match the navigator, so it checks the software rather than
   your mission; see
-  <a href="../../validation/#zero-noise-round-trip">Validation</a>.</li>
+  <a href="../../validation/#zero-noise-round-trip">Validation</a>. With
+  <code>--oversample</code> it is instead the navigator's own integration error.</li>
 <li><strong>The largest acceleration and specific force</strong> along the mission, a
   check that the flight is physically reasonable. 11.36 m/s² is about
   1.16 g, in the holding patterns' 30° turns.</li>
