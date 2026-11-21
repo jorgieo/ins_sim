@@ -24,3 +24,6 @@
 | Gauss–Markov correlation at a lag of \(\tau_c\) | \(e^{-1}\) = 0.368 | 0.394 | +0.026 (standard error 0.016) |
 | Allan deviation at T = 1 s | 0.1200 °/h | 0.1200 °/h | −0.03% |
 | Allan deviation at the bias-instability peak (datasheet 0.01 °/h, plus white noise; T = 2.0 h) | 0.0101 °/h | 0.0102 °/h | +1.16% |
+| Largest gap between the linear error model and the navigator, one trial of constant errors, turning flight (\(\tau_i\) = 0.1 s), as a share of each error's largest value | 0 (to first order) | 0.33% | within 1% |
+| Monte Carlo σ over predicted σ, nine errors at 4 times, packaged mission, 200 trials | 1 ± 0.098 (95%) | 0.921 to 1.128 | 34 of 36 inside |
+| Monte Carlo CEP over predicted CEP at 79 min | 1 ± 0.098 | 1.043 | +4.30% |

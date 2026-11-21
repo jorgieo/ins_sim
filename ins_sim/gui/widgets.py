@@ -37,6 +37,7 @@ VISUALIZATION_CHOICES = {
     "velocity_errors":  "Velocity Errors",
     "position_errors":  "Position Errors",
     "cep":              "Circular Error Probable",
+    "error_budget":     "Error Budget",
     "map":              "Ground Track Map",
 }
 

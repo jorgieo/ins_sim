@@ -59,17 +59,13 @@ missions therefore need more trials. In a script, pass the same `seed` to
 
 ## Find the dominant error source
 
-To find which error limits a navigator, run it with one group of errors at
-a time and compare. Each group draws exactly the same errors in these runs
-as in the run with every error on (see above), so luck does not blur the
-comparison.
+To find which error limits a navigator, read the **Error Budget** tab
+after a run (see [Reading the results](results.md#error-budget)). It comes
+from a [covariance analysis](../theory/covariance.md), which predicts the
+error of each source on its own without random trials, so it has no
+sampling noise even for a source whose contribution is small.
 
-**In the app:** copy the IMU spec once per group, keep that group's values
-in each copy and set every other value to 0, as described in
-[Modelling an IMU](imu-specs.md#switching-errors-off). Run each copy with
-the same settings and compare the CEP tables.
-
-**In a script**, `dataclasses.replace` makes the copies:
+**In a script**, `error_budget` gives the same numbers:
 
 ```python
 --8<-- "docs/examples/error_budget.py"
@@ -82,14 +78,21 @@ prints:
 --8<-- "docs/examples/error_budget.txt"
 ```
 
-On this flight the initial alignment and the gyro biases dominate; the
-accelerometer biases matter least among the inertial sensors. A better
-accelerometer would barely help, while a better alignment or better gyros
-would. The barometer aids only the height, so it hardly touches the
-horizontal CEP; its errors show in the Down position error instead. The
-contributions do not add up directly: they combine roughly as the square
-root of the sum of their squares, 732 m here, against 796 m for all
-sources together.
+On this flight the initial alignment and the gyro biases dominate, with
+the accelerometer scale factors and misalignments next: the training
+flight's climbs and turns load them more than the packaged mission does. A
+better accelerometer bias would barely help, while a better alignment or
+better gyros would. The barometer aids only the height, so it hardly
+touches the horizontal CEP. The CEPs of single sources do not add up to
+the total; their shares of the variance do. The prediction of all sources
+together agrees with the 50 trials to within their sampling uncertainty.
+
+To check a budget with trials, run the Monte Carlo with one group of
+errors at a time, setting every other value to 0 as described in
+[Modelling an IMU](imu-specs.md#switching-errors-off). Each group draws
+exactly the same errors as in the run with every error on (see above),
+but a single source needs many trials: with 10, the CEP of one source can
+be off by a factor of two.
 
 Which source dominates depends on the flight: errors that the Schuler
 oscillation keeps bounded, such as the accelerometer biases, matter less

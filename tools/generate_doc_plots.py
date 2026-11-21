@@ -1,7 +1,7 @@
 """Generates the documentation figure assets from the current codebase.
 
 Runs the baseline Monte Carlo (packaged BQN departure trajectory +
-navigation-grade IMU spec) and exports the GUI's own plotly figures as
+navigation-grade IMU spec) and its covariance analysis, and exports the GUI's own plotly figures as
 high-resolution PNGs. Because the exports come from ins_sim.gui.figures,
 the doc images are identical to what the app renders — regenerate after
 figure or model changes so docs never drift:
@@ -36,6 +36,7 @@ REPO_ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO_ROOT))
 
 from ins_sim.config import default_imu_spec_path, default_trajectory_path  # noqa: E402
+from ins_sim.evaluation.covariance import error_budget  # noqa: E402
 from ins_sim.evaluation.errors import position_error  # noqa: E402
 from ins_sim.evaluation.monte_carlo import percentile_envelope, run_monte_carlo  # noqa: E402
 from ins_sim.gui import figures  # noqa: E402
@@ -59,6 +60,7 @@ SIM_FIGURES = [
     ("velocity_error.png", figures.figure_velocity),
     ("attitude_error.png", figures.figure_attitude),
     ("cep.png",            figures.figure_cep),
+    ("error_budget.png",   figures.figure_error_budget),
 ]
 
 
@@ -75,7 +77,9 @@ def run_baseline(trials: int, dt: float, seed: int) -> SimpleNamespace:
     delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
                                   truth.L_b, truth.lambda_b, truth.h_b)
     r95 = percentile_envelope(delta_r_eb_n, q=95)
-    return SimpleNamespace(truth=truth, **mc._asdict(), r95=r95, n_trials=trials)
+    budget = error_budget(truth, spec, step_s=max(dt, 1.0))
+    return SimpleNamespace(truth=truth, **mc._asdict(), r95=r95, n_trials=trials,
+                           budget=budget)
 
 
 def build_guide_images() -> None:

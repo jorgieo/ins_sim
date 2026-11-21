@@ -27,6 +27,14 @@ version may change the API.
   `mechanization` too; the app has both under **Advanced**, and
   `main.py` has `--mechanization` and `--oversample`. Both default to the
   previous behaviour, which gives the same results as before.
+- **A covariance analysis and an error budget.** `covariance_analysis`
+  propagates the covariance of a 43-state linearized error model, with
+  every error source of the simulator as a state, along the truth
+  trajectory: it predicts the spread of the attitude, velocity and
+  position errors and the CEP in one pass. `error_budget` gives each error
+  source's share. The app draws the prediction as dashed lines on the CEP,
+  attitude, velocity and position tabs and has a new **Error Budget** tab;
+  `main.py` prints the budget. The Monte Carlo results are unchanged.
 
 ### Changed
 

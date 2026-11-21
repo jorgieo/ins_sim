@@ -230,7 +230,8 @@ navigator. For example, the gyro-bias prediction:
     as analysed by Groves[^groves] and by Titterton and Weston[^tw]. The
     error equations above are a simplified form of the full error-state
     model, which keeps the transport-rate terms, the vertical channel and
-    every sensor error as states.
+    every sensor error as states; ins_sim's
+    [covariance analysis](covariance.md) uses it.
 
 ## What it looks like
 
@@ -267,9 +268,10 @@ manoeuvre: see the packaged mission's
       manoeuvres couple heading, scale-factor and misalignment errors into
       the navigation errors in ways these formulas do not capture. That is
       what the Monte Carlo simulation is for.
-    - **No covariance propagation.** ins_sim has no full error-state model
-      and does not propagate error covariances. Its statistics come from
-      Monte Carlo trials alone.
+    - **The full model is elsewhere.** The
+      [Covariance analysis](covariance.md) page keeps every term and every
+      error source, and propagates the statistics of the errors along a
+      real flight.
 
 ## In the code
 

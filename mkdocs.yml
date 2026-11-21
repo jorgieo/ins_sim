@@ -58,6 +58,7 @@ nav:
       - Vertical channel: theory/vertical-channel.md
       - INS error model: theory/error-model.md
       - Monte Carlo evaluation: theory/monte-carlo.md
+      - Covariance analysis: theory/covariance.md
   - Validation: validation/index.md
   - Reference:
       - Python API:

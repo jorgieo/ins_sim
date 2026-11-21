@@ -150,3 +150,38 @@ def test_bands_use_unbiased_spread_and_tolerate_one_trial():
                              "delta_psi_nb_n": result.delta_psi_nb_n[:1]})
     fig = figures.figure_attitude(one)
     assert np.all(np.isfinite(np.asarray(fig.data[0].y, dtype=float)))
+
+
+def _with_budget(result):
+    """Adds a synthetic covariance ErrorBudget: sources' variances grow with time."""
+    from ins_sim.evaluation.covariance import ERROR_SOURCES, CovarianceResult, ErrorBudget
+    t = result.truth.t[::4]
+    parts = {}
+    for i, name in enumerate(ERROR_SOURCES):
+        var = np.outer((t / 100.0) ** 2 * (i + 1), np.ones(9))
+        parts[name] = CovarianceResult(t, var, np.zeros(len(t)))
+    total = CovarianceResult(t, sum(p.var for p in parts.values()), np.zeros(len(t)))
+    result.budget = ErrorBudget(total, parts)
+    return result
+
+
+def test_band_figures_draw_the_predicted_bounds_only_with_a_budget():
+    plain = _synthetic_result()
+    assert not any(t.name == "Predicted ±3σ (covariance)" for t in figures.figure_position(plain).data)
+    fig = figures.figure_position(_with_budget(_synthetic_result()))
+    predicted = [t for t in fig.data if t.name == "Predicted ±3σ (covariance)"]
+    assert len(predicted) == 6                    # ±, in each of the three panels
+    assert sum(t.showlegend for t in predicted) == 1
+
+
+def test_cep_figure_draws_the_predicted_cep_with_a_budget():
+    fig = figures.figure_cep(_with_budget(_synthetic_result()))
+    assert any(t.name == "Predicted CEP (covariance)" for t in fig.data)
+
+
+def test_error_budget_shares_fill_one_hundred_percent():
+    result = _with_budget(_synthetic_result())
+    shares = figures.horizontal_shares(result.budget)
+    np.testing.assert_allclose(shares[:, 1:].sum(axis=0), 100.0)
+    fig = figures.figure_error_budget(result)
+    assert [t.name for t in fig.data] == list(result.budget.by_source)

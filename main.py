@@ -10,6 +10,7 @@ from ins_sim.trajectory.kinematics import build_trajectory
 from ins_sim.sensors.imu import IMUSpec, load_imu_spec
 from ins_sim.navigation.strapdown import (PRECISION_WITHOUT_OVERSAMPLING, NavState,
                                           strapdown_navgrade)
+from ins_sim.evaluation.covariance import error_budget
 from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import run_monte_carlo, percentile_envelope
 from ins_sim.evaluation.visualization import build_summary_figure
@@ -115,6 +116,38 @@ def print_self_consistency_summary(truth, zero_err):
           f"Max |f_ib_b|: {np.linalg.norm(truth.f_ib_b, axis=1).max():.2f} m/s²")
 
 
+def print_error_budget(budget, mc_cep_m: float) -> None:
+    """Prints each error source's predicted CEP and share of the horizontal variance.
+
+    Columns are the whole hours of flight, or the end of the flight when it
+    is shorter than an hour.
+
+    Args:
+        budget: ErrorBudget from `ins_sim.evaluation.covariance.error_budget`.
+        mc_cep_m: The Monte Carlo CEP at the end of the flight [m], printed
+            beside the prediction.
+
+    Returns:
+        None: Prints to stdout.
+    """
+    t = budget.total.t
+    marks = [h * 3600.0 for h in range(1, int(t[-1] // 3600.0) + 1)] or [t[-1]]
+    cols = [int(np.argmin(np.abs(t - mark))) for mark in marks]
+    horizontal = lambda part, k: part.var[k, 6] + part.var[k, 7]
+    print("Error budget (covariance analysis): CEP with each source alone [NM], "
+          "and its share of the horizontal variance")
+    print(f"  {'':38s}" + "".join(f"{t[k] / 60:>14.0f} min" for k in cols))
+    for name, part in budget.by_source.items():
+        cells = "".join(
+            f"{part.cep[k] / NM:>11.2f} ({100 * horizontal(part, k) / max(horizontal(budget.total, k), 1e-300):3.0f}%)"
+            for k in cols)
+        print(f"  {name:38s}{cells}")
+    print(f"  {'All sources: predicted CEP':38s}"
+          + "".join(f"{budget.total.cep[k] / NM:>18.2f}" for k in cols))
+    print(f"Predicted CEP at the end: {budget.total.cep[-1] / NM:.2f} NM; "
+          f"Monte Carlo: {mc_cep_m / NM:.2f} NM")
+
+
 def parse_args(argv=None):
     """Parses the headless CLI arguments (defaults preserve legacy behavior).
 
@@ -186,6 +219,10 @@ def main(argv=None):
     mc, r95 = simulate(truth, spec, n_trials=n_trials, seed=args.seed,
                        mechanization=args.mechanization)
     print(f"95th-pct error  start: {r95[0]:6.3f} m   end: {r95[-1]:6.1f} m")
+    budget = error_budget(truth, spec, step_s=max(args.dt, 1.0))
+    delta_r_eb_n = position_error(mc.est_L_b[:, -1], mc.est_lambda_b[:, -1], mc.est_h_b[:, -1],
+                                  truth.L_b[-1], truth.lambda_b[-1], truth.h_b[-1])
+    print_error_budget(budget, float(np.median(np.hypot(delta_r_eb_n[:, 0], delta_r_eb_n[:, 1]))))
 
     elapsed = datetime.now() - simulation_start
     hours, rem = divmod(elapsed.total_seconds(), 3600)

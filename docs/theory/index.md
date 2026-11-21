@@ -40,6 +40,7 @@ Each part has its own page:
 | [Vertical channel](vertical-channel.md) | Why does height diverge, and how does the barometer hold it? | `ins_sim.navigation.strapdown` |
 | [INS error model](error-model.md) | Why do navigation errors grow the way they do? | – |
 | [Monte Carlo evaluation](monte-carlo.md) | How do many runs become error statistics? | `ins_sim.evaluation` |
+| [Covariance analysis](covariance.md) | Can the error statistics be predicted in one pass, and which source dominates? | `ins_sim.evaluation.covariance` |
 
 ## Reading paths
 
@@ -49,8 +50,9 @@ Each part has its own page:
   [INS error model](error-model.md). The [Validation](../validation/index.md)
   page then shows the simulator reproducing each prediction.
 - **Choosing or comparing IMUs:** the [IMU error model](imu-errors.md), the
-  [INS error model](error-model.md) and
-  [Monte Carlo evaluation](monte-carlo.md).
+  [INS error model](error-model.md),
+  [Monte Carlo evaluation](monte-carlo.md) and
+  [Covariance analysis](covariance.md).
 - **Reading or extending the code:** [Notation & conventions](notation.md),
   [Truth trajectory & ideal IMU](truth-kinematics.md) and
   [Strapdown mechanization](mechanization.md). Every page ends with an

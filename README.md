@@ -25,7 +25,9 @@ Gauss-Markov bias drift, turn-on bias repeatability, scale-factor and
 misalignment errors, initial-alignment errors), and runs a strapdown
 mechanization to recover position, velocity, and attitude. A Monte Carlo
 ensemble over independent noise realizations characterizes how navigation
-error grows over time for a given IMU grade.
+error grows over time for a given IMU grade, and a covariance analysis of
+the linearized error model predicts the same statistics in one pass, with
+an error budget by source.
 
 The simulation models rotating-Earth effects explicitly: Earth rate, transport
 (craft) rate, WGS-84 radii of curvature, and Somigliana normal gravity are all
@@ -80,7 +82,9 @@ python -m ins_sim.gui
   - **CEP** — horizontal error growth for every trial, ensemble CEP, linear
     fit, and a percentile table by hour.
   - **Attitude / Velocity / Position errors** — ensemble mean and 3σ bands
-    per axis.
+    per axis, with the covariance analysis's predicted 3σ.
+  - **Error Budget** — each error source's share of the predicted
+    horizontal error over the flight, with a table by hour.
   - **3D Trajectory** — all trial tracks, the truth track, and a 95th
     percentile error tube.
   - **Map** — ground track over OpenStreetMap tiles with a horizontal error
@@ -135,7 +139,7 @@ spec = load_imu_spec("path/to/your_imu_spec.yaml")
 | `ins_sim/trajectory` | Truth generation | Phase-based mission builder (ground roll, takeoff, climb, waypoints, loiters, speed ramps), ISA Mach conversion |
 | `ins_sim/sensors` | IMU error model | ARW/VRW white noise, Gauss-Markov bias instability, turn-on repeatability, scale factor & misalignment |
 | `ins_sim/navigation` | Strapdown mechanization | Quaternion attitude propagation, Coriolis/transport-rate compensation, optional coning/sculling corrections, baro-damped or free-inertial vertical channel |
-| `ins_sim/evaluation` | Monte Carlo statistics | Empirical ensemble runs, percentile envelopes, CEP |
+| `ins_sim/evaluation` | Monte Carlo statistics and covariance analysis | Empirical ensemble runs, percentile envelopes, CEP; linearized error-state covariance and error budget |
 | `ins_sim/gui` | Desktop interface | PySide6 + QThread background workers, interactive plotly views in QtWebEngine |
 
 Data flows from truth generation, through the IMU error model, into the

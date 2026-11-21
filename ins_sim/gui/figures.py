@@ -2,13 +2,15 @@
 
 Qt-free by design: every builder takes a SimulationResult-shaped object
 (truth, est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b, est_v_eb_n,
-est_h_b, delta_psi_nb_n, r95, n_trials) and returns a
+est_h_b, delta_psi_nb_n, r95, n_trials, and optionally budget, the
+covariance analysis's ErrorBudget) and returns a
 plotly.graph_objects.Figure, so the module is
 unit-testable headlessly and reusable from the CLI (main.py's saved map).
 
 Chart language matches the rest of the project: navy = truth/mean,
-steelblue = individual trials, crimson = uncertainty bounds, darkorange
-= fits.
+steelblue = individual trials, crimson = uncertainty bounds (dashed
+crimson: the covariance analysis's prediction), darkorange = fits. The
+Error Budget tab uses the fixed categorical order in SOURCE_COLORS.
 
 All Monte Carlo trials are always drawn. To keep figures responsive at
 high trial counts, the N trial polylines of a figure are emitted as ONE
@@ -21,6 +23,7 @@ import numpy as np
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 
+from ins_sim.evaluation.covariance import ERROR_SOURCES
 from ins_sim.evaluation.errors import position_error, velocity_error
 
 NM = 1852.0
@@ -28,6 +31,10 @@ NM = 1852.0
 NAVY = "navy"
 STEELBLUE_FAINT = "rgba(70, 130, 180, 0.30)"
 CRIMSON_BAND = "rgba(220, 20, 60, 0.25)"
+CRIMSON = "crimson"
+#: One color per error source of the budget, in ERROR_SOURCES order.
+SOURCE_COLORS = ("#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4",
+                 "#008300", "#6250d6")
 ORANGE = "darkorange"
 
 #: Max points across all trials in one figure's trial-bundle trace.
@@ -129,6 +136,17 @@ def figure_cep(result) -> go.Figure:
         ))
         fig.add_vline(x=1.0, line_color="gray", line_width=1, line_dash="dot")
 
+    budget = getattr(result, "budget", None)
+    if budget is not None:
+        cov = budget.total
+        s = _line_step(len(cov.t))
+        fig.add_trace(go.Scatter(
+            x=cov.t[::s] / 3600.0, y=cov.cep[::s] / NM, mode="lines",
+            line=dict(color=CRIMSON, width=2, dash="dash"),
+            name="Predicted CEP (covariance)",
+            hovertemplate="t = %{x:.2f} hr<br>predicted CEP = %{y:.2f} NM<extra></extra>",
+        ))
+
     fig.update_layout(
         title=f"Horizontal position error — {result.n_trials} runs",
         xaxis_title="Time (hr)", yaxis_title="Horizontal error (NM)",
@@ -140,7 +158,8 @@ def figure_cep(result) -> go.Figure:
 # ±3σ band figures (attitude / velocity / position)
 # =========================================================================
 
-def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
+def _bands_figure(t_min, err_runs, panels, unit: str,
+                  predicted=None) -> go.Figure:
     """Three stacked panels of mean error with ±3σ bands.
 
     Args:
@@ -148,6 +167,8 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
         err_runs: Per-trial error, shape (n_trials, M, 3).
         panels: list of (column index, panel title) per subplot row.
         unit: Y-axis unit label.
+        predicted: Optional (t_min, sigma) from the covariance analysis,
+            sigma shape (K, 3) in the same unit; drawn as dashed ±3σ lines.
 
     Returns:
         plotly.graph_objects.Figure: The assembled subplot figure.
@@ -181,6 +202,18 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
             hovertemplate=("t = %{x:.1f} min<br>"
                            f"{title} = %{{y:.3g}} {unit}<extra></extra>"),
         ), row=row, col=1)
+        if predicted is not None:
+            t_cov, sigma_cov = predicted
+            sc = _line_step(len(t_cov))
+            for sign in (1, -1):
+                fig.add_trace(go.Scatter(
+                    x=t_cov[::sc], y=sign * 3 * sigma_cov[::sc, col], mode="lines",
+                    line=dict(color=CRIMSON, width=1.5, dash="dash"),
+                    name="Predicted ±3σ (covariance)", legendgroup="predicted",
+                    showlegend=bool(row == 1 and sign == 1),
+                    hovertemplate=("t = %{x:.1f} min<br>"
+                                   f"predicted 3σ = %{{y:.3g}} {unit}<extra></extra>"),
+                ), row=row, col=1)
         fig.add_hline(y=0.0, line_color="gray", line_width=1,
                       line_dash="dot", row=row, col=1)
         fig.update_yaxes(title_text=f"{title} ({unit})", row=row, col=1)
@@ -189,13 +222,21 @@ def _bands_figure(t_min, err_runs, panels, unit: str) -> go.Figure:
     return fig
 
 
+def _predicted(result, name: str, to_unit: float = 1.0):
+    """(t [min], sigma) of one error from the covariance analysis, or None."""
+    budget = getattr(result, "budget", None)
+    if budget is None:
+        return None
+    return budget.total.t / 60.0, getattr(budget.total, name) * to_unit
+
+
 def figure_attitude(result) -> go.Figure:
     """Attitude error delta_psi_nb^n (tilts and heading) with ±3σ bands [deg]."""
     return _bands_figure(
         result.truth.t / 60.0, np.rad2deg(result.delta_psi_nb_n),
         [(0, "North tilt error"), (1, "East tilt error"),
          (2, "Heading error")],
-        "deg")
+        "deg", _predicted(result, "sigma_delta_psi_nb_n", 180.0 / np.pi))
 
 
 def figure_velocity(result) -> go.Figure:
@@ -205,7 +246,7 @@ def figure_velocity(result) -> go.Figure:
         truth.t / 60.0, velocity_error(result.est_v_eb_n, truth.v_eb_n),
         [(0, "North velocity error"), (1, "East velocity error"),
          (2, "Down velocity error")],
-        "m/s")
+        "m/s", _predicted(result, "sigma_delta_v_eb_n"))
 
 
 def figure_position(result) -> go.Figure:
@@ -215,7 +256,49 @@ def figure_position(result) -> go.Figure:
         truth.t / 60.0, position_errors(result),
         [(0, "North position error"), (1, "East position error"),
          (2, "Down position error")],
-        "m")
+        "m", _predicted(result, "sigma_delta_r_eb_n"))
+
+
+# =========================================================================
+# Error budget
+# =========================================================================
+
+def horizontal_shares(budget) -> np.ndarray:
+    """Each source's share of the predicted horizontal position variance [%].
+
+    Returns:
+        numpy.ndarray: Shares in ERROR_SOURCES order, shape (n_sources, K);
+            zero where the total is zero.
+    """
+    total = budget.total.var[:, 6] + budget.total.var[:, 7]
+    parts = np.array([budget.by_source[name].var[:, 6] + budget.by_source[name].var[:, 7]
+                      for name in ERROR_SOURCES])
+    with np.errstate(divide="ignore", invalid="ignore"):
+        return np.where(total > 0, 100.0 * parts / np.where(total > 0, total, 1.0), 0.0)
+
+
+def figure_error_budget(result) -> go.Figure:
+    """Each error source's share of the predicted horizontal position variance over time.
+
+    The covariance analysis is linear, so the sources' variances add up to
+    the total; the stacked areas always fill 100%.
+    """
+    budget = result.budget
+    t_min = budget.total.t / 60.0
+    s = _line_step(len(t_min))
+    shares = horizontal_shares(budget)
+    fig = go.Figure()
+    for name, color, share in zip(ERROR_SOURCES, SOURCE_COLORS, shares):
+        fig.add_trace(go.Scatter(
+            x=t_min[::s], y=share[::s], mode="lines", stackgroup="share",
+            line=dict(color=color, width=0.5), fillcolor=color, name=name,
+            hovertemplate=f"{name}: %{{y:.1f}}%<extra></extra>",
+        ))
+    fig.update_layout(
+        title="Share of the predicted horizontal position variance, by error source",
+        xaxis_title="Time (min)", yaxis_title="Share of variance (%)",
+        yaxis=dict(range=[0, 100]), hovermode="x unified", **LAYOUT_KW)
+    return fig
 
 
 # =========================================================================

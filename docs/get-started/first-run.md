@@ -70,10 +70,15 @@ faint line is one trial.
 - The **CEP**, the circular error probable, is the radius that holds half
   of the trials. The table under the plot gives it at each whole hour:
   0.90 nmi after one hour, while 95% of the trials are within 2.44 nmi.
-- The dashed line is a straight-line fit to the CEP over the first hour.
-  Its slope, here 0.97 nmi per hour, is the usual one-number summary of an
-  INS: this IMU makes a "one nautical mile per hour" navigator, as expected
-  of navigation grade.
+- The dashed orange line is a straight-line fit to the CEP over the first
+  hour. Its slope, here 0.97 nmi per hour, is the usual one-number summary
+  of an INS: this IMU makes a "one nautical mile per hour" navigator, as
+  expected of navigation grade.
+- The dashed crimson line, and the table's last row, is the CEP that a
+  [covariance analysis](../theory/covariance.md) predicts without random
+  trials: 1.17 nmi after one hour. Ten trials are few, so their CEP of
+  0.90 nmi differs from it; with more trials the two come together. The
+  **Error Budget** tab shows which error source contributes most.
 
 The app always uses the same random seed, so the same settings give the
 same numbers every time.

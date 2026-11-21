@@ -13,6 +13,7 @@ import numpy as np
 from PySide6.QtCore import QObject, Signal
 
 from ins_sim.config import default_imu_spec_path
+from ins_sim.evaluation.covariance import error_budget
 from ins_sim.evaluation.errors import position_error
 from ins_sim.evaluation.monte_carlo import percentile_envelope, run_monte_carlo
 from ins_sim.navigation.strapdown import PRECISION_WITHOUT_OVERSAMPLING
@@ -38,6 +39,7 @@ class SimulationResult:
     n_trials: int
     config: dict = field(default_factory=dict)
     elapsed_s: float = 0.0
+    budget: object = None     # ErrorBudget of the covariance analysis, or None
 
 
 class SimulationWorker(QObject):
@@ -121,6 +123,12 @@ class SimulationWorker(QObject):
                                       truth.L_b, truth.lambda_b, truth.h_b)
         r95 = percentile_envelope(delta_r_eb_n, q=95)
 
+        self.log_message.emit("Running the covariance analysis...")
+        budget = error_budget(truth, spec, baro_aiding=baro_aiding,
+                              step_s=max(dt, 1.0))
+        self.log_message.emit(
+            f"Predicted CEP at the end: {budget.total.cep[-1] / NM:.2f} NM")
+
         elapsed = time.monotonic() - start
         self.log_message.emit(
             f"Done in {elapsed:.1f} s — 95th-pct error "
@@ -128,7 +136,8 @@ class SimulationWorker(QObject):
 
         return SimulationResult(
             truth=truth, **mc._asdict(), r95=r95,
-            n_trials=n_trials, config=dict(self._config), elapsed_s=elapsed)
+            n_trials=n_trials, config=dict(self._config), elapsed_s=elapsed,
+            budget=budget)
 
     def _on_progress(self, n_done: int, n_total: int) -> None:
         self.progress_updated.emit(n_done * 100 // n_total)

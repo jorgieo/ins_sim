@@ -76,6 +76,9 @@ error grows over time for a given IMU.
 - **Monte Carlo evaluation**: independent error draws for every trial,
   errors measured as the textbook defines them, and CEP, ±3σ and
   percentile statistics.
+- **Covariance analysis and error budget**: the same statistics predicted
+  in one pass by a 43-state linearized error model, and each error
+  source's share of them.
 - **Interactive visualizations**: every tab is a plotly page rendered in
   the app: CEP growth with an hourly table, attitude, velocity and
   position errors with ±3σ bands, a 3D trajectory with its 95th-percentile

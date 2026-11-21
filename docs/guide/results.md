@@ -20,6 +20,13 @@ app's default settings: 50 trials at a 0.1 s time step.
 - **Percentiles count trials.** The CEP is the 50th percentile of the
   horizontal error: half the trials are within it. The tube and the map
   band use the 95th percentile.
+- **Dashed crimson lines are predictions.** After the trials, the app runs
+  a [covariance analysis](../theory/covariance.md), which predicts the
+  spread of the errors without random trials. The CEP, attitude, velocity
+  and position tabs draw it as dashed lines: the predicted CEP, and ±3σ
+  about zero. Where the trials' band and the dashed lines part, the
+  trials are too few, or the errors too large for the prediction's
+  linear model.
 
 The [Monte Carlo evaluation](../theory/monte-carlo.md) page gives the exact
 definitions.
@@ -45,9 +52,10 @@ miles (NM), against time in hours.
   marked by the dotted line. Its slope, 1.28 nmi/h here, is the usual
   figure of merit of an INS. The line starts slightly below zero because
   the errors grow slowly at first.
-- Under the plot, a table gives the 50th percentile (the CEP) and the
-  95th percentile of the horizontal error at each whole hour of flight.
-  Flights shorter than an hour have no table.
+- The dashed crimson line is the CEP the covariance analysis predicts.
+- Under the plot, a table gives the 50th percentile (the CEP), the 95th
+  percentile of the horizontal error and the predicted CEP at each whole
+  hour of flight. Flights shorter than an hour have no table.
 
 The trials fan out because each one has different sensor errors. One
 unlucky trial here ends 6.6 nmi off while others end within 0.5 nmi, which
@@ -131,6 +139,30 @@ error at that point.
 
 The background tiles need an internet connection; without one the tracks
 and the band appear on a blank background.
+
+## Error Budget
+
+![Each error source's share of the predicted horizontal position variance over the packaged mission](../assets/plots/error_budget.png)
+
+Which error source limits the navigator? The covariance analysis predicts
+the error of each source on its own, and since its model is linear, their
+variances add up to the total. The plot stacks each source's share of the
+predicted horizontal position variance over the flight; the shares always
+fill 100%. Hover to read them at any time.
+
+The table under the plot lists, at each whole hour of flight (or at the
+end, for a shorter flight), each source's predicted CEP on its own and its
+share of the variance, then the predicted CEP of all sources together. The
+CEPs of single sources do not add up to the total; their variances do.
+
+On the packaged mission the initial alignment errors dominate the first
+few minutes, and the accelerometer scale factors and misalignments the
+climb-out. From about 15 minutes the gyro scale factors and
+misalignments, fed by every turn, take the largest share, and by the end
+the gyro biases have caught up with them. After the first half hour a
+better accelerometer would barely change the result; better gyros would.
+[Recipes](recipes.md#find-the-dominant-error-source) shows how to act on a
+budget.
 
 ## How many trials?
 

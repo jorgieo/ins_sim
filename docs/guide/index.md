@@ -102,7 +102,10 @@ page explains the difference.
 
 **Output Visualizations** selects the result tabs to build. Each tab takes
 a moment to build when the run finishes, so unchecking the ones you do not
-need saves a little time.
+need saves a little time. The **Error Budget** tab, and the dashed
+predicted lines on the others, come from a
+[covariance analysis](../theory/covariance.md) that the app runs after
+the trials; it takes a few seconds.
 
 ## Running
 

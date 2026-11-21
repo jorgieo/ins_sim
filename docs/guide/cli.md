@@ -46,8 +46,19 @@ Zero-noise error  start: 0.000 m  max: 0.0 m  end: 0.0 m
   t = 79.8 min (100%): err = 0.0 m
 Max |dv_eb_n/dt|: 5.65 m/s²
 Max |f_ib_b|: 11.36 m/s²
-95th-pct error  start:  0.000 m   end: 6687.6 m
-Monte Carlo simulation time: 0h 0m 17s
+95th-pct error  start:  0.000 m   end: 6688.3 m
+Error budget (covariance analysis): CEP with each source alone [NM], and its share of the horizontal variance
+                                                    60 min
+  Initial alignment                            0.53 ( 27%)
+  Gyro biases                                  0.56 ( 20%)
+  Gyro scale factor and misalignment           0.71 ( 40%)
+  Accelerometer biases                         0.18 (  2%)
+  Accel. scale factor and misalignment         0.35 (  8%)
+  Sensor noise (ARW and VRW)                   0.20 (  3%)
+  Barometer                                    0.00 (  0%)
+  All sources: predicted CEP                          1.17
+Predicted CEP at the end: 1.51 NM; Monte Carlo: 1.73 NM
+Monte Carlo simulation time: 0h 0m 22s
 Interactive map saved: .../ins_sim/maps/trajectory_map.html
 ```
 
@@ -64,7 +75,14 @@ Interactive map saved: .../ins_sim/maps/trajectory_map.html
   check that the flight is physically reasonable. 11.36 m/s² is about
   1.16 g, in the holding patterns' 30° turns.
 - **The result:** the 95th percentile of the 3D position error at the start
-  and the end, then the run time.
+  and the end.
+- **The error budget** of the [covariance analysis](../theory/covariance.md):
+  each error source's predicted CEP on its own and its share of the
+  horizontal variance, at each whole hour of flight (or at the end of a
+  shorter one), then the predicted CEP of all sources. The last line
+  compares the predicted CEP at the end with the trials' CEP, which 10
+  trials pin down only to about 20%.
+- **The run time**, including the covariance analysis.
 
 ## What it shows
 

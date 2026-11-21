@@ -235,10 +235,11 @@ up to about 0.02 °/h per axis, and each 0.01 °/h gives 0.6 nmi/h (see
 ## Assumptions & limitations
 
 !!! warning "Assumptions & limitations"
-    - **Not a covariance analysis.** ins_sim propagates no linearized
-      error-state model and no error covariance. Every statistic comes from
-      nonlinear trials, so it costs \(N\) full simulations, and it is only
-      as accurate as \(N\) allows.
+    - **Costly and noisy.** Every statistic comes from nonlinear trials,
+      so it costs \(N\) full simulations, and it is only as accurate as
+      \(N\) allows. The [covariance analysis](covariance.md) predicts the
+      same spreads in one pass, without sampling noise, as long as the
+      errors stay small; the app draws its prediction as dashed lines.
     - **Sampling error.** Bands from a few trials are noisy, and tails need
       more trials than medians; see the table above.
     - **One trajectory.** Every trial flies the same truth trajectory. Only

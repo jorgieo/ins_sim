@@ -255,6 +255,8 @@ pattern:
 | \(\delta\psivec{nb}{n}\) | Attitude error | rad | `delta_psi_nb_n` | `mis_rotvec` (initial only) | [INS error model](error-model.md) |
 | \(\delta\vvec{eb}{n}\) | Velocity error | m/s | `delta_v_eb_n` | – | [INS error model](error-model.md) |
 | \(\delta\rvec{eb}{n}\) | Position error, local NED | m | `delta_r_eb_n` | – | [INS error model](error-model.md) |
+| \(\mathbf{F}\), \(\boldsymbol{\Phi}\) | Error-state system matrix and state transition matrix | – | `F`, `Phi` | – | [Covariance analysis](covariance.md) |
+| \(\mathbf{P}\), \(\mathbf{Q}\) | Error covariance and process-noise density | state units² (per s) | `P`, `Q` | – | [Covariance analysis](covariance.md) |
 
 User-facing names do not change: YAML keys, command-line flags and GUI
 labels keep their datasheet-style names. For example, the GUI's

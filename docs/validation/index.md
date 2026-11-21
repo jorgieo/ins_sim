@@ -13,8 +13,9 @@ the figures and table below are regenerated from the same scenarios. The
 predictions are derived on the Theory pages: the
 [INS error model](../theory/error-model.md), the
 [Vertical channel](../theory/vertical-channel.md), the
-[Strapdown mechanization](../theory/mechanization.md) and the
-[IMU error model](../theory/imu-errors.md).
+[Strapdown mechanization](../theory/mechanization.md), the
+[IMU error model](../theory/imu-errors.md) and the
+[Covariance analysis](../theory/covariance.md).
 
 !!! abstract "Key results"
     - Every inertial check agrees with its prediction to within 0.3%, and
@@ -34,6 +35,10 @@ predictions are derived on the Theory pages: the
       models the in-run bias with a Gauss–Markov process whose spread it
       sets to \(B/0.617\), so the simulated bias's Allan deviation peaks
       at exactly \(B\) (see [Allan deviation](#allan-deviation)).
+    - The covariance analysis follows a single navigator trial to within
+      1%, and the spreads of 200 Monte Carlo trials of the packaged
+      mission lie within the 95% sampling band of its prediction, 34 times
+      out of 36.
 
 ## Summary
 
@@ -323,6 +328,39 @@ reproduces the whole curve across five decades of \(T\).
 Each Monte Carlo trial draws its alignment error from its own random
 stream, and the attitude error at the first sample must equal that draw.
 `tests/evaluation/test_monte_carlo.py` checks it to \(10^{-12}\) rad.
+
+## Covariance analysis
+
+The [covariance analysis](../theory/covariance.md) predicts the spread of
+the navigation errors from a linearized error model. Two checks test it:
+one against the navigator, one against the Monte Carlo.
+
+**One trial, no randomness.** A turning, climbing 20-minute flight at
+\(\tau_i\) = 0.1 s, with one draw of every constant error of the packaged
+IMU spec: alignment, turn-on biases, scale factors, misalignments and the
+barometer's scale factor and bias. The same initial errors, propagated by
+the covariance analysis's state transition matrices, follow the
+navigator's nine errors to within the share of their largest values given
+in the table above. Any wrong sign or missing term in the error model
+would show here at full size.
+
+**Many trials.** The packaged mission at \(\tau_i\) = 1 s, with every error
+source, flown 200 times. The trials' spread of each error is its RMS over
+the trials, which the linear model predicts to be centred on zero. With
+\(N\) trials it is uncertain by about \(1/\sqrt{2N}\), so 95% of the
+ratios to the prediction should lie within \(\pm 1.96/\sqrt{2N}\) = ±0.098
+of 1.
+
+![Monte Carlo spread over the predicted spread for all nine errors at four times, with the 95% sampling band](../assets/validation/covariance_ratio.png)
+
+Of the 36 ratios, 34 lie inside the band, about what a 95% band leads
+one to expect. They lean a few percent above 1 together, because all nine
+errors of a trial come from the same few random draws: a few unusually
+large draws among these 200 trials raise the spread of many errors at
+once. With other seeds the lean goes the other way;
+100 trials with seeds 11 and 23 give mean ratios of 0.999 and 0.989. The
+covariance analysis takes about 3 s for this mission; the 200 trials took
+4 minutes.
 
 ## Rerunning the checks
 

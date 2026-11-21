@@ -16,17 +16,20 @@ textbook single-axis formulas apply exactly.
 from types import SimpleNamespace
 
 import numpy as np
-from scipy.linalg import solve_continuous_lyapunov
+from scipy.linalg import expm, solve_continuous_lyapunov
 from scipy.signal import lsim, tf2ss
 from scipy.spatial.transform import Rotation as Rot
 
 from ins_sim.config import default_trajectory_path
 from ins_sim.core.earth_model import WGS84_A, WGS84_OMEGA, normal_gravity, wgs84_radii
+from ins_sim.evaluation import covariance as cv
 from ins_sim.evaluation.errors import attitude_error, position_error
+from ins_sim.evaluation.monte_carlo import run_monte_carlo
 from ins_sim.navigation.strapdown import NavState, strapdown_navgrade
 from ins_sim.sensors.baro import BaroSpec, generate_baro_samples
 from ins_sim.sensors.imu import GM_ALLAN_PEAK, IMUSpec, generate_imu_samples
 from ins_sim.trajectory.kinematics import TruthTrajectory, build_trajectory
+from ins_sim.trajectory.spline import NEDSplinePath
 
 #: All error sources off; scenarios switch on exactly the one they test.
 QUIET = dict(gyro_arw=0.0, gyro_bias_instability=0.0, gyro_br_std=0.0,
@@ -592,3 +595,103 @@ def gyro_allan(arw_deg_rt_h: float = 0.002, bias_instab_deg_h: float = 0.01,
                            predicted=np.sqrt(white**2 + gm**2), sigma=sigma, arw=arw,
                            bias_instability=bias_instability,
                            gm_peak=float(gm_fine[peak]), gm_peak_T=float(T_fine[peak]))
+
+
+# --------------------------------------------------------------------------
+# Covariance analysis
+# --------------------------------------------------------------------------
+
+def turning_truth(tau_i: float = 0.1) -> SimpleNamespace:
+    """A 20-minute flight with turns both ways and a climb, for the covariance checks.
+
+    The spline truth's end differences put a jump of a few degrees in roll
+    into its first and last samples, so the first and last second are cut
+    off. The result has the attributes `run_monte_carlo` and the covariance
+    analysis read.
+    """
+    path = NEDSplinePath([[0.0, 0.0, -1000.0], [40000.0, 0.0, -1000.0],
+                          [60000.0, 30000.0, -2500.0], [40000.0, 60000.0, -3000.0],
+                          [70000.0, 90000.0, -3000.0], [110000.0, 100000.0, -3000.0]])
+    truth = TruthTrajectory.from_spline(path, speed=150.0, tau_i=tau_i,
+                                        L_b0_deg=45.0, h_b0=0.0)
+    keep = slice(int(round(1.0 / tau_i)), -int(round(1.0 / tau_i)))
+    return SimpleNamespace(
+        t=truth.t[keep] - truth.t[keep][0], tau_i=tau_i, C_b_n=truth.C_b_n[keep],
+        **{name: getattr(truth, name)[keep] for name in
+           ("L_b", "lambda_b", "h_b", "v_eb_n", "omega_ib_b", "f_ib_b", "euler_nb")})
+
+
+def _nav_errors(truth, est_L_b, est_lambda_b, est_h_b, est_v_eb_n, delta_psi_nb_n):
+    """The nine navigation errors of each sample, in `CovarianceResult.var` order."""
+    delta_r_eb_n = position_error(est_L_b, est_lambda_b, est_h_b,
+                                  truth.L_b, truth.lambda_b, truth.h_b)
+    delta_v_eb_n = np.asarray(est_v_eb_n) - truth.v_eb_n
+    return np.concatenate([delta_psi_nb_n, delta_v_eb_n, delta_r_eb_n], axis=-1)
+
+
+def linear_model_single_trial(truth: TruthTrajectory, spec: IMUSpec,
+                              seed: int = 1) -> SimpleNamespace:
+    """One trial's navigation errors, from the navigator and from the linear error model.
+
+    Draws the constant errors of `spec` (alignment, static biases, scale
+    factors, misalignments and the barometer's scale factor and bias; not
+    the Gauss-Markov biases or the white noise),
+    applies them to the truth's IMU outputs and height, and runs the
+    navigator. The same initial error state, propagated by the state
+    transition matrices of the covariance analysis, should give the same
+    errors to first order.
+
+    Returns:
+        SimpleNamespace: t, navigator and linear errors, each shape (M, 9).
+    """
+    rng = np.random.default_rng(seed)
+    P0 = sum(P0 for P0, Q in cv._source_terms(spec, baro_aiding=True))
+    x0 = rng.normal(0.0, np.sqrt(np.diag(P0)))
+    x0[cv.B_AD] = x0[cv.B_GD] = 0.0; x0[cv.B_BD] = 0.0   # no Gauss-Markov biases
+    M_g = x0[cv.M_G].reshape(3, 3); M_a = x0[cv.M_A].reshape(3, 3)
+    meas_omega_ib_b = truth.omega_ib_b @ (np.eye(3) + M_g).T + x0[cv.B_GS]
+    meas_f_ib_b = truth.f_ib_b @ (np.eye(3) + M_a).T + x0[cv.B_AS]
+    meas_h_b = truth.h_b + x0[cv.S_B] * (truth.h_b - truth.h_b[0]) + x0[cv.B_BS]
+    start = NavState(truth.L_b[0], truth.lambda_b[0], truth.h_b[0], truth.v_eb_n[0],
+                     (Rot.from_rotvec(x0[cv.PSI]) * truth.C_b_n[0]).as_quat())
+    nav = strapdown_navgrade(meas_omega_ib_b, meas_f_ib_b, start, truth.tau_i,
+                             meas_h_b=meas_h_b)
+    navigator = _nav_errors(truth, nav.L_b, nav.lambda_b, nav.h_b, nav.v_eb_n,
+                            attitude_error(Rot.from_quat(nav.q_b_n), truth.C_b_n))
+
+    x = np.zeros((len(truth.t), cv.N_STATES)); x[0] = x0
+    for start_k in range(0, len(truth.t) - 1, 512):
+        nodes = np.arange(start_k, min(start_k + 512, len(truth.t) - 1) + 1)
+        F = cv.error_dynamics(truth, nodes, spec)
+        for j, Phi in enumerate(expm(0.5 * (F[:-1] + F[1:]) * truth.tau_i)):
+            x[nodes[j] + 1] = Phi @ x[nodes[j]]
+    R_N, R_E = wgs84_radii(truth.L_b)
+    linear = np.column_stack([x[:, :6], x[:, cv.LAT] * (R_N + truth.h_b),
+                              x[:, cv.LON] * (R_E + truth.h_b) * np.cos(truth.L_b),
+                              -x[:, cv.HGT]])
+    return SimpleNamespace(t=truth.t, navigator=navigator, linear=linear)
+
+
+def covariance_vs_monte_carlo(truth: TruthTrajectory, spec: IMUSpec,
+                              n_trials: int = 200, seed: int = 7) -> SimpleNamespace:
+    """Monte Carlo spread of the nine navigation errors against the covariance prediction.
+
+    The Monte Carlo spread is the RMS over the trials about zero, the mean
+    the linear model predicts. Its sampling uncertainty is about
+    1/√(2·n_trials) of the spread, so the 95% band of the ratio is
+    ±1.96/√(2·n_trials).
+
+    Returns:
+        SimpleNamespace: t (the covariance times), sigma_mc and sigma_cov
+            (each shape (K, 9)), cep_mc and cep_cov (each shape (K,)),
+            band and n_trials.
+    """
+    cov = cv.covariance_analysis(truth, spec)
+    mc = run_monte_carlo(truth, spec, n_trials=n_trials, seed=seed)
+    k = np.searchsorted(truth.t, cov.t)
+    err = _nav_errors(truth, mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
+                      mc.est_v_eb_n, mc.delta_psi_nb_n)[:, k]
+    return SimpleNamespace(
+        t=cov.t, sigma_mc=np.sqrt(np.mean(err ** 2, axis=0)), sigma_cov=np.sqrt(cov.var),
+        cep_mc=np.median(np.hypot(err[..., 6], err[..., 7]), axis=0), cep_cov=cov.cep,
+        band=1.96 / np.sqrt(2 * n_trials), n_trials=n_trials)

@@ -95,6 +95,7 @@ class VisualizationPanel(QTabWidget):
         """
         builders = [
             ("cep",             "CEP",             figures.figure_cep),
+            ("error_budget",    "Error Budget",    figures.figure_error_budget),
             ("attitude_errors", "Attitude Errors", figures.figure_attitude),
             ("velocity_errors", "Velocity Errors", figures.figure_velocity),
             ("position_errors", "Position Errors", figures.figure_position),
@@ -106,11 +107,13 @@ class VisualizationPanel(QTabWidget):
         for slug, title, builder in builders:
             if not enabled.get(slug, False):
                 continue
+            if slug == "error_budget" and getattr(result, "budget", None) is None:
+                continue
             page = self._web_page(builder(result), f"{slug}.html")
-            if slug == "cep":
-                table = self._cep_table(result)
-                if table is not None:
-                    page.layout().addWidget(table) # pyright: ignore[reportOptionalMemberAccess]
+            table = {"cep": self._cep_table,
+                     "error_budget": self._budget_table}.get(slug, lambda _: None)(result)
+            if table is not None:
+                page.layout().addWidget(table) # pyright: ignore[reportOptionalMemberAccess]
             self.addTab(page, title)
         if self.count() == 0:
             self.show_placeholder()
@@ -204,25 +207,67 @@ class VisualizationPanel(QTabWidget):
         horiz_err_nm = figures.horizontal_error_nm(result)
         hours = range(1, int(truth.t[-1] // 3600.0) + 1)
 
-        table = QTableWidget(2, len(hours))
+        budget = getattr(result, "budget", None)
+        labels = ["50th percentile (NM)", "95th percentile (NM)"]
+        if budget is not None:
+            labels.append("Predicted CEP (NM)")
+        table = QTableWidget(len(labels), len(hours))
         if table.columnCount() == 0:
             return None
         table.setHorizontalHeaderLabels([str(h) for h in hours])
-        table.setVerticalHeaderLabels(
-            ["50th percentile (NM)", "95th percentile (NM)"])
+        table.setVerticalHeaderLabels(labels)
         for col, h in enumerate(hours):
             idx = int(np.argmin(np.abs(truth.t - h * 3600.0)))
             sample = horiz_err_nm[:, idx]
-            for row, pct in enumerate((50, 95)):
-                item = QTableWidgetItem(f"{np.percentile(sample, pct):.2f}")
-                item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
-                table.setItem(row, col, item)
+            values = [np.percentile(sample, pct) for pct in (50, 95)]
+            if budget is not None:
+                k = int(np.argmin(np.abs(budget.total.t - h * 3600.0)))
+                values.append(budget.total.cep[k] / figures.NM)
+            for row, value in enumerate(values):
+                self._set_cell(table, row, col, f"{value:.2f}")
+        return self._fit_table(table)
 
+    def _budget_table(self, result) -> QTableWidget:
+        """Each source's predicted CEP on its own, and its share of the variance.
+
+        One column per whole hour of flight, or the end of the flight when it
+        is shorter than an hour; one row per error source, then the total.
+        """
+        budget = result.budget
+        t = budget.total.t
+        marks = [h * 3600.0 for h in range(1, int(t[-1] // 3600.0) + 1)] or [t[-1]]
+        cols = [int(np.argmin(np.abs(t - mark))) for mark in marks]
+        shares = figures.horizontal_shares(budget)
+        names = list(budget.by_source)
+        table = QTableWidget(len(names) + 1, len(cols))
+        table.setHorizontalHeaderLabels(
+            [f"{t[k] / 3600.0:g} h" if t[-1] >= 3600.0 else f"{t[k] / 60.0:.0f} min"
+             for k in cols])
+        table.setVerticalHeaderLabels(
+            [f"{name}: CEP alone (NM), share" for name in names]
+            + ["All sources: predicted CEP (NM)"])
+        for col, k in enumerate(cols):
+            for row, name in enumerate(names):
+                cep = budget.by_source[name].cep[k] / figures.NM
+                self._set_cell(table, row, col, f"{cep:.2f}  ({shares[row, k]:.0f}%)")
+            self._set_cell(table, len(names), col,
+                           f"{budget.total.cep[k] / figures.NM:.2f}")
+        return self._fit_table(table)
+
+    @staticmethod
+    def _set_cell(table: QTableWidget, row: int, col: int, text: str) -> None:
+        item = QTableWidgetItem(text)
+        item.setTextAlignment(Qt.AlignmentFlag.AlignCenter)
+        table.setItem(row, col, item)
+
+    @staticmethod
+    def _fit_table(table: QTableWidget) -> QTableWidget:
+        """Makes a table read-only and exactly tall enough for its rows."""
         table.setEditTriggers(QAbstractItemView.EditTrigger.NoEditTriggers)
         table.horizontalHeader().setSectionResizeMode(
             QHeaderView.ResizeMode.Stretch)
         table.setFixedHeight(
             table.horizontalHeader().sizeHint().height()
-            + table.rowHeight(0) + table.rowHeight(1)
+            + sum(table.rowHeight(r) for r in range(table.rowCount()))
             + 2 * table.frameWidth())
         return table
