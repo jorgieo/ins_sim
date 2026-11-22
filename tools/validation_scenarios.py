@@ -681,17 +681,40 @@ def covariance_vs_monte_carlo(truth: TruthTrajectory, spec: IMUSpec,
     1/√(2·n_trials) of the spread, so the 95% band of the ratio is
     ±1.96/√(2·n_trials).
 
+    The Monte Carlo CEP is a median, so its 95% confidence interval comes
+    from order statistics instead: the number of trials below the true
+    median is binomial, B(n_trials, 1/2), whatever the distribution of
+    the errors.
+
     Returns:
         SimpleNamespace: t (the covariance times), sigma_mc and sigma_cov
-            (each shape (K, 9)), cep_mc and cep_cov (each shape (K,)),
-            band and n_trials.
+            (each shape (K, 9)), cep_mc, cep_cov, and cep_lo and cep_hi (the
+            95% confidence interval of cep_mc; each shape (K,)), band and
+            n_trials.
     """
     cov = cv.covariance_analysis(truth, spec)
     mc = run_monte_carlo(truth, spec, n_trials=n_trials, seed=seed)
     k = np.searchsorted(truth.t, cov.t)
     err = _nav_errors(truth, mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
                       mc.est_v_eb_n, mc.delta_psi_nb_n)[:, k]
+    radii = np.sort(np.hypot(err[..., 6], err[..., 7]), axis=0)
+    lo, hi = median_interval_ranks(n_trials)
     return SimpleNamespace(
         t=cov.t, sigma_mc=np.sqrt(np.mean(err ** 2, axis=0)), sigma_cov=np.sqrt(cov.var),
-        cep_mc=np.median(np.hypot(err[..., 6], err[..., 7]), axis=0), cep_cov=cov.cep,
+        cep_mc=np.median(radii, axis=0), cep_cov=cov.cep, cep_lo=radii[lo], cep_hi=radii[hi],
         band=1.96 / np.sqrt(2 * n_trials), n_trials=n_trials)
+
+
+def median_interval_ranks(n: int, confidence: float = 0.95) -> tuple[int, int]:
+    """Zero-based ranks of the sorted samples that bound a median's confidence interval.
+
+    Distribution-free: the number of samples below the true median is
+    B(n, 1/2), so the interval from the sorted samples x[lo] to x[hi] holds
+    the median with at least the given confidence.
+
+    >>> median_interval_ranks(100)
+    (39, 60)
+    """
+    from scipy.stats import binom
+    j = int(binom.ppf((1.0 - confidence) / 2.0, n, 0.5))
+    return j - 1, n - j

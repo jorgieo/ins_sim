@@ -347,6 +347,25 @@ def _baro_gains() -> tuple[float, float, float]:
     return 3.0 / _BARO_TAU, 3.0 / _BARO_TAU ** 2, 1.0 / _BARO_TAU ** 3
 
 
+def _shortest_time_constant(spec: IMUSpec, baro_aiding: bool) -> float:
+    """The shortest correlation or loop time constant of the model [s].
+
+    Only time constants whose state the model drives count: a Gauss-Markov
+    bias with zero spread, or the baro loop without aiding, cannot shorten
+    the propagation substep.
+    """
+    taus = [np.inf]
+    if spec.gyro_gm_std > 0:
+        taus.append(spec.gyro_bias_tau)
+    if spec.accel_gm_std > 0:
+        taus.append(spec.accel_bias_tau)
+    if spec.baro is not None and spec.baro.drift_std > 0:
+        taus.append(spec.baro.drift_tau)
+    if baro_aiding:
+        taus.append(_BARO_TAU)
+    return float(min(taus))
+
+
 def _source_terms(spec: IMUSpec, baro_aiding: bool) -> list[tuple[np.ndarray, np.ndarray]]:
     """Initial covariance P0 and process-noise density Q of each error source."""
     terms = []
@@ -419,9 +438,13 @@ def error_budget(truth: "TruthTrajectory", spec: IMUSpec,
         P(k+1) = Phi·P(k)·Phi^T + Q_d,   Phi = exp(F·step),
         Q_d = (Phi·Q·Phi^T + Q)·step/2,
 
-    with F averaged over the step. Each error source is propagated on its
-    own; since the error sources are independent and the model is linear,
-    the total is their sum.
+    with F averaged over the step. The prediction times are every `step_s`
+    from the start, plus the truth's last time, so the last step may be
+    shorter. A step longer than a tenth of the model's shortest time
+    constant (a Gauss-Markov correlation time, or the baro loop's 100 s)
+    is split into equal substeps, which keeps Q_d accurate. Each error
+    source is propagated on its own; since the error sources are
+    independent and the model is linear, the total is their sum.
 
     Args:
         truth: Truth trajectory exposing t, tau_i, L_b, lambda_b, h_b,
@@ -429,8 +452,8 @@ def error_budget(truth: "TruthTrajectory", spec: IMUSpec,
         spec: IMU error-parameter set, as for `run_monte_carlo`.
         baro_aiding: Whether the barometer aids the vertical channel, as
             for `run_monte_carlo`. Defaults to True.
-        step_s: Propagation step [s], rounded to a whole number of truth
-            samples (at least one). Defaults to 1.0.
+        step_s: Interval between predictions [s], rounded to a whole
+            number of truth samples (at least one). Defaults to 1.0.
 
     Returns:
         ErrorBudget: The total prediction and each source's share.
@@ -456,7 +479,9 @@ def error_budget(truth: "TruthTrajectory", spec: IMUSpec,
     """
     stride = max(1, int(round(step_s / truth.tau_i)))
     idx = np.arange(0, len(truth.t), stride)
-    step = stride * truth.tau_i
+    if idx[-1] != len(truth.t) - 1:                         # always end at the truth's end
+        idx = np.append(idx, len(truth.t) - 1)
+    steps = np.diff(np.asarray(truth.t)[idx])              # the last may be shorter
     terms = _source_terms(spec, baro_aiding)
     P = np.stack([P0 for P0, _ in terms])                  # (S, n, n)
     Q = np.stack([Q for _, Q in terms])
@@ -476,15 +501,22 @@ def error_budget(truth: "TruthTrajectory", spec: IMUSpec,
         cov_NE[:, k] = P[:, LAT, LON] * scale[k, 6] * scale[k, 7]
 
     record(0)
+    tau_min = _shortest_time_constant(spec, baro_aiding)
     chunk = 512
     for start in range(0, len(idx) - 1, chunk):
         nodes = idx[start:min(start + chunk, len(idx) - 1) + 1]
         F = error_dynamics(truth, nodes, spec, baro_aiding)
         # --8<-- [start:propagation]
-        Phi = expm(0.5 * (F[:-1] + F[1:]) * step)           # (n_steps, n, n)
+        dt = steps[start:start + len(nodes) - 1]
+        # Substeps of at most a tenth of the shortest time constant keep
+        # the trapezoidal process noise accurate (within 0.4%).
+        m = np.maximum(1, np.ceil(dt / (0.1 * tau_min))).astype(int)
+        h = dt / m                                          # substep [s]
+        Phi = expm(0.5 * (F[:-1] + F[1:]) * h[:, None, None])  # (n_steps, n, n)
         for j, Phi_j in enumerate(Phi):
             PhiQ = Phi_j @ Q @ Phi_j.T
-            P = Phi_j @ P @ Phi_j.T + 0.5 * (PhiQ + Q) * step
+            for _ in range(m[j]):
+                P = Phi_j @ P @ Phi_j.T + 0.5 * (PhiQ + Q) * h[j]
             record(start + j + 1)
         # --8<-- [end:propagation]
 

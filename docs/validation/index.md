@@ -358,7 +358,14 @@ one to expect. They lean a few percent above 1 together, because all nine
 errors of a trial come from the same few random draws: a few unusually
 large draws among these 200 trials raise the spread of many errors at
 once. With other seeds the lean goes the other way;
-100 trials with seeds 11 and 23 give mean ratios of 0.999 and 0.989. The
+100 trials with seeds 11 and 23 give mean ratios of 0.999 and 0.989.
+
+The CEP is a median, not an RMS, so its check uses an interval that
+assumes nothing about how the errors are distributed. The number of
+trials below the true median is binomial, \(B(N, \tfrac12)\), so the
+sorted trials themselves bound it: with 200 trials, the 86th and 115th
+smallest horizontal errors bracket it with 96% confidence. The predicted
+CEP at the end of the flight lies inside that interval (table above). The
 covariance analysis takes about 3 s for this mission; the 200 trials took
 4 minutes.
 

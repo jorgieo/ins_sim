@@ -210,6 +210,14 @@ attitude and velocity rows:
     --8<-- "ins_sim/evaluation/covariance.py:propagation"
     ```
 
+The trapezoidal noise term is accurate while \(\Delta\) is short against
+the model's time constants. A step longer than a tenth of the shortest of
+them (a Gauss–Markov correlation time, or the baro loop's 100 s) is
+therefore split into equal substeps; that keeps a Gauss–Markov bias's
+variance within 0.4% of its true value. The prediction times are every
+\(\Delta\) from the start, plus the end of the flight, so the last step
+may be shorter.
+
 **3. Outputs.** The position variances are converted to metres with
 \(R_N + h_b\) and \((R_E + h_b)\cos L_b\), as for the
 [Monte Carlo errors](monte-carlo.md#errors). The CEP is the exact median
