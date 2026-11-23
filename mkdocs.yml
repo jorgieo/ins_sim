@@ -34,6 +34,12 @@ theme:
         icon: material/weather-sunny
         name: Switch to light mode
 
+# Strict builds fail on links to missing headings too, not only to missing
+# pages (MkDocs reports those only as INFO by default).
+validation:
+  links:
+    anchors: warn
+
 nav:
   - Home: index.md
   - Get started:
