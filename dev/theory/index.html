@@ -863,6 +863,8 @@
       
         
       
+        
+      
     
     
     
@@ -1157,6 +1159,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -1943,6 +1973,11 @@ gravity of the Earth to both the truth and the navigator.</p>
 <td>How do many runs become error statistics?</td>
 <td><code>ins_sim.evaluation</code></td>
 </tr>
+<tr>
+<td><a href="covariance/">Covariance analysis</a></td>
+<td>Can the error statistics be predicted in one pass, and which source dominates?</td>
+<td><code>ins_sim.evaluation.covariance</code></td>
+</tr>
 </tbody>
 </table>
 <h2 id="reading-paths">Reading paths<a class="headerlink" href="#reading-paths" title="Permanent link">&para;</a></h2>
@@ -1953,8 +1988,9 @@ gravity of the Earth to both the truth and the navigator.</p>
   <a href="error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a>. The <a href="../validation/">Validation</a>
   page then shows the simulator reproducing each prediction.</li>
 <li><strong>Choosing or comparing IMUs:</strong> the <a href="imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a>, the
-  <a href="error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a> and
-  <a href="monte-carlo/">Monte Carlo evaluation</a>.</li>
+  <a href="error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a>,
+  <a href="monte-carlo/">Monte Carlo evaluation</a> and
+  <a href="covariance/">Covariance analysis</a>.</li>
 <li><strong>Reading or extending the code:</strong> <a href="notation/">Notation &amp; conventions</a>,
   <a href="truth-kinematics/">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a> and
   <a href="mechanization/">Strapdown mechanization</a>. Every page ends with an

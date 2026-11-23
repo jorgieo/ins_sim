@@ -1,9 +1,10 @@
-CEP after 27 min, each source on its own
-  Initial alignment                        428 m
-  Gyro biases                              487 m
-  Gyro scale factor and misalignment       233 m
-  Accelerometer biases                     120 m
-  Accel. scale factor and misalignment     168 m
-  Sensor noise (ARW and VRW)               136 m
-  Barometer                                  5 m
-  All sources together                     796 m
+After 27 min        CEP alone   share of the variance
+  Initial alignment                        395 m    30.0%
+  Gyro biases                              430 m    31.8%
+  Gyro scale factor and misalignment       218 m     9.0%
+  Accelerometer biases                     182 m     5.7%
+  Accel. scale factor and misalignment     347 m    20.8%
+  Sensor noise (ARW and VRW)               125 m     2.7%
+  Barometer                                  3 m     0.0%
+  All sources together                     759 m
+  Monte Carlo, 50 trials                   796 m

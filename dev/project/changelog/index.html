@@ -861,6 +861,8 @@
       
         
       
+        
+      
     
     
     
@@ -1152,6 +1154,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -1799,7 +1829,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2026-11-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.4.0 - 2026-11-23
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.0 - 2026-11-23">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2025,7 +2066,18 @@
     </span>
   </a>
   
-    <nav class="md-nav" aria-label="Unreleased">
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#040-2026-11-23" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        0.4.0 - 2026-11-23
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="0.4.0 - 2026-11-23">
       <ul class="md-nav__list">
         
           <li class="md-nav__item">
@@ -2197,7 +2249,15 @@
 <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>, and the version
 numbers <a href="https://semver.org/">Semantic Versioning</a>: before 1.0, a new minor
 version may change the API.</p>
-<h2 id="unreleased"><a href="https://github.com/jorgieo/ins_sim/compare/v0.3.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="unreleased"><a href="https://github.com/jorgieo/ins_sim/compare/v0.4.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h2 id="040-2026-11-23"><a href="https://github.com/jorgieo/ins_sim/compare/v0.3.0...v0.4.0">0.4.0</a> - 2026-11-23<a class="headerlink" href="#040-2026-11-23" title="Permanent link">&para;</a></h2>
+<p>Version 0.4.0 makes the simulation more realistic and adds a second way
+to evaluate a navigator: a barometer that errs like a real one, a
+precision navigation algorithm for testing the algorithm itself, and a
+covariance analysis that predicts the errors and splits them by source
+without random trials. The Python API only grows: code written for 0.3.0
+runs unchanged. The app's default results change, because the packaged
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec now has a barometer (see <em>Changed</em>).</p>
 <h3 id="added">Added<a class="headerlink" href="#added" title="Permanent link">&para;</a></h3>
 <ul>
 <li><strong>A barometer error model.</strong> The barometric altimeter that aids the
@@ -2218,6 +2278,14 @@ version may change the API.</p>
   <code>mechanization</code> too; the app has both under <strong>Advanced</strong>, and
   <code>main.py</code> has <code>--mechanization</code> and <code>--oversample</code>. Both default to the
   previous behaviour, which gives the same results as before.</li>
+<li><strong>A covariance analysis and an error budget.</strong> <code>covariance_analysis</code>
+  propagates the covariance of a 43-state linearized error model, with
+  every error source of the simulator as a state, along the truth
+  trajectory: it predicts the spread of the attitude, velocity and
+  position errors and the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> in one pass. <code>error_budget</code> gives each error
+  source's share. The app draws the prediction as dashed lines on the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>,
+  attitude, velocity and position tabs and has a new <strong>Error Budget</strong> tab;
+  <code>main.py</code> prints the budget. The Monte Carlo results are unchanged.</li>
 </ul>
 <h3 id="changed">Changed<a class="headerlink" href="#changed" title="Permanent link">&para;</a></h3>
 <ul>

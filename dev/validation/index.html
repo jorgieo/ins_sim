@@ -13,7 +13,7 @@
         <link rel="canonical" href="https://jorgieo.github.io/ins_sim/dev/validation/">
       
       
-        <link rel="prev" href="../theory/monte-carlo/">
+        <link rel="prev" href="../theory/covariance/">
       
       
         <link rel="next" href="../reference/api/">
@@ -861,6 +861,8 @@
       
         
       
+        
+      
     
     
     
@@ -1165,6 +1167,34 @@
 
               
             
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
           </ul>
         </nav>
       
@@ -1375,6 +1405,17 @@
     <span class="md-ellipsis">
       
         Initial attitude error
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#covariance-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Covariance analysis
       
     </span>
   </a>
@@ -2153,6 +2194,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#covariance-checks" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Covariance analysis
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#rerunning-the-checks" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2196,8 +2248,9 @@ the figures and table below are regenerated from the same scenarios. The
 predictions are derived on the Theory pages: the
 <a href="../theory/error-model/"><abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> error model</a>, the
 <a href="../theory/vertical-channel/">Vertical channel</a>, the
-<a href="../theory/mechanization/">Strapdown mechanization</a> and the
-<a href="../theory/imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a>.</p>
+<a href="../theory/mechanization/">Strapdown mechanization</a>, the
+<a href="../theory/imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a> and the
+<a href="../theory/covariance/">Covariance analysis</a>.</p>
 <div class="admonition abstract">
 <p class="admonition-title">Key results</p>
 <ul>
@@ -2218,6 +2271,10 @@ predictions are derived on the Theory pages: the
   models the in-run bias with a Gauss–Markov process whose spread it
   sets to <span class="arithmatex">\(B/0.617\)</span>, so the simulated bias's Allan deviation peaks
   at exactly <span class="arithmatex">\(B\)</span> (see <a href="#allan-deviation">Allan deviation</a>).</li>
+<li>The covariance analysis follows a single navigator trial to within
+  1%, and the spreads of 200 Monte Carlo trials of the packaged
+  mission lie within the 95% sampling band of its prediction, 34 times
+  out of 36.</li>
 </ul>
 </div>
 <h2 id="summary">Summary<a class="headerlink" href="#summary" title="Permanent link">&para;</a></h2>
@@ -2364,6 +2421,24 @@ predictions are derived on the Theory pages: the
 <td>0.0101 °/h</td>
 <td>0.0102 °/h</td>
 <td>+1.16%</td>
+</tr>
+<tr>
+<td>Largest gap between the linear error model and the navigator, one trial of constant errors, turning flight (<span class="arithmatex">\(\tau_i\)</span> = 0.1 s), as a share of each error's largest value</td>
+<td>0 (to first order)</td>
+<td>0.33%</td>
+<td>within 1%</td>
+</tr>
+<tr>
+<td>Monte Carlo σ over predicted σ, nine errors at 4 times, packaged mission, 200 trials</td>
+<td>1 ± 0.098 (95%)</td>
+<td>0.921 to 1.128</td>
+<td>34 of 36 inside</td>
+</tr>
+<tr>
+<td><abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> at the end (80 min): predicted, and the Monte Carlo median with its 95% confidence interval</td>
+<td>2804 m</td>
+<td>2925 m (2610 to 3429 m)</td>
+<td>+4.30%, prediction inside the interval</td>
 </tr>
 </tbody>
 </table>
@@ -2615,6 +2690,39 @@ multiply by 0.664 before entering it.</p>
 <p>Each Monte Carlo trial draws its alignment error from its own random
 stream, and the attitude error at the first sample must equal that draw.
 <code>tests/evaluation/test_monte_carlo.py</code> checks it to <span class="arithmatex">\(10^{-12}\)</span> rad.</p>
+<h2 id="covariance-checks">Covariance analysis<a class="headerlink" href="#covariance-checks" title="Permanent link">&para;</a></h2>
+<p>The <a href="../theory/covariance/">covariance analysis</a> predicts the spread of
+the navigation errors from a linearized error model. Two checks test it:
+one against the navigator, one against the Monte Carlo.</p>
+<p><strong>One trial, no randomness.</strong> A turning, climbing 20-minute flight at
+<span class="arithmatex">\(\tau_i\)</span> = 0.1 s, with one draw of every constant error of the packaged
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec: alignment, turn-on biases, scale factors, misalignments and the
+barometer's scale factor and bias. The same initial errors, propagated by
+the covariance analysis's state transition matrices, follow the
+navigator's nine errors to within the share of their largest values given
+in the table above. Any wrong sign or missing term in the error model
+would show here at full size.</p>
+<p><strong>Many trials.</strong> The packaged mission at <span class="arithmatex">\(\tau_i\)</span> = 1 s, with every error
+source, flown 200 times. The trials' spread of each error is its RMS over
+the trials, which the linear model predicts to be centred on zero. With
+<span class="arithmatex">\(N\)</span> trials it is uncertain by about <span class="arithmatex">\(1/\sqrt{2N}\)</span>, so 95% of the
+ratios to the prediction should lie within <span class="arithmatex">\(\pm 1.96/\sqrt{2N}\)</span> = ±0.098
+of 1.</p>
+<p><img alt="Monte Carlo spread over the predicted spread for all nine errors at four times, with the 95% sampling band" src="../assets/validation/covariance_ratio.png" /></p>
+<p>Of the 36 ratios, 34 lie inside the band, about what a 95% band leads
+one to expect. They lean a few percent above 1 together, because all nine
+errors of a trial come from the same few random draws: a few unusually
+large draws among these 200 trials raise the spread of many errors at
+once. With other seeds the lean goes the other way;
+100 trials with seeds 11 and 23 give mean ratios of 0.999 and 0.989.</p>
+<p>The <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> is a median, not an RMS, so its check uses an interval that
+assumes nothing about how the errors are distributed. The number of
+trials below the true median is binomial, <span class="arithmatex">\(B(N, \tfrac12)\)</span>, so the
+sorted trials themselves bound it: with 200 trials, the 86th and 115th
+smallest horizontal errors bracket it with 96% confidence. The predicted
+<abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> at the end of the flight lies inside that interval (table above). The
+covariance analysis takes about 3 s for this mission; the 200 trials took
+4 minutes.</p>
 <h2 id="rerunning-the-checks">Rerunning the checks<a class="headerlink" href="#rerunning-the-checks" title="Permanent link">&para;</a></h2>
 <div class="highlight"><pre><span></span><code>python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>tests/validation<span class="w">             </span><span class="c1"># assert every agreement</span>
 python<span class="w"> </span>tools/generate_doc_plots.py<span class="w"> </span>--validation<span class="w">  </span><span class="c1"># redraw the figures and the table</span>

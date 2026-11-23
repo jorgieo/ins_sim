@@ -16,7 +16,7 @@
         <link rel="prev" href="../error-model/">
       
       
-        <link rel="next" href="../../validation/">
+        <link rel="next" href="../covariance/">
       
       
         
@@ -863,6 +863,8 @@
       
         
       
+        
+      
     
     
     
@@ -1339,6 +1341,34 @@
   
 </nav>
       
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
     </li>
   
 
@@ -2394,10 +2424,11 @@ up to about 0.02 °/h per axis, and each 0.01 °/h gives 0.6 <abbr title="Nautic
 <div class="admonition warning">
 <p class="admonition-title">Assumptions &amp; limitations</p>
 <ul>
-<li><strong>Not a covariance analysis.</strong> ins_sim propagates no linearized
-  error-state model and no error covariance. Every statistic comes from
-  nonlinear trials, so it costs <span class="arithmatex">\(N\)</span> full simulations, and it is only
-  as accurate as <span class="arithmatex">\(N\)</span> allows.</li>
+<li><strong>Costly and noisy.</strong> Every statistic comes from nonlinear trials,
+  so it costs <span class="arithmatex">\(N\)</span> full simulations, and it is only as accurate as
+  <span class="arithmatex">\(N\)</span> allows. The <a href="../covariance/">covariance analysis</a> predicts the
+  same spreads in one pass, without sampling noise, as long as the
+  errors stay small; the app draws its prediction as dashed lines.</li>
 <li><strong>Sampling error.</strong> Bands from a few trials are noisy, and tails need
   more trials than medians; see the table above.</li>
 <li><strong>One trajectory.</strong> Every trial flies the same truth trajectory. Only

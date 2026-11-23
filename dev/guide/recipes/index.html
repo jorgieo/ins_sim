@@ -990,6 +990,8 @@
       
         
       
+        
+      
     
     
     
@@ -1281,6 +1283,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -2101,23 +2131,20 @@ and alignment errors, but its noise is drawn afresh. Comparisons between
 missions therefore need more trials. In a script, pass the same <code>seed</code> to
 <code>run_monte_carlo</code>.</p>
 <h2 id="find-the-dominant-error-source">Find the dominant error source<a class="headerlink" href="#find-the-dominant-error-source" title="Permanent link">&para;</a></h2>
-<p>To find which error limits a navigator, run it with one group of errors at
-a time and compare. Each group draws exactly the same errors in these runs
-as in the run with every error on (see above), so luck does not blur the
-comparison.</p>
-<p><strong>In the app:</strong> copy the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec once per group, keep that group's values
-in each copy and set every other value to 0, as described in
-<a href="../imu-specs/#switching-errors-off">Modelling an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>. Run each copy with
-the same settings and compare the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> tables.</p>
-<p><strong>In a script</strong>, <code>dataclasses.replace</code> makes the copies:</p>
-<div class="highlight"><pre><span></span><code><span class="sd">"""Which error source dominates? The training flight with one source at a time."""</span>
+<p>To find which error limits a navigator, read the <strong>Error Budget</strong> tab
+after a run (see <a href="../results/#error-budget">Reading the results</a>). It comes
+from a <a href="../../theory/covariance/">covariance analysis</a>, which predicts the
+error of each source on its own without random trials, so it has no
+sampling noise even for a source whose contribution is small.</p>
+<p><strong>In a script</strong>, <code>error_budget</code> gives the same numbers:</p>
+<div class="highlight"><pre><span></span><code><span class="sd">"""Which error source dominates? The covariance analysis's error budget for the training flight."""</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">dataclasses</span><span class="w"> </span><span class="kn">import</span> <span class="n">replace</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pathlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">Path</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_imu_spec_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.evaluation.covariance</span><span class="w"> </span><span class="kn">import</span> <span class="n">error_budget</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.evaluation.errors</span><span class="w"> </span><span class="kn">import</span> <span class="n">position_error</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.evaluation.monte_carlo</span><span class="w"> </span><span class="kn">import</span> <span class="n">run_monte_carlo</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.sensors.imu</span><span class="w"> </span><span class="kn">import</span> <span class="n">load_imu_spec</span>
@@ -2125,58 +2152,56 @@ the same settings and compare the <abbr title="Circular error probable: the radi
 
 <span class="n">MISSION</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="vm">__file__</span><span class="p">)</span><span class="o">.</span><span class="n">parent</span> <span class="o">/</span> <span class="s2">"missions"</span> <span class="o">/</span> <span class="s2">"training_flight.yaml"</span>
 
-<span class="c1"># The IMUSpec fields that make up each error source.</span>
-<span class="n">SOURCES</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"Initial alignment"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"align_tilt_std"</span><span class="p">,</span> <span class="s2">"align_heading_std"</span><span class="p">],</span>
-    <span class="s2">"Gyro biases"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"gyro_br_std"</span><span class="p">,</span> <span class="s2">"gyro_bias_instability"</span><span class="p">],</span>
-    <span class="s2">"Gyro scale factor and misalignment"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"gyro_sf_std"</span><span class="p">,</span> <span class="s2">"gyro_ma_std"</span><span class="p">],</span>
-    <span class="s2">"Accelerometer biases"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"accel_br_std"</span><span class="p">,</span> <span class="s2">"accel_bias_instability"</span><span class="p">],</span>
-    <span class="s2">"Accel. scale factor and misalignment"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"accel_sf_std"</span><span class="p">,</span> <span class="s2">"accel_ma_std"</span><span class="p">],</span>
-    <span class="s2">"Sensor noise (ARW and VRW)"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"gyro_arw"</span><span class="p">,</span> <span class="s2">"accel_vrw"</span><span class="p">],</span>
-    <span class="s2">"Barometer"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"baro"</span><span class="p">],</span>
-<span class="p">}</span>
-
 <span class="n">truth</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">build_trajectory</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">MISSION</span><span class="p">),</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">2.0</span><span class="p">)</span>
 <span class="n">spec</span> <span class="o">=</span> <span class="n">load_imu_spec</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">default_imu_spec_path</span><span class="p">()))</span>
-<span class="c1"># Every error off: spreads of 0, and None for an ideal barometer.</span>
-<span class="n">no_errors</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">field</span> <span class="o">==</span> <span class="s2">"baro"</span> <span class="k">else</span> <span class="mf">0.0</span>
-                             <span class="k">for</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">SOURCES</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">})</span>
+<span class="n">budget</span> <span class="o">=</span> <span class="n">error_budget</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">spec</span><span class="p">)</span>
 
 
-<span class="k">def</span><span class="w"> </span><span class="nf">final_cep</span><span class="p">(</span><span class="n">spec</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">"""CEP at the end of the flight, from 10 trials with the GUI's seed."""</span>
-    <span class="n">mc</span> <span class="o">=</span> <span class="n">run_monte_carlo</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">n_trials</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
-    <span class="n">delta_r_eb_n</span> <span class="o">=</span> <span class="n">position_error</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">est_L_b</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">est_lambda_b</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">est_h_b</span><span class="p">,</span>
-                                  <span class="n">truth</span><span class="o">.</span><span class="n">L_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">delta_r_eb_n</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">horizontal_variance</span><span class="p">(</span><span class="n">part</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""North plus East position variance at the end of the flight [m²]."""</span>
+    <span class="k">return</span> <span class="n">part</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">6</span><span class="p">]</span> <span class="o">+</span> <span class="n">part</span><span class="o">.</span><span class="n">var</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">7</span><span class="p">]</span>
 
 
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"CEP after </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> min, each source on its own"</span><span class="p">)</span>
-<span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">fields</span> <span class="ow">in</span> <span class="n">SOURCES</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
-    <span class="n">only_this</span> <span class="o">=</span> <span class="n">replace</span><span class="p">(</span><span class="n">no_errors</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">field</span><span class="p">:</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">spec</span><span class="p">,</span> <span class="n">field</span><span class="p">)</span> <span class="k">for</span> <span class="n">field</span> <span class="ow">in</span> <span class="n">fields</span><span class="p">})</span>
-    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">source</span><span class="si">:</span><span class="s2">38s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">final_cep</span><span class="p">(</span><span class="n">only_this</span><span class="p">)</span><span class="si">:</span><span class="s2">5.0f</span><span class="si">}</span><span class="s2"> m"</span><span class="p">)</span>
-<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="s1">'All sources together'</span><span class="si">:</span><span class="s2">38s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">final_cep</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span><span class="si">:</span><span class="s2">5.0f</span><span class="si">}</span><span class="s2"> m"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"After </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">.0f</span><span class="si">}</span><span class="s2"> min        CEP alone   share of the variance"</span><span class="p">)</span>
+<span class="k">for</span> <span class="n">source</span><span class="p">,</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">budget</span><span class="o">.</span><span class="n">by_source</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+    <span class="n">share</span> <span class="o">=</span> <span class="mi">100</span> <span class="o">*</span> <span class="n">horizontal_variance</span><span class="p">(</span><span class="n">part</span><span class="p">)</span> <span class="o">/</span> <span class="n">horizontal_variance</span><span class="p">(</span><span class="n">budget</span><span class="o">.</span><span class="n">total</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">source</span><span class="si">:</span><span class="s2">38s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">part</span><span class="o">.</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">5.0f</span><span class="si">}</span><span class="s2"> m   </span><span class="si">{</span><span class="n">share</span><span class="si">:</span><span class="s2">5.1f</span><span class="si">}</span><span class="s2">%"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="s1">'All sources together'</span><span class="si">:</span><span class="s2">38s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">budget</span><span class="o">.</span><span class="n">total</span><span class="o">.</span><span class="n">cep</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="si">:</span><span class="s2">5.0f</span><span class="si">}</span><span class="s2"> m"</span><span class="p">)</span>
+
+<span class="c1"># The same flight, flown 50 times with random errors.</span>
+<span class="n">mc</span> <span class="o">=</span> <span class="n">run_monte_carlo</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">spec</span><span class="p">,</span> <span class="n">n_trials</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span> <span class="n">seed</span><span class="o">=</span><span class="mi">42</span><span class="p">)</span>
+<span class="n">delta_r_eb_n</span> <span class="o">=</span> <span class="n">position_error</span><span class="p">(</span><span class="n">mc</span><span class="o">.</span><span class="n">est_L_b</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">est_lambda_b</span><span class="p">,</span> <span class="n">mc</span><span class="o">.</span><span class="n">est_h_b</span><span class="p">,</span>
+                              <span class="n">truth</span><span class="o">.</span><span class="n">L_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">)</span>
+<span class="n">cep</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">median</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">delta_r_eb_n</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">delta_r_eb_n</span><span class="p">[:,</span> <span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">]))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="s1">'Monte Carlo, 50 trials'</span><span class="si">:</span><span class="s2">38s</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">cep</span><span class="si">:</span><span class="s2">5.0f</span><span class="si">}</span><span class="s2"> m"</span><span class="p">)</span>
 </code></pre></div>
 <p>On the half-hour training flight of <a href="../missions/">Writing a mission</a> it
 prints:</p>
-<div class="highlight"><pre><span></span><code>CEP after 27 min, each source on its own
-  Initial alignment                        428 m
-  Gyro biases                              487 m
-  Gyro scale factor and misalignment       233 m
-  Accelerometer biases                     120 m
-  Accel. scale factor and misalignment     168 m
-  Sensor noise (ARW and VRW)               136 m
-  Barometer                                  5 m
-  All sources together                     796 m
+<div class="highlight"><pre><span></span><code>After 27 min        CEP alone   share of the variance
+  Initial alignment                        395 m    30.0%
+  Gyro biases                              430 m    31.8%
+  Gyro scale factor and misalignment       218 m     9.0%
+  Accelerometer biases                     182 m     5.7%
+  Accel. scale factor and misalignment     347 m    20.8%
+  Sensor noise (ARW and VRW)               125 m     2.7%
+  Barometer                                  3 m     0.0%
+  All sources together                     759 m
+  Monte Carlo, 50 trials                   796 m
 </code></pre></div>
-<p>On this flight the initial alignment and the gyro biases dominate; the
-accelerometer biases matter least among the inertial sensors. A better
-accelerometer would barely help, while a better alignment or better gyros
-would. The barometer aids only the height, so it hardly touches the
-horizontal <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>; its errors show in the Down position error instead. The
-contributions do not add up directly: they combine roughly as the square
-root of the sum of their squares, 732 m here, against 796 m for all
-sources together.</p>
+<p>On this flight the initial alignment and the gyro biases dominate, with
+the accelerometer scale factors and misalignments next: the training
+flight's climbs and turns load them more than the packaged mission does. A
+better accelerometer bias would barely help, while a better alignment or
+better gyros would. The barometer aids only the height, so it hardly
+touches the horizontal <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>. The CEPs of single sources do not add up to
+the total; their shares of the variance do. The prediction of all sources
+together agrees with the 50 trials to within their sampling uncertainty.</p>
+<p>To check a budget with trials, run the Monte Carlo with one group of
+errors at a time, setting every other value to 0 as described in
+<a href="../imu-specs/#switching-errors-off">Modelling an <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>. Each group draws
+exactly the same errors as in the run with every error on (see above),
+but a single source needs many trials: with 10, the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> of one source can
+be off by a factor of two.</p>
 <p>Which source dominates depends on the flight: errors that the Schuler
 oscillation keeps bounded, such as the accelerometer biases, matter less
 on long flights than errors that keep growing, such as the gyro biases.

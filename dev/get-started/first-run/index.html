@@ -1001,6 +1001,8 @@
       
         
       
+        
+      
     
     
     
@@ -1292,6 +1294,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -2113,10 +2143,15 @@ faint line is one trial.</p>
 <li>The <strong><abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr></strong>, the circular error probable, is the radius that holds half
   of the trials. The table under the plot gives it at each whole hour:
   0.90 <abbr title="Nautical mile: 1,852 m.">nmi</abbr> after one hour, while 95% of the trials are within 2.44 <abbr title="Nautical mile: 1,852 m.">nmi</abbr>.</li>
-<li>The dashed line is a straight-line fit to the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> over the first hour.
-  Its slope, here 0.97 <abbr title="Nautical mile: 1,852 m.">nmi</abbr> per hour, is the usual one-number summary of an
-  <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>: this <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> makes a "one nautical mile per hour" navigator, as expected
-  of navigation grade.</li>
+<li>The dashed orange line is a straight-line fit to the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> over the first
+  hour. Its slope, here 0.97 <abbr title="Nautical mile: 1,852 m.">nmi</abbr> per hour, is the usual one-number summary
+  of an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>: this <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> makes a "one nautical mile per hour" navigator, as
+  expected of navigation grade.</li>
+<li>The dashed crimson line, and the table's last row, is the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> that a
+  <a href="../../theory/covariance/">covariance analysis</a> predicts without random
+  trials: 1.17 <abbr title="Nautical mile: 1,852 m.">nmi</abbr> after one hour. Ten trials are few, so their <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> of
+  0.90 <abbr title="Nautical mile: 1,852 m.">nmi</abbr> differs from it; with more trials the two come together. The
+  <strong>Error Budget</strong> tab shows which error source contributes most.</li>
 </ul>
 <p>The app always uses the same random seed, so the same settings give the
 same numbers every time.</p>

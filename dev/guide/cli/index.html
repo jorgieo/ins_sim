@@ -957,6 +957,8 @@
       
         
       
+        
+      
     
     
     
@@ -1248,6 +1250,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -2042,8 +2072,19 @@ Zero-noise error  start: 0.000 m  max: 0.0 m  end: 0.0 m
   t = 79.8 min (100%): err = 0.0 m
 Max |dv_eb_n/dt|: 5.65 m/s²
 Max |f_ib_b|: 11.36 m/s²
-95th-pct error  start:  0.000 m   end: 6687.6 m
-Monte Carlo simulation time: 0h 0m 17s
+95th-pct error  start:  0.000 m   end: 6688.3 m
+Error budget (covariance analysis): CEP with each source alone [NM], and its share of the horizontal variance
+                                                    60 min
+  Initial alignment                            0.53 ( 27%)
+  Gyro biases                                  0.56 ( 20%)
+  Gyro scale factor and misalignment           0.71 ( 40%)
+  Accelerometer biases                         0.18 (  2%)
+  Accel. scale factor and misalignment         0.35 (  8%)
+  Sensor noise (ARW and VRW)                   0.20 (  3%)
+  Barometer                                    0.00 (  0%)
+  All sources: predicted CEP                          1.17
+Predicted CEP at the end: 1.51 NM; Monte Carlo: 1.73 NM
+Monte Carlo simulation time: 0h 0m 22s
 Interactive map saved: .../ins_sim/maps/trajectory_map.html
 </code></pre></div>
 <ul>
@@ -2060,7 +2101,14 @@ Interactive map saved: .../ins_sim/maps/trajectory_map.html
   check that the flight is physically reasonable. 11.36 m/s² is about
   1.16 g, in the holding patterns' 30° turns.</li>
 <li><strong>The result:</strong> the 95th percentile of the 3D position error at the start
-  and the end, then the run time.</li>
+  and the end.</li>
+<li><strong>The error budget</strong> of the <a href="../../theory/covariance/">covariance analysis</a>:
+  each error source's predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> on its own and its share of the
+  horizontal variance, at each whole hour of flight (or at the end of a
+  shorter one), then the predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> of all sources. The last line
+  compares the predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> at the end with the trials' <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>, which 10
+  trials pin down only to about 20%.</li>
+<li><strong>The run time</strong>, including the covariance analysis.</li>
 </ul>
 <h2 id="what-it-shows">What it shows<a class="headerlink" href="#what-it-shows" title="Permanent link">&para;</a></h2>
 <p>When the run finishes, a window opens with a summary figure of six panels:

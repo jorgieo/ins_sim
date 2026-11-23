@@ -849,6 +849,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#error-budget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Budget
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-many-trials" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -998,6 +1009,8 @@
       
         
           
+        
+      
         
       
         
@@ -1309,6 +1322,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -2060,6 +2101,17 @@
 </li>
       
         <li class="md-nav__item">
+  <a href="#error-budget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Error Budget
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#how-many-trials" class="md-nav__link">
     <span class="md-ellipsis">
       
@@ -2110,6 +2162,13 @@ app's default settings: 50 trials at a 0.1 s time step.</p>
 <li><strong>Percentiles count trials.</strong> The <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> is the 50th percentile of the
   horizontal error: half the trials are within it. The tube and the map
   band use the 95th percentile.</li>
+<li><strong>Dashed crimson lines are predictions.</strong> After the trials, the app runs
+  a <a href="../../theory/covariance/">covariance analysis</a>, which predicts the
+  spread of the errors without random trials. The <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>, attitude, velocity
+  and position tabs draw it as dashed lines: the predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>, and ±3σ
+  about zero. Where the trials' band and the dashed lines part, the
+  trials are too few, or the errors too large for the prediction's
+  linear model.</li>
 </ul>
 <p>The <a href="../../theory/monte-carlo/">Monte Carlo evaluation</a> page gives the exact
 definitions.</p>
@@ -2129,9 +2188,10 @@ miles (<abbr title="Nautical mile: 1,852 m. The app's CEP tab uses this abbrevia
   marked by the dotted line. Its slope, 1.28 <abbr title="Nautical mile: 1,852 m.">nmi</abbr>/h here, is the usual
   figure of merit of an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>. The line starts slightly below zero because
   the errors grow slowly at first.</li>
-<li>Under the plot, a table gives the 50th percentile (the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>) and the
-  95th percentile of the horizontal error at each whole hour of flight.
-  Flights shorter than an hour have no table.</li>
+<li>The dashed crimson line is the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> the covariance analysis predicts.</li>
+<li>Under the plot, a table gives the 50th percentile (the <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr>), the 95th
+  percentile of the horizontal error and the predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> at each whole
+  hour of flight. Flights shorter than an hour have no table.</li>
 </ul>
 <p>The trials fan out because each one has different sensor errors. One
 unlucky trial here ends 6.6 <abbr title="Nautical mile: 1,852 m.">nmi</abbr> off while others end within 0.5 <abbr title="Nautical mile: 1,852 m.">nmi</abbr>, which
@@ -2197,6 +2257,25 @@ minutes. Hover over the track to read the time and the 95th-percentile
 error at that point.</p>
 <p>The background tiles need an internet connection; without one the tracks
 and the band appear on a blank background.</p>
+<h2 id="error-budget">Error Budget<a class="headerlink" href="#error-budget" title="Permanent link">&para;</a></h2>
+<p><img alt="Each error source's share of the predicted horizontal position variance over the packaged mission" src="../../assets/plots/error_budget.png" /></p>
+<p>Which error source limits the navigator? The covariance analysis predicts
+the error of each source on its own, and since its model is linear, their
+variances add up to the total. The plot stacks each source's share of the
+predicted horizontal position variance over the flight; the shares always
+fill 100%. Hover to read them at any time.</p>
+<p>The table under the plot lists, at each whole hour of flight (or at the
+end, for a shorter flight), each source's predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> on its own and its
+share of the variance, then the predicted <abbr title="Circular error probable: the radius of the circle, centred on the true position, that contains 50% of horizontal position errors.">CEP</abbr> of all sources together. The
+CEPs of single sources do not add up to the total; their variances do.</p>
+<p>On the packaged mission the initial alignment errors dominate the first
+few minutes, and the accelerometer scale factors and misalignments the
+climb-out. From about 15 minutes the gyro scale factors and
+misalignments, fed by every turn, take the largest share, and by the end
+the gyro biases have caught up with them. After the first half hour a
+better accelerometer would barely change the result; better gyros would.
+<a href="../recipes/#find-the-dominant-error-source">Recipes</a> shows how to act on a
+budget.</p>
 <h2 id="how-many-trials">How many trials?<a class="headerlink" href="#how-many-trials" title="Permanent link">&para;</a></h2>
 <p>The statistics are estimates from a finite number of trials. With 50
 trials a standard deviation, and so a ±3σ band, is uncertain by about 10%,

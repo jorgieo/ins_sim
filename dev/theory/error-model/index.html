@@ -863,6 +863,8 @@
       
         
       
+        
+      
     
     
     
@@ -1353,6 +1355,34 @@
     
   
     Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
   
 
     
@@ -2431,7 +2461,8 @@ navigator. For example, the gyro-bias prediction:</p>
 as analysed by Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup> and by Titterton and Weston<sup id="fnref:tw"><a class="footnote-ref" href="#fn:tw">2</a></sup>. The
 error equations above are a simplified form of the full error-state
 model, which keeps the transport-rate terms, the vertical channel and
-every sensor error as states.</p>
+every sensor error as states; ins_sim's
+<a href="../covariance/">covariance analysis</a> uses it.</p>
 </div>
 <h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
 <p><img alt="East position error after a 20 arcsecond initial North tilt, simulated and predicted" src="../../assets/validation/schuler.png" /></p>
@@ -2463,9 +2494,10 @@ manoeuvre: see the packaged mission's
   manoeuvres couple heading, scale-factor and misalignment errors into
   the navigation errors in ways these formulas do not capture. That is
   what the Monte Carlo simulation is for.</li>
-<li><strong>No covariance propagation.</strong> ins_sim has no full error-state model
-  and does not propagate error covariances. Its statistics come from
-  Monte Carlo trials alone.</li>
+<li><strong>The full model is elsewhere.</strong> The
+  <a href="../covariance/">Covariance analysis</a> page keeps every term and every
+  error source, and propagates the statistics of the errors along a
+  real flight.</li>
 </ul>
 </div>
 <h2 id="in-the-code">In the code<a class="headerlink" href="#in-the-code" title="Permanent link">&para;</a></h2>
