@@ -1,5 +1,7 @@
 # Test suite on every push to main and every pull request: unit tests,
-# docstring examples (doctests) and the documentation notation lint.
+# docstring examples (doctests) and the documentation notation lint, plus a
+# strict documentation build, so a broken link, anchor or snippet fails the
+# pull request instead of the docs deployment after the merge.
 
 name: Tests
 
@@ -33,3 +35,18 @@ jobs:
 
       - name: Run tests
         run: python -m pytest -q
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install documentation dependencies
+        run: pip install ".[docs]"
+
+      - name: Build the documentation strictly
+        run: mkdocs build --strict
