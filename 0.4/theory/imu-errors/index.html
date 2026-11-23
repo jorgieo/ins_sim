@@ -1,0 +1,2781 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source desktop simulation engine for IMU trajectory generation and Monte Carlo navigation error evaluation">
+      
+      
+      
+        <link rel="canonical" href="https://jorgieo.github.io/ins_sim/0.4/theory/imu-errors/">
+      
+      
+        <link rel="prev" href="../truth-kinematics/">
+      
+      
+        <link rel="next" href="../mechanization/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>IMU error model - Inertial Navigation Simulation & GUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#imu-error-model" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-header__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Inertial Navigation Simulation & GUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              IMU error model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../download/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Theory & Math
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../validation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Validation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-nav__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Inertial Navigation Simulation & GUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading the results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing a mission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/imu-specs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelling an IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-line runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory & Math
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-measurement-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The measurement equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-factor-and-misalignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale factor and misalignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-bias-a-first-order-gaussmarkov-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic bias: a first-order Gauss–Markov process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#white-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        White noise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initial-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initial alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/earth-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/trajectory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/sensors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/mission-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mission YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/imu-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU spec YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/units-constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Units & constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/bibliography/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bibliography
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/migrating-from-0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#the-measurement-equations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The measurement equations
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#scale-factor-and-misalignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Scale factor and misalignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#dynamic-bias-a-first-order-gaussmarkov-process" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Dynamic bias: a first-order Gauss–Markov process
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#white-noise" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        White noise
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#initial-alignment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Initial alignment
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="imu-error-model"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model<a class="headerlink" href="#imu-error-model" title="Permanent link">&para;</a></h1>
+<p>Gyros and accelerometers are never perfect. Each output carries a bias that
+differs every time the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> is switched on and wanders slowly during a run,
+gain and alignment errors that grow with the motion, and white noise. The
+navigator integrates all of these, which is why an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> drifts. The <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> spec
+you choose in the GUI sets the size of each error, in the units of a sensor
+datasheet. ins_sim models them with the sensor error model of
+Groves<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup>, one realization per Monte Carlo trial.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Key results</p>
+<ul>
+<li>Each sensor output is the true value, scaled and cross-coupled by a
+  matrix <span class="arithmatex">\(\Ithree + \mathbf{M}\)</span>, plus a static bias, a slowly varying
+  dynamic bias and white noise.</li>
+<li>Bias instability is entered as the datasheet value <span class="arithmatex">\(B\)</span>. The dynamic
+  bias is a Gauss–Markov process with spread <span class="arithmatex">\(B/0.617\)</span>, so that its
+  Allan deviation peaks at exactly <span class="arithmatex">\(B\)</span>.</li>
+<li>The white noise per sample is the random-walk density divided by
+  <span class="arithmatex">\(\sqrt{\tau_i}\)</span>, so results do not depend on the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>'s sample rate.</li>
+<li>Every trial draws its own errors, from separate random streams for
+  the gyros, the accelerometers and the initial alignment.</li>
+</ul>
+</div>
+<h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    T["True rate ω&lt;sub&gt;ib&lt;/sub&gt;&lt;sup&gt;b&lt;/sup&gt;&lt;br/&gt;or specific force f&lt;sub&gt;ib&lt;/sub&gt;&lt;sup&gt;b&lt;/sup&gt;"] --&gt; M["× (I + M)&lt;br/&gt;scale factor and&lt;br/&gt;misalignment"]
+    M --&gt; S["+ static bias&lt;br/&gt;b&lt;sub&gt;s&lt;/sub&gt;"]
+    S --&gt; D["+ dynamic bias&lt;br/&gt;b&lt;sub&gt;d&lt;/sub&gt;(t)"]
+    D --&gt; W["+ white noise&lt;br/&gt;w"]
+    W --&gt; O["Sensor output"]</code></pre>
+<p>The error terms behave very differently:</p>
+<ul>
+<li><strong>Scale factor and misalignment.</strong> A sensor's gain is slightly wrong, by
+  parts per million, and its axes are not exactly orthogonal or exactly
+  along the body axes, by microradians. These errors are proportional to
+  what the sensor measures, so they are present even at rest, where the
+  accelerometers measure gravity and the gyros the Earth's rotation, and
+  largest in turns and accelerations.</li>
+<li><strong>Static bias.</strong> Every time the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> is switched on, each bias settles at a
+  slightly different value, then stays there for the run. Datasheets call
+  its spread the turn-on bias repeatability.</li>
+<li><strong>Dynamic bias.</strong> During the run the bias wanders slowly, over minutes to
+  hours. Datasheets quantify this as the bias instability.</li>
+<li><strong>White noise.</strong> Every sample is noisy. Integrated by the navigator, gyro
+  noise becomes a random walk in angle (angle random walk, <abbr title="Angle random walk: gyro white noise. Integrated angle uncertainty grows as ARW·√t; datasheets quote it in °/√h.">ARW</abbr>) and
+  accelerometer noise a random walk in velocity (<abbr title="Velocity random walk: accelerometer white noise. Integrated velocity uncertainty grows as VRW·√t; datasheets quote it in m/s/√h.">VRW</abbr>).</li>
+</ul>
+<p>The packaged spec is typical of a ring-laser-gyro aircraft <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>:</p>
+<table>
+<thead>
+<tr>
+<th>Error</th>
+<th>Gyro</th>
+<th>Accelerometer</th>
+<th><abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> keys</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Random walk</td>
+<td>0.002 °/√h</td>
+<td>0.005 m/s/√h</td>
+<td><code>arw_deg_per_rt_hr</code>, <code>vrw_m_per_s_per_rt_hr</code></td>
+</tr>
+<tr>
+<td>Bias instability (datasheet)</td>
+<td>0.01 °/h</td>
+<td>5 µg</td>
+<td><code>bias_instab_deg_per_hr</code>, <code>bias_instab_ug</code></td>
+</tr>
+<tr>
+<td>Bias correlation time</td>
+<td>1 h</td>
+<td>1 h</td>
+<td><code>bias_tau_s</code></td>
+</tr>
+<tr>
+<td>Turn-on bias repeatability</td>
+<td>0.01 °/h</td>
+<td>25 µg</td>
+<td><code>repeatability_deg_per_hr</code>, <code>repeatability_ug</code></td>
+</tr>
+<tr>
+<td>Scale factor</td>
+<td>5 <abbr title="Parts per million, 10⁻⁶: the unit of scale-factor errors.">ppm</abbr></td>
+<td>100 <abbr title="Parts per million, 10⁻⁶: the unit of scale-factor errors.">ppm</abbr></td>
+<td><code>scale_factor_ppm</code></td>
+</tr>
+<tr>
+<td>Misalignment</td>
+<td>50 µrad</td>
+<td>50 µrad</td>
+<td><code>misalignment_urad</code></td>
+</tr>
+</tbody>
+</table>
+<p>and its initial alignment leaves a tilt of 0.0015° and a heading error of
+0.04° (1σ), set in its <code>alignment:</code> block.</p>
+<h2 id="continuous-time-model">Continuous-time model<a class="headerlink" href="#continuous-time-model" title="Permanent link">&para;</a></h2>
+<h3 id="the-measurement-equations">The measurement equations<a class="headerlink" href="#the-measurement-equations" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[
+\fvec[\tilde]{ib}{b} = \mathbf{b}_a + \left(\Ithree + \mathbf{M}_a\right)\fvec{ib}{b} + \mathbf{w}_a,
+\qquad
+\wvec[\tilde]{ib}{b} = \mathbf{b}_g + \left(\Ithree + \mathbf{M}_g\right)\wvec{ib}{b} + \mathbf{w}_g
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(\fvec[\tilde]{ib}{b}\)</span> and <span class="arithmatex">\(\wvec[\tilde]{ib}{b}\)</span> are the
+  accelerometer and gyro outputs [m/s², rad/s], and <span class="arithmatex">\(\fvec{ib}{b}\)</span>,
+  <span class="arithmatex">\(\wvec{ib}{b}\)</span> the true specific force and angular rate (see
+  <a href="../truth-kinematics/">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a>);</li>
+<li><span class="arithmatex">\(\mathbf{b}_a = \mathbf{b}_{as} + \mathbf{b}_{ad}\)</span> and
+  <span class="arithmatex">\(\mathbf{b}_g = \mathbf{b}_{gs} + \mathbf{b}_{gd}\)</span> are the biases, each
+  a static part (subscript s) and a dynamic part (subscript d) [m/s², rad/s];</li>
+<li><span class="arithmatex">\(\mathbf{M}_a\)</span> and <span class="arithmatex">\(\mathbf{M}_g\)</span> are the scale-factor and
+  misalignment matrices [dimensionless];</li>
+<li><span class="arithmatex">\(\mathbf{w}_a\)</span> and <span class="arithmatex">\(\mathbf{w}_g\)</span> are white noise [m/s², rad/s].</li>
+</ul>
+<h3 id="scale-factor-and-misalignment">Scale factor and misalignment<a class="headerlink" href="#scale-factor-and-misalignment" title="Permanent link">&para;</a></h3>
+<div class="arithmatex">\[
+\mathbf{M} =
+\begin{bmatrix}
+s_x &amp; m_{xy} &amp; m_{xz} \\
+m_{yx} &amp; s_y &amp; m_{yz} \\
+m_{zx} &amp; m_{zy} &amp; s_z
+\end{bmatrix}
+\]</div>
+<p>where the scale-factor errors <span class="arithmatex">\(s\)</span> and the six misalignments <span class="arithmatex">\(m\)</span> are
+independent, zero-mean and normally distributed, with the spreads of the
+spec's <code>scale_factor_ppm</code> and <code>misalignment_urad</code> [dimensionless, rad].</p>
+<h3 id="dynamic-bias-a-first-order-gaussmarkov-process">Dynamic bias: a first-order Gauss–Markov process<a class="headerlink" href="#dynamic-bias-a-first-order-gaussmarkov-process" title="Permanent link">&para;</a></h3>
+<p>Each axis's dynamic bias <span class="arithmatex">\(b_d\)</span> relaxes towards zero while being kicked by
+white noise:</p>
+<div class="arithmatex">\[
+\dot b_d = -\frac{b_d}{\tau_c} + w_b,
+\qquad
+\mathrm{E}\left[w_b(t)\,w_b(t')\right] = \frac{2\sigma^2}{\tau_c}\,\delta(t - t')
+\]</div>
+<p>where <span class="arithmatex">\(\tau_c\)</span> is the correlation time (<code>bias_tau_s</code>) [s] and <span class="arithmatex">\(\sigma\)</span> the
+steady-state spread of the bias [rad/s or m/s²]. Its correlation with itself
+decays as <span class="arithmatex">\(e^{-|\Delta t|/\tau_c}\)</span>: over times much shorter than
+<span class="arithmatex">\(\tau_c\)</span> it looks like a constant bias, over much longer times like noise.</p>
+<p>A datasheet does not quote <span class="arithmatex">\(\sigma\)</span>. It quotes the <strong>bias instability</strong>
+<span class="arithmatex">\(B\)</span>, the floor of the sensor's Allan deviation, the standard measure of how
+much a sensor's average output varies between successive averaging windows
+of length <span class="arithmatex">\(T\)</span>. For white noise plus a Gauss–Markov bias:</p>
+<div class="arithmatex">\[
+\sigma_A^2(T) = \frac{N^2}{T}
++ \frac{\sigma^2\tau_c^2}{T^2}\left(\frac{2T}{\tau_c} - 3
++ 4e^{-T/\tau_c} - e^{-2T/\tau_c}\right)
+\]</div>
+<p>where <span class="arithmatex">\(\sigma_A\)</span> is the Allan deviation [rad/s or m/s²], <span class="arithmatex">\(T\)</span> the
+averaging time [s] and <span class="arithmatex">\(N\)</span> the white-noise density defined below. The
+Gauss–Markov term peaks at <span class="arithmatex">\(0.6174\,\sigma\)</span> when <span class="arithmatex">\(T = 1.89\,\tau_c\)</span>.
+ins_sim therefore sets</p>
+<div class="arithmatex">\[
+\sigma = \frac{B}{0.6174}
+\]</div>
+<p>so the simulated Allan deviation peaks at exactly the datasheet value. See
+<a href="../../validation/#allan-deviation">Validation</a> for how to choose
+<span class="arithmatex">\(\tau_c\)</span> from a datasheet's Allan plot.</p>
+<h3 id="white-noise">White noise<a class="headerlink" href="#white-noise" title="Permanent link">&para;</a></h3>
+<p>White noise of density <span class="arithmatex">\(N\)</span> integrates into a random walk whose spread
+grows with the square root of time:</p>
+<div class="arithmatex">\[
+\sigma_\theta(t) = N\sqrt{t}
+\]</div>
+<p>where <span class="arithmatex">\(N\)</span> is the <abbr title="Angle random walk: gyro white noise. Integrated angle uncertainty grows as ARW·√t; datasheets quote it in °/√h.">ARW</abbr> (gyro) [rad/√s] or <abbr title="Velocity random walk: accelerometer white noise. Integrated velocity uncertainty grows as VRW·√t; datasheets quote it in m/s/√h.">VRW</abbr> (accelerometer) [m/s/√s], and
+<span class="arithmatex">\(\sigma_\theta\)</span> the spread of the integrated angle [rad] or velocity [m/s].</p>
+<h3 id="initial-alignment">Initial alignment<a class="headerlink" href="#initial-alignment" title="Permanent link">&para;</a></h3>
+<p>Before navigating, an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> aligns itself at rest. It levels by finding which
+way gravity points, which leaves a tilt error of about the accelerometer
+bias over <span class="arithmatex">\(g\)</span>. It finds North by gyrocompassing, measuring the direction
+of the Earth's rotation, which leaves a heading error of about the
+East-pointing gyro's bias over <span class="arithmatex">\(\omega_{ie}\cos L_b\)</span>. Each trial draws
+this residual alignment error as the initial attitude error:</p>
+<div class="arithmatex">\[
+\delta\psivec{nb}{n}(0) \sim \mathcal{N}\left(\mathbf{0},\;
+\operatorname{diag}\left(\sigma_\text{tilt}^2,\ \sigma_\text{tilt}^2,\ \sigma_\text{heading}^2\right)\right)
+\]</div>
+<p>For the packaged spec, 25 µg over <span class="arithmatex">\(g\)</span> is 0.0014°, and 0.01 °/h over the
+Earth's horizontal rotation at 18.5° N is 0.04°: the spec's tilt and
+heading values.</p>
+<h2 id="as-implemented">As implemented<a class="headerlink" href="#as-implemented" title="Permanent link">&para;</a></h2>
+<p><strong>1. Datasheet units to SI.</strong> The <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> spec is converted as it is loaded:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Equation</label><label for="__tabbed_1_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<table>
+<thead>
+<tr>
+<th>Datasheet unit</th>
+<th>Factor to SI</th>
+<th>SI unit</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>°/√h</td>
+<td><span class="arithmatex">\(\pi/180/60\)</span></td>
+<td>rad/√s</td>
+</tr>
+<tr>
+<td>°/h</td>
+<td><span class="arithmatex">\(\pi/180/3600\)</span></td>
+<td>rad/s</td>
+</tr>
+<tr>
+<td>µg</td>
+<td><span class="arithmatex">\(9.80665 \times 10^{-6}\)</span></td>
+<td>m/s²</td>
+</tr>
+<tr>
+<td>m/s/√h</td>
+<td><span class="arithmatex">\(1/60\)</span></td>
+<td>m/s/√s</td>
+</tr>
+<tr>
+<td><abbr title="Parts per million, 10⁻⁶: the unit of scale-factor errors.">ppm</abbr>, µrad</td>
+<td><span class="arithmatex">\(10^{-6}\)</span></td>
+<td>–, rad</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">DEG_HR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">3600</span>
+<span class="k">return</span> <span class="n">IMUSpec</span><span class="p">(</span>
+    <span class="n">gyro_arw</span>     <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="s2">"arw_deg_per_rt_hr"</span><span class="p">]</span>          <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span> <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">gyro_bias_instability</span> <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="s2">"bias_instab_deg_per_hr"</span><span class="p">]</span>  <span class="o">*</span> <span class="n">DEG_HR</span><span class="p">,</span>
+    <span class="n">gyro_bias_tau</span>         <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="s2">"bias_tau_s"</span><span class="p">],</span>
+    <span class="n">gyro_br_std</span>  <span class="o">=</span> <span class="n">g</span><span class="p">[</span><span class="s2">"repeatability_deg_per_hr"</span><span class="p">]</span>   <span class="o">*</span> <span class="n">DEG_HR</span><span class="p">,</span>
+    <span class="n">gyro_sf_std</span>  <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scale_factor_ppm"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>   <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">gyro_ma_std</span>  <span class="o">=</span> <span class="n">g</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"misalignment_urad"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>  <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">accel_vrw</span>    <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="s2">"vrw_m_per_s_per_rt_hr"</span><span class="p">]</span>      <span class="o">/</span> <span class="mi">60</span><span class="p">,</span>
+    <span class="n">accel_bias_instability</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="s2">"bias_instab_ug"</span><span class="p">]</span>     <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="mf">9.80665</span><span class="p">,</span>
+    <span class="n">accel_bias_tau</span>         <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="s2">"bias_tau_s"</span><span class="p">],</span>
+    <span class="n">accel_br_std</span> <span class="o">=</span> <span class="n">a</span><span class="p">[</span><span class="s2">"repeatability_ug"</span><span class="p">]</span>            <span class="o">*</span> <span class="mf">1e-6</span> <span class="o">*</span> <span class="mf">9.80665</span><span class="p">,</span>
+    <span class="n">accel_sf_std</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"scale_factor_ppm"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>   <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">accel_ma_std</span> <span class="o">=</span> <span class="n">a</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"misalignment_urad"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>  <span class="o">*</span> <span class="mf">1e-6</span><span class="p">,</span>
+    <span class="n">align_tilt_std</span>    <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"tilt_std_deg"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>    <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>
+    <span class="n">align_heading_std</span> <span class="o">=</span> <span class="n">al</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"heading_std_deg"</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="mi">180</span><span class="p">,</span>
+    <span class="n">baro</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="n">baro</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">baro_spec_from_yaml</span><span class="p">(</span><span class="n">baro</span><span class="p">),</span>
+<span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>2. Scale factor and misalignment</strong>, drawn once per trial:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Equation</label><label for="__tabbed_2_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\mathbf{y}_\text{scaled} = \left(\Ithree + \mathbf{M}\right)\mathbf{y}
+\]</div>
+<p>where <span class="arithmatex">\(\mathbf{y}\)</span> is the true angular rate or specific force.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># Per-run multiplicative errors (scale factor + misalignment). With</span>
+<span class="c1"># zero stds these are exact identity transforms, preserving the</span>
+<span class="c1"># zero-noise passthrough property.</span>
+<span class="n">M</span> <span class="o">=</span> <span class="n">_error_matrix</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">sf_std</span><span class="p">,</span> <span class="n">ma_std</span><span class="p">)</span>
+<span class="n">scaled</span> <span class="o">=</span> <span class="n">truth_triad</span> <span class="o">@</span> <span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">eye</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span> <span class="o">+</span> <span class="n">M</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>          <span class="c1"># (I + M)·truth</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>3. Static bias</strong>, drawn once per trial:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Equation</label><label for="__tabbed_3_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\mathbf{b}_s \sim \mathcal{N}\left(\mathbf{0},\ \sigma_\text{BR}^2\Ithree\right)
+\]</div>
+<p>where <span class="arithmatex">\(\sigma_\text{BR}\)</span> is the turn-on bias repeatability.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># Static (turn-on) bias, per axis, constant over the run</span>
+<span class="n">b_s</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">bs_std</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mi">3</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>4. Dynamic bias.</strong> The exact discrete form of the Gauss–Markov process,
+started in its steady state:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Equation</label><label for="__tabbed_4_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+b_{d,k+1} = a\,b_{d,k} + \sqrt{1 - a^2}\,\sigma\,u_{k+1},
+\qquad a = e^{-\tau_i/\tau_c},
+\qquad b_{d,0} \sim \mathcal{N}(0, \sigma^2)
+\]</div>
+<p>where <span class="arithmatex">\(u_k\)</span> are independent standard normal numbers. The variance is
+<span class="arithmatex">\(\sigma^2\)</span> at every sample, whatever the sample interval.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># Dynamic (Gauss-Markov) bias: discrete AR(1) recursion</span>
+<span class="c1">#   b_d[k+1] = a·b_d[k] + √(1−a²)·σ·u[k+1],   a = exp(−tau_i/τ),</span>
+<span class="c1"># started in its stationary distribution, b_d[0] ~ N(0, σ²), so its</span>
+<span class="c1"># variance is σ² from the first sample on.</span>
+<span class="n">b_d</span> <span class="o">=</span> <span class="n">gauss_markov</span><span class="p">(</span><span class="n">rng</span><span class="p">,</span> <span class="n">n_samples</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">bd_std</span><span class="p">,</span> <span class="n">bd_tau</span><span class="p">)</span>
+</code></pre></div>
+<p>The same process models the barometer's weather drift, so it lives in
+a shared helper:</p>
+<div class="highlight"><pre><span></span><code><span class="c1"># The IIR filter produces the zero-start response to u; the decaying</span>
+<span class="c1"># initial state a^k·x[0] is added to it.</span>
+<span class="n">a</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">exp</span><span class="p">(</span><span class="o">-</span><span class="n">tau_i</span> <span class="o">/</span> <span class="n">tau_c</span><span class="p">)</span>
+<span class="n">s</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="mf">1.0</span> <span class="o">-</span> <span class="n">a</span> <span class="o">*</span> <span class="n">a</span><span class="p">)</span> <span class="o">*</span> <span class="n">sigma</span>
+<span class="n">x0</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="n">n_axes</span><span class="p">)</span>
+<span class="n">u</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">n_axes</span><span class="p">));</span> <span class="n">u</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="mf">0.0</span>
+<span class="k">return</span> <span class="p">(</span><span class="n">lfilter</span><span class="p">([</span><span class="mf">1.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">-</span><span class="n">a</span><span class="p">],</span> <span class="n">s</span> <span class="o">*</span> <span class="n">u</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="o">+</span> <span class="n">a</span> <span class="o">**</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">n_samples</span><span class="p">)[:,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="n">x0</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>5. White noise.</strong> The per-sample spread that integrates to <span class="arithmatex">\(N\sqrt{t}\)</span>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Equation</label><label for="__tabbed_5_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+w_k \sim \mathcal{N}\left(0,\ \frac{N^2}{\tau_i}\right)
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="c1"># White noise: density/√tau_i is the discrete-time σ that makes the</span>
+<span class="c1"># integrated angle (velocity) uncertainty grow as density·√t,</span>
+<span class="c1"># independent of the sample rate.</span>
+<span class="n">w</span> <span class="o">=</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">noise_density</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tau_i</span><span class="p">),</span> <span class="n">size</span><span class="o">=</span><span class="p">(</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>6. Initial alignment error</strong>, drawn once per trial:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Equation</label><label for="__tabbed_6_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\delta\psivec{nb}{n}(0) \sim \mathcal{N}\left(\mathbf{0},\;
+\operatorname{diag}\left(\sigma_\text{tilt}^2,\ \sigma_\text{tilt}^2,\ \sigma_\text{heading}^2\right)\right)
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">return</span> <span class="n">rng</span><span class="o">.</span><span class="n">normal</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="p">[</span><span class="n">spec</span><span class="o">.</span><span class="n">align_tilt_std</span><span class="p">,</span>
+                        <span class="n">spec</span><span class="o">.</span><span class="n">align_tilt_std</span><span class="p">,</span>
+                        <span class="n">spec</span><span class="o">.</span><span class="n">align_heading_std</span><span class="p">])</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The gyro triad, the accelerometer triad and the alignment error each draw
+from their own random stream, and each triad draws its terms in a fixed
+order, whether or not their spreads are zero. Changing one error's spread
+therefore leaves every other error's realization unchanged, which makes
+comparisons between specs fair (see
+<a href="../monte-carlo/#random-streams">Monte Carlo evaluation</a>).</p>
+<div class="admonition note">
+<p class="admonition-title">Compared with Groves (2013)</p>
+<p>The structure is Groves' sensor model<sup id="fnref2:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup>: a bias, a matrix of
+scale-factor and cross-coupling errors, and noise. Groves also includes
+a gyro bias proportional to specific force (the g-dependent bias) and
+output quantization; ins_sim models neither.</p>
+</div>
+<h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
+<p><img alt="Allan deviation of a simulated stationary gyro with the predicted curve and its two terms" src="../../assets/validation/allan.png" /></p>
+<p>The Allan deviation of a simulated stationary gyro with the packaged spec's
+noise. At short averaging times the white noise dominates, falling with a
+slope of −½. At long times the Gauss–Markov bias takes over and peaks at the
+datasheet bias instability, 0.01 °/h, at 1.89 hours. The
+<a href="../../validation/#allan-deviation">Validation</a> page checks this curve
+against the formula above, together with the
+<a href="../../validation/#angle-random-walk">angle random walk</a> and the
+<a href="../../validation/#gaussmarkov-bias">stationarity</a> of the
+Gauss–Markov bias.</p>
+<p>The example output below shows why the bias, not the noise, sets an <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr>'s
+long-term performance. At 10 Hz each gyro sample's noise is 0.38 °/h, 38
+times the bias instability, but it averages away; the bias does not.</p>
+<h2 id="assumptions-limitations">Assumptions &amp; limitations<a class="headerlink" href="#assumptions-limitations" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Assumptions &amp; limitations</p>
+<ul>
+<li><strong>Not modelled:</strong> g-dependent gyro bias, quantization, rate random
+  walk, scale-factor nonlinearity and asymmetry, temperature effects,
+  and errors driven by vibration.</li>
+<li><strong>One Gauss–Markov hump.</strong> A real sensor's Allan deviation is often
+  flat near its floor over a decade or more of averaging time. One
+  Gauss–Markov process matches the datasheet value only at its peak,
+  and falls below the real sensor on either side.</li>
+<li><strong>Independent alignment errors.</strong> A real <abbr title="Inertial navigation system: an IMU plus the navigation equations that turn its outputs into position, velocity and attitude.">INS</abbr> aligns with its biases
+  present, so the initial tilt largely cancels the accelerometer bias,
+  and the initial heading error is tied to the East gyro's bias. ins_sim
+  draws them independently, which is pessimistic early in a flight.</li>
+<li><strong>Constant parameters.</strong> The spreads do not change with temperature or
+  time, and nothing estimates or corrects the errors during the run:
+  there is no aiding apart from the barometer.</li>
+</ul>
+</div>
+<h2 id="in-the-code">In the code<a class="headerlink" href="#in-the-code" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Equation</th>
+<th>Implemented in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Datasheet spec, in SI</td>
+<td>Units table</td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;IMUSpec&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-dataclass&quot;&gt;&lt;code&gt;dataclass&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.IMUSpec"><code>IMUSpec</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;load_imu_spec&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.load_imu_spec"><code>load_imu_spec</code></a></td>
+</tr>
+<tr>
+<td>Gauss–Markov spread</td>
+<td><span class="arithmatex">\(\sigma = B/0.6174\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;gyro_gm_std&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-property&quot;&gt;&lt;code&gt;property&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.IMUSpec.gyro_gm_std"><code>IMUSpec.gyro_gm_std</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;accel_gm_std&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-property&quot;&gt;&lt;code&gt;property&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.IMUSpec.accel_gm_std"><code>IMUSpec.accel_gm_std</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-attribute&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-attribute-name&quot;&gt;GM_ALLAN_PEAK&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-module-attribute&quot;&gt;&lt;code&gt;module-attribute&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.GM_ALLAN_PEAK"><code>GM_ALLAN_PEAK</code></a></td>
+</tr>
+<tr>
+<td>Sensor outputs</td>
+<td><span class="arithmatex">\(\fvec[\tilde]{ib}{b}\)</span>, <span class="arithmatex">\(\wvec[\tilde]{ib}{b}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;generate_imu_samples&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.generate_imu_samples"><code>generate_imu_samples</code></a></td>
+</tr>
+<tr>
+<td>Error terms of one triad</td>
+<td><span class="arithmatex">\(\mathbf{M}\)</span>, <span class="arithmatex">\(\mathbf{b}_s\)</span>, <span class="arithmatex">\(b_d\)</span>, <span class="arithmatex">\(w\)</span></td>
+<td><code>_triad_measurement</code> and <code>_error_matrix</code> in <code>ins_sim/sensors/imu.py</code></td>
+</tr>
+<tr>
+<td>Gauss–Markov process</td>
+<td><span class="arithmatex">\(b_d\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;gauss_markov&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.noise.gauss_markov"><code>gauss_markov</code></a></td>
+</tr>
+<tr>
+<td>Initial alignment error</td>
+<td><span class="arithmatex">\(\delta\psivec{nb}{n}(0)\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;draw_initial_misalignment&lt;/span&gt;" href="../../reference/api/sensors/#ins_sim.sensors.imu.draw_initial_misalignment"><code>draw_initial_misalignment</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>This example loads the packaged spec and prints its datasheet values next
+to the model parameters derived from them:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Script</label><label for="__tabbed_7_2">Output</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="sd">"""The packaged IMU spec: datasheet values, and the model parameters derived from them."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_imu_spec_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.sensors.imu</span><span class="w"> </span><span class="kn">import</span> <span class="n">GM_ALLAN_PEAK</span><span class="p">,</span> <span class="n">load_imu_spec</span>
+
+<span class="n">spec</span> <span class="o">=</span> <span class="n">load_imu_spec</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">default_imu_spec_path</span><span class="p">()))</span>   <span class="c1"># converted to SI on loading</span>
+<span class="n">tau_i</span> <span class="o">=</span> <span class="mf">0.1</span>                                          <span class="c1"># IMU output interval [s]</span>
+<span class="n">DEG_PER_HOUR</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="mf">1.0</span><span class="p">)</span> <span class="o">/</span> <span class="mf">3600.0</span>              <span class="c1"># 1 °/h in rad/s</span>
+<span class="n">MICRO_G</span> <span class="o">=</span> <span class="mf">9.80665e-6</span>                                 <span class="c1"># 1 µg in m/s²</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">show</span><span class="p">(</span><span class="n">label</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">unit</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"  </span><span class="si">{</span><span class="n">label</span><span class="si">:</span><span class="s2">&lt;42s</span><span class="si">}{</span><span class="n">value</span><span class="si">:</span><span class="s2">9.4f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">unit</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+
+
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Gyro"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="s2">"bias instability B (datasheet)"</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">gyro_bias_instability</span> <span class="o">/</span> <span class="n">DEG_PER_HOUR</span><span class="p">,</span> <span class="s2">"°/h"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Gauss-Markov spread, B / </span><span class="si">{</span><span class="n">GM_ALLAN_PEAK</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">gyro_gm_std</span> <span class="o">/</span> <span class="n">DEG_PER_HOUR</span><span class="p">,</span> <span class="s2">"°/h"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="s2">"white noise per sample, ARW / sqrt(tau_i)"</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">gyro_arw</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tau_i</span><span class="p">)</span> <span class="o">/</span> <span class="n">DEG_PER_HOUR</span><span class="p">,</span> <span class="s2">"°/h"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Accelerometer"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="s2">"bias instability B (datasheet)"</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_bias_instability</span> <span class="o">/</span> <span class="n">MICRO_G</span><span class="p">,</span> <span class="s2">"µg"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Gauss-Markov spread, B / </span><span class="si">{</span><span class="n">GM_ALLAN_PEAK</span><span class="si">:</span><span class="s2">.4f</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_gm_std</span> <span class="o">/</span> <span class="n">MICRO_G</span><span class="p">,</span> <span class="s2">"µg"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="s2">"white noise per sample, VRW / sqrt(tau_i)"</span><span class="p">,</span> <span class="n">spec</span><span class="o">.</span><span class="n">accel_vrw</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">tau_i</span><span class="p">)</span> <span class="o">/</span> <span class="n">MICRO_G</span><span class="p">,</span> <span class="s2">"µg"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="s2">"Initial alignment"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="s2">"tilt spread"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">align_tilt_std</span><span class="p">),</span> <span class="s2">"°"</span><span class="p">)</span>
+<span class="n">show</span><span class="p">(</span><span class="s2">"heading spread"</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">spec</span><span class="o">.</span><span class="n">align_heading_std</span><span class="p">),</span> <span class="s2">"°"</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>Gyro
+  bias instability B (datasheet)               0.0100 °/h
+  Gauss-Markov spread, B / 0.6174              0.0162 °/h
+  white noise per sample, ARW / sqrt(tau_i)    0.3795 °/h
+Accelerometer
+  bias instability B (datasheet)               5.0000 µg
+  Gauss-Markov spread, B / 0.6174              8.0989 µg
+  white noise per sample, VRW / sqrt(tau_i)   26.8719 µg
+Initial alignment
+  tilt spread                                  0.0015 °
+  heading spread                               0.0400 °
+</code></pre></div>
+</div>
+</div>
+</div>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:groves">
+<p><a href="../../reference/bibliography/#groves2013">Groves (2013)</a>, Chapter 4,
+for inertial sensor errors and the sensor error model. The Allan
+variance and the datasheet terms come from
+<a href="../../reference/bibliography/#ieee952">IEEE Std 952</a> and
+<a href="../../reference/bibliography/#elsheimy2008">El-Sheimy et al. (2008)</a>.&#160;<a class="footnote-backref" href="#fnref:groves" title="Jump back to footnote 1 in the text">&#8617;</a><a class="footnote-backref" href="#fnref2:groves" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

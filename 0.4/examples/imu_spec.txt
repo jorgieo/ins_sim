@@ -1,0 +1,11 @@
+Gyro
+  bias instability B (datasheet)               0.0100 °/h
+  Gauss-Markov spread, B / 0.6174              0.0162 °/h
+  white noise per sample, ARW / sqrt(tau_i)    0.3795 °/h
+Accelerometer
+  bias instability B (datasheet)               5.0000 µg
+  Gauss-Markov spread, B / 0.6174              8.0989 µg
+  white noise per sample, VRW / sqrt(tau_i)   26.8719 µg
+Initial alignment
+  tilt spread                                  0.0015 °
+  heading spread                               0.0400 °

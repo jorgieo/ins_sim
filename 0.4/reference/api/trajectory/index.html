@@ -1,0 +1,3899 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source desktop simulation engine for IMU trajectory generation and Monte Carlo navigation error evaluation">
+      
+      
+      
+        <link rel="canonical" href="https://jorgieo.github.io/ins_sim/0.4/reference/api/trajectory/">
+      
+      
+        <link rel="prev" href="../earth-model/">
+      
+      
+        <link rel="next" href="../sensors/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Trajectory - Inertial Navigation Simulation & GUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#trajectory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="Inertial Navigation Simulation &amp; GUI" class="md-header__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Inertial Navigation Simulation & GUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Trajectory
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../download/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../theory/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Theory & Math
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../validation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Validation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../project/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="Inertial Navigation Simulation &amp; GUI" class="md-nav__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Inertial Navigation Simulation & GUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../get-started/first-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../get-started/first-script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading the results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing a mission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/imu-specs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelling an IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-line runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../guide/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../theory/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory & Math
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/notation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/truth-kinematics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../theory/covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../earth-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectory
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;kinematics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" kinematics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.TruthTrajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TruthTrajectory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" TruthTrajectory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.TruthTrajectory.from_spline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_spline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.MissionTrajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MissionTrajectory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.build_trajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_trajectory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.spline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;spline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" spline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.spline.NEDSplinePath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NEDSplinePath
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" NEDSplinePath">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.spline.NEDSplinePath.position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;position
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../sensors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../mission-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mission YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../imu-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU spec YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../units-constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Units & constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../bibliography/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bibliography
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../project/migrating-from-0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;kinematics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" kinematics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.TruthTrajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;TruthTrajectory
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" TruthTrajectory">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.TruthTrajectory.from_spline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;from_spline
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.MissionTrajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;MissionTrajectory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.kinematics.build_trajectory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-function"></code>&nbsp;build_trajectory
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.spline" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-module"></code>&nbsp;spline
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" spline">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.spline.NEDSplinePath" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-class"></code>&nbsp;NEDSplinePath
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label=" NEDSplinePath">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#ins_sim.trajectory.spline.NEDSplinePath.position" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        <code class="doc-symbol doc-symbol-toc doc-symbol-method"></code>&nbsp;position
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="trajectory">Trajectory<a class="headerlink" href="#trajectory" title="Permanent link">&para;</a></h1>
+<p>The truth trajectory, built from a mission <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> or a spline path, and the
+outputs a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> would produce along it.</p>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="ins_sim.trajectory.kinematics" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">ins_sim.trajectory.kinematics</span>
+
+
+<a href="#ins_sim.trajectory.kinematics" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Truth trajectory: the reference motion, and what a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> measures along it.</p>
+<p><code>build_trajectory</code> builds a <code>TruthTrajectory</code> from a mission <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr>, phase by
+phase; <code>TruthTrajectory.from_spline</code> builds one by flying a spline path at
+constant speed. Either way the truth carries the curvilinear position,
+velocity and attitude at every sample, plus the outputs a perfect gyro
+(omega_ib_b) and accelerometer (f_ib_b) would produce.</p>
+<p>Those <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are derived as the exact inverse of the strapdown
+mechanization's update, so feeding them back through the navigator
+reproduces the truth to numerical precision. That zero-noise round trip
+checks the consistency of the two halves; it does not measure how
+accurately the mechanization integrates continuous motion. See the
+<a class="autorefs autorefs-internal" title="Truth trajectory &amp; ideal " href="../../../theory/truth-kinematics/#truth-trajectory-ideal-imu">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></a> theory page.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ins_sim.trajectory.kinematics.TruthTrajectory" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">TruthTrajectory</span>
+
+
+<a href="#ins_sim.trajectory.kinematics.TruthTrajectory" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">TruthTrajectory</span><span class="p">(</span><span class="n">pos_profile</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">euler_nb</span><span class="p">:</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">L_b0_deg</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">38.97</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.49</span><span class="p">,</span> <span class="n">h_b0</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span> <span class="n">oversample</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>Truth state derived from a raw kinematic profile, consistent with rotating-Earth navigation kinematics.</p>
+<p>Computed at every sample (Groves notation):</p>
+<ul>
+<li>Position relative to the start point, r_lb^l (linearized geodetic
+  reprojection, so it is directly comparable to the strapdown output).</li>
+<li>Velocity v_eb^n (input) and its time derivative (numerical).</li>
+<li>Curvilinear position (L_b, lambda_b, h_b), integrated from the start.</li>
+<li>Euler angles (input).</li>
+<li>Angular rate omega_ib^b that a perfect gyro would output. This
+  includes Earth rate and transport rate, resolved in body axes, via
+  the exact discrete body-to-<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> rotation.</li>
+<li>Specific force f_ib^b that a perfect accelerometer would output,
+  derived from the forward-difference rotating-frame velocity
+  equation so that a forward-Euler strapdown recovers the truth
+  exactly.</li>
+</ul>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.tau_i">tau_i</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Sample interval [s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.t">t</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Time vector, shape (M,) [s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.r_lb_l">r_lb_l</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Position relative to the start point,
+resolved in the start point's <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> axes, shape (M, 3) [m].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.v_eb_n">v_eb_n</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Velocity of the body relative to the
+Earth, resolved in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>, shape (M, 3) [m/s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.v_eb_n_dot">v_eb_n_dot</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Time derivative of v_eb_n (central
+differences, diagnostic only), shape (M, 3) [m/s²].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.L_b">L_b</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Geodetic latitude, shape (M,) [rad].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.lambda_b">lambda_b</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Longitude, shape (M,) [rad].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.h_b">h_b</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Geodetic height, shape (M,) [m].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.euler_nb">euler_nb</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Euler angles [phi_nb (roll), theta_nb
+(pitch), psi_nb (heading)], shape (M, 3) [rad].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.C_b_n">C_b_n</span></code></b>
+              (<code>Rotation</code>)
+          –
+          <div class="doc-md-description">
+            <p>Body-to-<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> attitude
+C_b^n, vectorized over all M samples.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.omega_ib_b">omega_ib_b</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Truth gyro output omega_ib^b, shape
+(M, 3) [rad/s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.f_ib_b">f_ib_b</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Truth accelerometer output f_ib^b, shape
+(M, 3) [m/s²].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.g">g</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Local gravity magnitude g(L_b, h_b), shape
+(M,) [m/s²].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.TruthTrajectory.oversample">oversample</span></code></b>
+              (<code><span title="int">int</span> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Profile samples per <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval for
+integrated <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs, or None for the exact inverse of the
+basic strapdown update.</p>
+          </div>
+        </li>
+    </ul>
+
+        <p>Builds the truth trajectory from raw position/velocity/Euler-angle profiles.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>pos_profile</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Raw <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> position profile, shape (M, 3) [m]. Only
+used to determine the sample count; the exposed <code>r_lb_l</code>
+attribute is recomputed from the integrated curvilinear
+position (see class docstring).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>v_eb_n</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Velocity profile resolved in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>, shape (M, 3) [m/s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>euler_nb</code></b>
+              (<code><span title="numpy.ndarray">ndarray</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Euler angles [roll, pitch, heading], shape (M, 3)
+[rad].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tau_i</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Sample interval [s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>L_b0_deg</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>38.97</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initial geodetic latitude [deg]. Defaults to 38.97.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>lambda_b0_deg</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>-76.49</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initial longitude [deg]. Defaults to -76.49.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>h_b0</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>100.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initial geodetic height [m]. Defaults to 100.0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>oversample</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>When None (the default) the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are the
+exact inverse of the basic strapdown update, as described
+above. When an integer M, the profiles are sampled M times
+per <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval, at tau_i/M, and the truth is the continuous
+motion through them: the body turns at a constant rate and
+the velocity changes at a constant rate between profile
+samples. The <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are the averages of omega_ib^b and
+f_ib^b over each interval tau_i, as an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>
+reports them, and the states are kept every M-th sample.</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+                  <details class="mkdocstrings-source">
+                    <summary>Source code in <code>ins_sim/trajectory/kinematics.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">133</span>
+<span class="normal">134</span>
+<span class="normal">135</span>
+<span class="normal">136</span>
+<span class="normal">137</span>
+<span class="normal">138</span>
+<span class="normal">139</span>
+<span class="normal">140</span>
+<span class="normal">141</span>
+<span class="normal">142</span>
+<span class="normal">143</span>
+<span class="normal">144</span>
+<span class="normal">145</span>
+<span class="normal">146</span>
+<span class="normal">147</span>
+<span class="normal">148</span>
+<span class="normal">149</span>
+<span class="normal">150</span>
+<span class="normal">151</span>
+<span class="normal">152</span>
+<span class="normal">153</span>
+<span class="normal">154</span>
+<span class="normal">155</span>
+<span class="normal">156</span>
+<span class="normal">157</span>
+<span class="normal">158</span>
+<span class="normal">159</span>
+<span class="normal">160</span>
+<span class="normal">161</span>
+<span class="normal">162</span>
+<span class="normal">163</span>
+<span class="normal">164</span>
+<span class="normal">165</span>
+<span class="normal">166</span>
+<span class="normal">167</span>
+<span class="normal">168</span>
+<span class="normal">169</span>
+<span class="normal">170</span>
+<span class="normal">171</span>
+<span class="normal">172</span>
+<span class="normal">173</span>
+<span class="normal">174</span>
+<span class="normal">175</span>
+<span class="normal">176</span>
+<span class="normal">177</span>
+<span class="normal">178</span>
+<span class="normal">179</span>
+<span class="normal">180</span>
+<span class="normal">181</span>
+<span class="normal">182</span>
+<span class="normal">183</span>
+<span class="normal">184</span>
+<span class="normal">185</span>
+<span class="normal">186</span>
+<span class="normal">187</span>
+<span class="normal">188</span>
+<span class="normal">189</span>
+<span class="normal">190</span>
+<span class="normal">191</span>
+<span class="normal">192</span>
+<span class="normal">193</span>
+<span class="normal">194</span>
+<span class="normal">195</span>
+<span class="normal">196</span>
+<span class="normal">197</span>
+<span class="normal">198</span>
+<span class="normal">199</span>
+<span class="normal">200</span>
+<span class="normal">201</span>
+<span class="normal">202</span>
+<span class="normal">203</span>
+<span class="normal">204</span>
+<span class="normal">205</span>
+<span class="normal">206</span>
+<span class="normal">207</span>
+<span class="normal">208</span>
+<span class="normal">209</span>
+<span class="normal">210</span>
+<span class="normal">211</span>
+<span class="normal">212</span>
+<span class="normal">213</span>
+<span class="normal">214</span>
+<span class="normal">215</span>
+<span class="normal">216</span>
+<span class="normal">217</span>
+<span class="normal">218</span>
+<span class="normal">219</span>
+<span class="normal">220</span>
+<span class="normal">221</span>
+<span class="normal">222</span>
+<span class="normal">223</span>
+<span class="normal">224</span>
+<span class="normal">225</span>
+<span class="normal">226</span>
+<span class="normal">227</span>
+<span class="normal">228</span>
+<span class="normal">229</span>
+<span class="normal">230</span>
+<span class="normal">231</span>
+<span class="normal">232</span>
+<span class="normal">233</span>
+<span class="normal">234</span>
+<span class="normal">235</span>
+<span class="normal">236</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pos_profile</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span>
+             <span class="n">euler_nb</span><span class="p">:</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+             <span class="n">L_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">38.97</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.49</span><span class="p">,</span>
+             <span class="n">h_b0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span> <span class="n">oversample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Builds the truth trajectory from raw position/velocity/Euler-angle profiles.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        pos_profile: Raw NED position profile, shape (M, 3) [m]. Only</span>
+<span class="sd">            used to determine the sample count; the exposed `r_lb_l`</span>
+<span class="sd">            attribute is recomputed from the integrated curvilinear</span>
+<span class="sd">            position (see class docstring).</span>
+<span class="sd">        v_eb_n: Velocity profile resolved in NED, shape (M, 3) [m/s].</span>
+<span class="sd">        euler_nb: Euler angles [roll, pitch, heading], shape (M, 3)</span>
+<span class="sd">            [rad].</span>
+<span class="sd">        tau_i: Sample interval [s].</span>
+<span class="sd">        L_b0_deg: Initial geodetic latitude [deg]. Defaults to 38.97.</span>
+<span class="sd">        lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.</span>
+<span class="sd">        h_b0: Initial geodetic height [m]. Defaults to 100.0.</span>
+<span class="sd">        oversample: When None (the default) the IMU outputs are the</span>
+<span class="sd">            exact inverse of the basic strapdown update, as described</span>
+<span class="sd">            above. When an integer M, the profiles are sampled M times</span>
+<span class="sd">            per IMU interval, at tau_i/M, and the truth is the continuous</span>
+<span class="sd">            motion through them: the body turns at a constant rate and</span>
+<span class="sd">            the velocity changes at a constant rate between profile</span>
+<span class="sd">            samples. The IMU outputs are the averages of omega_ib^b and</span>
+<span class="sd">            f_ib^b over each interval tau_i, as an integrating IMU</span>
+<span class="sd">            reports them, and the states are kept every M-th sample.</span>
+<span class="sd">    """</span>
+    <span class="k">if</span> <span class="n">oversample</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_integrating</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">,</span> <span class="n">euler_nb</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="n">oversample</span><span class="p">),</span>
+                               <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">L_b0_deg</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lambda_b0_deg</span><span class="p">),</span> <span class="n">h_b0</span><span class="p">)</span>
+        <span class="k">return</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">oversample</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">tau_i</span> <span class="o">=</span> <span class="n">tau_i</span>
+    <span class="n">L_b0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">L_b0_deg</span><span class="p">)</span>
+    <span class="n">lambda_b0</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lambda_b0_deg</span><span class="p">)</span>
+
+    <span class="n">M</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">pos_profile</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">M</span><span class="p">)</span> <span class="o">*</span> <span class="n">tau_i</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">v_eb_n</span> <span class="o">=</span> <span class="n">v_eb_n</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">v_eb_n_dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">euler_nb</span> <span class="o">=</span> <span class="n">euler_nb</span>
+
+    <span class="c1"># ---- Curvilinear position by integration --------------------------</span>
+    <span class="c1"># Integrate (L_b, lambda_b, h_b) using current radii of curvature.</span>
+    <span class="c1"># Inherently sequential (L_b[k+1] depends on L_b[k]), so this stays</span>
+    <span class="c1"># a loop.</span>
+    <span class="c1"># --8&lt;-- [start:truth_position]</span>
+    <span class="n">L_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">);</span> <span class="n">lambda_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">);</span> <span class="n">h_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+    <span class="n">L_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lambda_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b0</span><span class="p">,</span> <span class="n">lambda_b0</span><span class="p">,</span> <span class="n">h_b0</span>
+    <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+        <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_i</span>
+        <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span>
+                                       <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_i</span>
+        <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>
+    <span class="c1"># --8&lt;-- [end:truth_position]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">L_b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">h_b</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">,</span> <span class="n">lambda_b</span><span class="p">,</span> <span class="n">h_b</span>
+
+    <span class="c1"># Body-to-NED attitude as a vectorized scipy Rotation stack</span>
+    <span class="c1"># --8&lt;-- [start:attitude_from_euler]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span> <span class="o">=</span> <span class="n">Rot</span><span class="o">.</span><span class="n">from_euler</span><span class="p">(</span>
+        <span class="s1">'ZYX'</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">column_stack</span><span class="p">([</span><span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]]))</span>
+    <span class="c1"># --8&lt;-- [end:attitude_from_euler]</span>
+    <span class="n">C_n_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span>
+
+    <span class="c1"># ---- Truth IMU outputs (exact discrete, vectorized) --------------</span>
+    <span class="c1"># Consistent with strapdown_navgrade's forward-Euler recursion:</span>
+    <span class="c1">#   omega_ib_b[k] = exact discrete rotation vector C[k]→C[k+1] / tau_i</span>
+    <span class="c1">#                   plus Earth/transport rate in body axes</span>
+    <span class="c1">#   f_ib_b[k]     = forward-difference specific force in NED,</span>
+    <span class="c1">#                   rotated to body axes:</span>
+    <span class="c1">#                     f_ib_n[k] = (v[k+1]-v[k])/tau_i + Coriolis[k] - g[k]</span>
+    <span class="n">omega_ie_n</span> <span class="o">=</span> <span class="n">earth_rate_n</span><span class="p">(</span><span class="n">L_b</span><span class="p">)</span>                       <span class="c1"># (M, 3)</span>
+    <span class="n">omega_en_n</span> <span class="o">=</span> <span class="n">transport_rate_n</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">,</span> <span class="n">L_b</span><span class="p">,</span> <span class="n">h_b</span><span class="p">)</span>      <span class="c1"># (M, 3)</span>
+    <span class="n">g</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">L_b</span><span class="p">,</span> <span class="n">h_b</span><span class="p">)</span>                         <span class="c1"># (M,)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">g</span> <span class="o">=</span> <span class="n">g</span>
+    <span class="n">g_b_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">));</span> <span class="n">g_b_n</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">g</span>
+
+    <span class="c1"># --8&lt;-- [start:truth_specific_force]</span>
+    <span class="n">v_eb_n_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">v_eb_n_rate</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">tau_i</span>
+    <span class="n">v_eb_n_rate</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="o">=</span> <span class="n">v_eb_n_rate</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">f_ib_n</span> <span class="o">=</span> <span class="n">v_eb_n_rate</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">)</span> <span class="o">-</span> <span class="n">g_b_n</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">f_ib_b</span> <span class="o">=</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">f_ib_n</span><span class="p">)</span>
+    <span class="c1"># --8&lt;-- [end:truth_specific_force]</span>
+
+    <span class="c1"># --8&lt;-- [start:truth_angular_rate]</span>
+    <span class="n">dC_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>       <span class="c1"># C_b(k+1)^b(k)</span>
+    <span class="n">omega_nb_b_fwd</span> <span class="o">=</span> <span class="n">dC_b</span><span class="o">.</span><span class="n">as_rotvec</span><span class="p">()</span> <span class="o">/</span> <span class="n">tau_i</span>            <span class="c1"># (M-1, 3)</span>
+    <span class="n">omega_nb_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">omega_nb_b_fwd</span><span class="p">,</span> <span class="n">omega_nb_b_fwd</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">omega_ib_b</span> <span class="o">=</span> <span class="n">omega_nb_b</span> <span class="o">+</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">)</span>
+    <span class="c1"># --8&lt;-- [end:truth_angular_rate]</span>
+
+    <span class="c1"># Reproject truth position through the same linearized geodetic</span>
+    <span class="c1"># formula that strapdown_navgrade uses, so error =</span>
+    <span class="c1"># estimated r_lb_l - truth.r_lb_l measures actual navigation error</span>
+    <span class="c1"># rather than flat-earth vs. curved-earth bias.</span>
+    <span class="n">R_N0</span><span class="p">,</span> <span class="n">R_E0</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b0</span><span class="p">)</span>
+    <span class="n">r_lb_l</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+    <span class="n">r_lb_l</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">L_b</span> <span class="o">-</span> <span class="n">L_b0</span><span class="p">)</span>   <span class="o">*</span> <span class="p">(</span><span class="n">R_N0</span> <span class="o">+</span> <span class="n">h_b0</span><span class="p">)</span>
+    <span class="n">r_lb_l</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">lambda_b</span> <span class="o">-</span> <span class="n">lambda_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">*</span> <span class="p">(</span><span class="n">R_E0</span> <span class="o">+</span> <span class="n">h_b0</span><span class="p">)</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b0</span><span class="p">)</span>
+    <span class="n">r_lb_l</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">h_b</span> <span class="o">-</span> <span class="n">h_b0</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">r_lb_l</span> <span class="o">=</span> <span class="n">r_lb_l</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="ins_sim.trajectory.kinematics.TruthTrajectory.from_spline" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">from_spline</span>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-classmethod"><code>classmethod</code></small>
+  </span>
+
+<a href="#ins_sim.trajectory.kinematics.TruthTrajectory.from_spline" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">from_spline</span><span class="p">(</span><span class="n">path</span><span class="p">:</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NEDSplinePath&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.spline.NEDSplinePath&lt;/code&gt;)" href="#ins_sim.trajectory.spline.NEDSplinePath">NEDSplinePath</a></span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="n"><span title="float">float</span></span><span class="p">,</span> <span class="n">L_b0_deg</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">38.97</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.49</span><span class="p">,</span> <span class="n">h_b0</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span> <span class="n">oversample</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.TruthTrajectory&lt;/code&gt;)" href="#ins_sim.trajectory.kinematics.TruthTrajectory">TruthTrajectory</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Builds a truth trajectory by traversing a spline path at constant speed.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>path</code></b>
+              (<code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NEDSplinePath&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.spline.NEDSplinePath&lt;/code&gt;)" href="#ins_sim.trajectory.spline.NEDSplinePath">NEDSplinePath</a></code>)
+          –
+          <div class="doc-md-description">
+            <p><abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> spline path to traverse.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>speed</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Along-path speed [m/s], assumed constant.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tau_i</code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Sample interval [s].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>L_b0_deg</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>38.97</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initial geodetic latitude [deg]. Defaults to 38.97.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>lambda_b0_deg</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>-76.49</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initial longitude [deg]. Defaults to -76.49.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>h_b0</code></b>
+              (<code><span title="float">float</span></code>, default:
+                  <code>100.0</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Initial geodetic height [m]. Defaults to 100.0.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>oversample</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Profile samples per <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval for an integrating
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>; see <code>TruthTrajectory</code>. Defaults to None. When set, the
+path stops at the last whole profile step, up to one step
+short of its end.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>TruthTrajectory</code></b> (              <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.TruthTrajectory&lt;/code&gt;)" href="#ins_sim.trajectory.kinematics.TruthTrajectory">TruthTrajectory</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>Truth trajectory over the spline.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>A 5 km leg flown due north at 100 m/s:</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.trajectory.kinematics</span><span class="w"> </span><span class="kn">import</span> <span class="n">TruthTrajectory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.trajectory.spline</span><span class="w"> </span><span class="kn">import</span> <span class="n">NEDSplinePath</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">NEDSplinePath</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">5000.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">truth</span> <span class="o">=</span> <span class="n">TruthTrajectory</span><span class="o">.</span><span class="n">from_spline</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">speed</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">),</span> <span class="mi">6</span><span class="p">)</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">truth</span><span class="o">.</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">100</span><span class="p">]]</span>
+<span class="go">[100.0, 0.0, 0.0]</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/trajectory/kinematics.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">321</span>
+<span class="normal">322</span>
+<span class="normal">323</span>
+<span class="normal">324</span>
+<span class="normal">325</span>
+<span class="normal">326</span>
+<span class="normal">327</span>
+<span class="normal">328</span>
+<span class="normal">329</span>
+<span class="normal">330</span>
+<span class="normal">331</span>
+<span class="normal">332</span>
+<span class="normal">333</span>
+<span class="normal">334</span>
+<span class="normal">335</span>
+<span class="normal">336</span>
+<span class="normal">337</span>
+<span class="normal">338</span>
+<span class="normal">339</span>
+<span class="normal">340</span>
+<span class="normal">341</span>
+<span class="normal">342</span>
+<span class="normal">343</span>
+<span class="normal">344</span>
+<span class="normal">345</span>
+<span class="normal">346</span>
+<span class="normal">347</span>
+<span class="normal">348</span>
+<span class="normal">349</span>
+<span class="normal">350</span>
+<span class="normal">351</span>
+<span class="normal">352</span>
+<span class="normal">353</span>
+<span class="normal">354</span>
+<span class="normal">355</span>
+<span class="normal">356</span>
+<span class="normal">357</span>
+<span class="normal">358</span>
+<span class="normal">359</span>
+<span class="normal">360</span>
+<span class="normal">361</span>
+<span class="normal">362</span>
+<span class="normal">363</span>
+<span class="normal">364</span>
+<span class="normal">365</span>
+<span class="normal">366</span>
+<span class="normal">367</span>
+<span class="normal">368</span>
+<span class="normal">369</span>
+<span class="normal">370</span>
+<span class="normal">371</span>
+<span class="normal">372</span>
+<span class="normal">373</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="nd">@classmethod</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">from_spline</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">path</span><span class="p">:</span> <span class="n">NEDSplinePath</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+                 <span class="n">L_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">38.97</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="o">-</span><span class="mf">76.49</span><span class="p">,</span>
+                 <span class="n">h_b0</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">100.0</span><span class="p">,</span>
+                 <span class="n">oversample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="s2">"TruthTrajectory"</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Builds a truth trajectory by traversing a spline path at constant speed.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        path: NED spline path to traverse.</span>
+<span class="sd">        speed: Along-path speed [m/s], assumed constant.</span>
+<span class="sd">        tau_i: Sample interval [s].</span>
+<span class="sd">        L_b0_deg: Initial geodetic latitude [deg]. Defaults to 38.97.</span>
+<span class="sd">        lambda_b0_deg: Initial longitude [deg]. Defaults to -76.49.</span>
+<span class="sd">        h_b0: Initial geodetic height [m]. Defaults to 100.0.</span>
+<span class="sd">        oversample: Profile samples per IMU interval for an integrating</span>
+<span class="sd">            IMU; see `TruthTrajectory`. Defaults to None. When set, the</span>
+<span class="sd">            path stops at the last whole profile step, up to one step</span>
+<span class="sd">            short of its end.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        TruthTrajectory: Truth trajectory over the spline.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        A 5 km leg flown due north at 100 m/s:</span>
+
+<span class="sd">        &gt;&gt;&gt; from ins_sim.trajectory.kinematics import TruthTrajectory</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.trajectory.spline import NEDSplinePath</span>
+<span class="sd">        &gt;&gt;&gt; path = NEDSplinePath([[0.0, 0.0, 0.0], [5000.0, 0.0, 0.0]])</span>
+<span class="sd">        &gt;&gt;&gt; truth = TruthTrajectory.from_spline(path, speed=100.0, tau_i=0.1)</span>
+<span class="sd">        &gt;&gt;&gt; [round(float(v), 6) for v in truth.v_eb_n[100]]</span>
+<span class="sd">        [100.0, 0.0, 0.0]</span>
+<span class="sd">    """</span>
+    <span class="n">T</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">length</span> <span class="o">/</span> <span class="n">speed</span>
+    <span class="n">tau_p</span> <span class="o">=</span> <span class="n">tau_i</span> <span class="o">/</span> <span class="p">(</span><span class="n">oversample</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>                  <span class="c1"># profile interval</span>
+    <span class="k">if</span> <span class="n">oversample</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">T</span> <span class="o">+</span> <span class="n">tau_p</span><span class="p">,</span> <span class="n">tau_p</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># Drop the partial last interval: clamping it reverses the velocity.</span>
+        <span class="n">t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">T</span> <span class="o">/</span> <span class="n">tau_p</span> <span class="o">+</span> <span class="mf">1e-9</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">tau_p</span>
+    <span class="n">s_of_t</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">minimum</span><span class="p">(</span><span class="n">speed</span> <span class="o">*</span> <span class="n">t</span><span class="p">,</span> <span class="n">path</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>
+    <span class="n">pos_profile</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">position</span><span class="p">(</span><span class="n">s_of_t</span><span class="p">)</span>
+    <span class="c1"># An oversampled truth is integrated sample by sample, so first-order</span>
+    <span class="c1"># differences at the ends would show up as a jump in roll there.</span>
+    <span class="n">edge_order</span> <span class="o">=</span> <span class="mi">1</span> <span class="k">if</span> <span class="n">oversample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">2</span>
+    <span class="n">v_eb_n</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">pos_profile</span><span class="p">,</span> <span class="n">tau_p</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="n">edge_order</span><span class="p">)</span>
+    <span class="c1"># Coordinated-turn bank uses local gravity at the start; for short</span>
+    <span class="c1"># trajectories using a mean g is well within the rounding error</span>
+    <span class="c1"># of the heading-rate derivative itself.</span>
+    <span class="n">g_ref</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">L_b0_deg</span><span class="p">),</span> <span class="n">h_b0</span><span class="p">)</span>
+    <span class="n">euler_nb</span> <span class="o">=</span> <span class="n">_euler_from_velocity</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">,</span> <span class="n">tau_p</span><span class="p">,</span> <span class="n">g_ref</span><span class="p">,</span> <span class="n">edge_order</span><span class="p">)</span>
+    <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">pos_profile</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">,</span> <span class="n">euler_nb</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span>
+               <span class="n">L_b0_deg</span><span class="o">=</span><span class="n">L_b0_deg</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="o">=</span><span class="n">lambda_b0_deg</span><span class="p">,</span> <span class="n">h_b0</span><span class="o">=</span><span class="n">h_b0</span><span class="p">,</span>
+               <span class="n">oversample</span><span class="o">=</span><span class="n">oversample</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ins_sim.trajectory.kinematics.MissionTrajectory" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">MissionTrajectory</span>
+
+
+<a href="#ins_sim.trajectory.kinematics.MissionTrajectory" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="typing.NamedTuple">NamedTuple</span></code></p>
+
+
+
+        <p>Result of building a mission from its <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> definition.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.MissionTrajectory.truth">truth</span></code></b>
+              (<code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.TruthTrajectory&lt;/code&gt;)" href="#ins_sim.trajectory.kinematics.TruthTrajectory">TruthTrajectory</a></code>)
+          –
+          <div class="doc-md-description">
+            <p>Truth trajectory over the whole mission.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.MissionTrajectory.v_sprint">v_sprint</span></code></b>
+              (<code><span title="float">float</span> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Sprint-leg speed [m/s] if a Mach-targeted speed_ramp
+phase is present, else None.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.kinematics.MissionTrajectory.R_turn">R_turn</span></code></b>
+              (<code><span title="float">float</span> | None</code>)
+          –
+          <div class="doc-md-description">
+            <p>Turn radius [m] of the first coordinated turn
+encountered, else None.</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="ins_sim.trajectory.kinematics.build_trajectory" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-function"></code>            <span class="doc doc-object-name doc-function-name">build_trajectory</span>
+
+
+<a href="#ins_sim.trajectory.kinematics.build_trajectory" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">build_trajectory</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="n"><span title="str">str</span></span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="n"><span title="float">float</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="n">oversample</span><span class="p">:</span> <span class="n"><span title="int">int</span></span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MissionTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.MissionTrajectory&lt;/code&gt;)" href="#ins_sim.trajectory.kinematics.MissionTrajectory">MissionTrajectory</a></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Builds a phase-by-phase truth trajectory from a <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> mission definition.</p>
+<p>Each phase in the <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> maps to a helper function; fields omitted
+from a phase are inherited from the running state (heading, speed,
+altitude).</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>yaml_path</code></b>
+              (<code><span title="str">str</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Path to the <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr> mission-phase definition file.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>tau_i</code></b>
+              (<code><span title="float">float</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Sample interval [s]. When None, defaults to the file's
+<code>simulation_time.dt_s</code> value.</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>oversample</code></b>
+              (<code><span title="int">int</span> | None</code>, default:
+                  <code>None</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>When None (the default), the truth <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are the
+exact inverse of the basic strapdown update. When an integer M,
+the mission is built at tau_i/M and the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are the
+averages over each interval tau_i, as an integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>
+reports them; see <code>TruthTrajectory</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+<b><code>MissionTrajectory</code></b> (              <code><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;MissionTrajectory&lt;/span&gt; (&lt;code&gt;ins_sim.trajectory.kinematics.MissionTrajectory&lt;/code&gt;)" href="#ins_sim.trajectory.kinematics.MissionTrajectory">MissionTrajectory</a></code>
+)          –
+          <div class="doc-md-description">
+            <p>(truth, v_sprint, R_turn); unpacks
+positionally as <code>truth, v_sprint, R_turn = build_trajectory(...)</code>.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Raises:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="ValueError">ValueError</span></code>
+            –
+          <div class="doc-md-description">
+            <p>If the first phase is not a <code>ground_roll</code> or a later
+phase is one, if a phase has an unrecognized <code>type</code>, or if a
+<code>speed_end_mach</code> speed_ramp phase comes before any <code>climb</code> or
+<code>waypoint</code> phase has set the altitude.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <p>The packaged mission at coarse 5 s steps (each phase is sampled on
+whole steps, so coarse sampling shortens it slightly):</p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_trajectory_path</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.trajectory.kinematics</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_trajectory</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">truth</span><span class="p">,</span> <span class="n">v_sprint</span><span class="p">,</span> <span class="n">R_turn</span> <span class="o">=</span> <span class="n">build_trajectory</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">default_trajectory_path</span><span class="p">()),</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">round</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="mi">60</span><span class="p">)</span>          <span class="c1"># minutes of flight</span>
+<span class="go">79</span>
+</code></pre></div>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/trajectory/kinematics.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">722</span>
+<span class="normal">723</span>
+<span class="normal">724</span>
+<span class="normal">725</span>
+<span class="normal">726</span>
+<span class="normal">727</span>
+<span class="normal">728</span>
+<span class="normal">729</span>
+<span class="normal">730</span>
+<span class="normal">731</span>
+<span class="normal">732</span>
+<span class="normal">733</span>
+<span class="normal">734</span>
+<span class="normal">735</span>
+<span class="normal">736</span>
+<span class="normal">737</span>
+<span class="normal">738</span>
+<span class="normal">739</span>
+<span class="normal">740</span>
+<span class="normal">741</span>
+<span class="normal">742</span>
+<span class="normal">743</span>
+<span class="normal">744</span>
+<span class="normal">745</span>
+<span class="normal">746</span>
+<span class="normal">747</span>
+<span class="normal">748</span>
+<span class="normal">749</span>
+<span class="normal">750</span>
+<span class="normal">751</span>
+<span class="normal">752</span>
+<span class="normal">753</span>
+<span class="normal">754</span>
+<span class="normal">755</span>
+<span class="normal">756</span>
+<span class="normal">757</span>
+<span class="normal">758</span>
+<span class="normal">759</span>
+<span class="normal">760</span>
+<span class="normal">761</span>
+<span class="normal">762</span>
+<span class="normal">763</span>
+<span class="normal">764</span>
+<span class="normal">765</span>
+<span class="normal">766</span>
+<span class="normal">767</span>
+<span class="normal">768</span>
+<span class="normal">769</span>
+<span class="normal">770</span>
+<span class="normal">771</span>
+<span class="normal">772</span>
+<span class="normal">773</span>
+<span class="normal">774</span>
+<span class="normal">775</span>
+<span class="normal">776</span>
+<span class="normal">777</span>
+<span class="normal">778</span>
+<span class="normal">779</span>
+<span class="normal">780</span>
+<span class="normal">781</span>
+<span class="normal">782</span>
+<span class="normal">783</span>
+<span class="normal">784</span>
+<span class="normal">785</span>
+<span class="normal">786</span>
+<span class="normal">787</span>
+<span class="normal">788</span>
+<span class="normal">789</span>
+<span class="normal">790</span>
+<span class="normal">791</span>
+<span class="normal">792</span>
+<span class="normal">793</span>
+<span class="normal">794</span>
+<span class="normal">795</span>
+<span class="normal">796</span>
+<span class="normal">797</span>
+<span class="normal">798</span>
+<span class="normal">799</span>
+<span class="normal">800</span>
+<span class="normal">801</span>
+<span class="normal">802</span>
+<span class="normal">803</span>
+<span class="normal">804</span>
+<span class="normal">805</span>
+<span class="normal">806</span>
+<span class="normal">807</span>
+<span class="normal">808</span>
+<span class="normal">809</span>
+<span class="normal">810</span>
+<span class="normal">811</span>
+<span class="normal">812</span>
+<span class="normal">813</span>
+<span class="normal">814</span>
+<span class="normal">815</span>
+<span class="normal">816</span>
+<span class="normal">817</span>
+<span class="normal">818</span>
+<span class="normal">819</span>
+<span class="normal">820</span>
+<span class="normal">821</span>
+<span class="normal">822</span>
+<span class="normal">823</span>
+<span class="normal">824</span>
+<span class="normal">825</span>
+<span class="normal">826</span>
+<span class="normal">827</span>
+<span class="normal">828</span>
+<span class="normal">829</span>
+<span class="normal">830</span>
+<span class="normal">831</span>
+<span class="normal">832</span>
+<span class="normal">833</span>
+<span class="normal">834</span>
+<span class="normal">835</span>
+<span class="normal">836</span>
+<span class="normal">837</span>
+<span class="normal">838</span>
+<span class="normal">839</span>
+<span class="normal">840</span>
+<span class="normal">841</span>
+<span class="normal">842</span>
+<span class="normal">843</span>
+<span class="normal">844</span>
+<span class="normal">845</span>
+<span class="normal">846</span>
+<span class="normal">847</span>
+<span class="normal">848</span>
+<span class="normal">849</span>
+<span class="normal">850</span>
+<span class="normal">851</span>
+<span class="normal">852</span>
+<span class="normal">853</span>
+<span class="normal">854</span>
+<span class="normal">855</span>
+<span class="normal">856</span>
+<span class="normal">857</span>
+<span class="normal">858</span>
+<span class="normal">859</span>
+<span class="normal">860</span>
+<span class="normal">861</span>
+<span class="normal">862</span>
+<span class="normal">863</span>
+<span class="normal">864</span>
+<span class="normal">865</span>
+<span class="normal">866</span>
+<span class="normal">867</span>
+<span class="normal">868</span>
+<span class="normal">869</span>
+<span class="normal">870</span>
+<span class="normal">871</span>
+<span class="normal">872</span>
+<span class="normal">873</span>
+<span class="normal">874</span>
+<span class="normal">875</span>
+<span class="normal">876</span>
+<span class="normal">877</span>
+<span class="normal">878</span>
+<span class="normal">879</span>
+<span class="normal">880</span>
+<span class="normal">881</span>
+<span class="normal">882</span>
+<span class="normal">883</span>
+<span class="normal">884</span>
+<span class="normal">885</span>
+<span class="normal">886</span>
+<span class="normal">887</span>
+<span class="normal">888</span>
+<span class="normal">889</span>
+<span class="normal">890</span>
+<span class="normal">891</span>
+<span class="normal">892</span>
+<span class="normal">893</span>
+<span class="normal">894</span>
+<span class="normal">895</span>
+<span class="normal">896</span>
+<span class="normal">897</span>
+<span class="normal">898</span>
+<span class="normal">899</span>
+<span class="normal">900</span>
+<span class="normal">901</span>
+<span class="normal">902</span>
+<span class="normal">903</span>
+<span class="normal">904</span>
+<span class="normal">905</span>
+<span class="normal">906</span>
+<span class="normal">907</span>
+<span class="normal">908</span>
+<span class="normal">909</span>
+<span class="normal">910</span>
+<span class="normal">911</span>
+<span class="normal">912</span>
+<span class="normal">913</span>
+<span class="normal">914</span>
+<span class="normal">915</span>
+<span class="normal">916</span>
+<span class="normal">917</span>
+<span class="normal">918</span>
+<span class="normal">919</span>
+<span class="normal">920</span>
+<span class="normal">921</span>
+<span class="normal">922</span>
+<span class="normal">923</span>
+<span class="normal">924</span>
+<span class="normal">925</span>
+<span class="normal">926</span>
+<span class="normal">927</span>
+<span class="normal">928</span>
+<span class="normal">929</span>
+<span class="normal">930</span>
+<span class="normal">931</span>
+<span class="normal">932</span>
+<span class="normal">933</span>
+<span class="normal">934</span>
+<span class="normal">935</span>
+<span class="normal">936</span>
+<span class="normal">937</span>
+<span class="normal">938</span>
+<span class="normal">939</span>
+<span class="normal">940</span>
+<span class="normal">941</span>
+<span class="normal">942</span>
+<span class="normal">943</span>
+<span class="normal">944</span>
+<span class="normal">945</span>
+<span class="normal">946</span>
+<span class="normal">947</span>
+<span class="normal">948</span>
+<span class="normal">949</span>
+<span class="normal">950</span>
+<span class="normal">951</span>
+<span class="normal">952</span>
+<span class="normal">953</span>
+<span class="normal">954</span>
+<span class="normal">955</span>
+<span class="normal">956</span>
+<span class="normal">957</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">build_trajectory</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">:</span> <span class="nb">float</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                     <span class="n">oversample</span><span class="p">:</span> <span class="nb">int</span> <span class="o">|</span> <span class="kc">None</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">MissionTrajectory</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Builds a phase-by-phase truth trajectory from a YAML mission definition.</span>
+
+<span class="sd">    Each phase in the YAML maps to a helper function; fields omitted</span>
+<span class="sd">    from a phase are inherited from the running state (heading, speed,</span>
+<span class="sd">    altitude).</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        yaml_path: Path to the YAML mission-phase definition file.</span>
+<span class="sd">        tau_i: Sample interval [s]. When None, defaults to the file's</span>
+<span class="sd">            `simulation_time.dt_s` value.</span>
+<span class="sd">        oversample: When None (the default), the truth IMU outputs are the</span>
+<span class="sd">            exact inverse of the basic strapdown update. When an integer M,</span>
+<span class="sd">            the mission is built at tau_i/M and the IMU outputs are the</span>
+<span class="sd">            averages over each interval tau_i, as an integrating IMU</span>
+<span class="sd">            reports them; see `TruthTrajectory`.</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        MissionTrajectory: (truth, v_sprint, R_turn); unpacks</span>
+<span class="sd">            positionally as ``truth, v_sprint, R_turn = build_trajectory(...)``.</span>
+
+<span class="sd">    Raises:</span>
+<span class="sd">        ValueError: If the first phase is not a `ground_roll` or a later</span>
+<span class="sd">            phase is one, if a phase has an unrecognized `type`, or if a</span>
+<span class="sd">            `speed_end_mach` speed_ramp phase comes before any `climb` or</span>
+<span class="sd">            `waypoint` phase has set the altitude.</span>
+
+<span class="sd">    Examples:</span>
+<span class="sd">        The packaged mission at coarse 5 s steps (each phase is sampled on</span>
+<span class="sd">        whole steps, so coarse sampling shortens it slightly):</span>
+
+<span class="sd">        &gt;&gt;&gt; from ins_sim.config import default_trajectory_path</span>
+<span class="sd">        &gt;&gt;&gt; from ins_sim.trajectory.kinematics import build_trajectory</span>
+<span class="sd">        &gt;&gt;&gt; truth, v_sprint, R_turn = build_trajectory(str(default_trajectory_path()), tau_i=5.0)</span>
+<span class="sd">        &gt;&gt;&gt; round(float(truth.t[-1]) / 60)          # minutes of flight</span>
+<span class="sd">        79</span>
+<span class="sd">    """</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">yaml_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">fh</span><span class="p">:</span>
+        <span class="n">cfg</span> <span class="o">=</span> <span class="n">yaml</span><span class="o">.</span><span class="n">safe_load</span><span class="p">(</span><span class="n">fh</span><span class="p">)</span>
+
+    <span class="n">FT</span> <span class="o">=</span> <span class="mf">0.3048</span>
+    <span class="n">KT</span> <span class="o">=</span> <span class="mf">0.514444</span>
+    <span class="n">NM</span> <span class="o">=</span> <span class="mf">1852.0</span>
+    <span class="n">g0</span> <span class="o">=</span> <span class="mf">9.80665</span>
+
+    <span class="n">dep</span>    <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"departure"</span><span class="p">]</span>
+    <span class="n">sim</span>    <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"simulation_time"</span><span class="p">]</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="n">cfg</span><span class="p">[</span><span class="s2">"phases"</span><span class="p">]</span>
+
+    <span class="c1"># Every mission starts from rest on the runway at the departure point,</span>
+    <span class="c1"># and only a ground roll starts from rest.</span>
+    <span class="n">phase_types</span> <span class="o">=</span> <span class="p">[</span><span class="n">phase</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"type"</span><span class="p">)</span> <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">]</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">phase_types</span> <span class="ow">or</span> <span class="n">phase_types</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="s2">"ground_roll"</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"The first phase must be a 'ground_roll': a mission "</span>
+                         <span class="s2">"starts from rest at the departure point"</span><span class="p">)</span>
+    <span class="k">if</span> <span class="s2">"ground_roll"</span> <span class="ow">in</span> <span class="n">phase_types</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"Only the first phase can be a 'ground_roll'"</span><span class="p">)</span>
+
+    <span class="n">lat0_deg</span>     <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dep</span><span class="p">[</span><span class="s2">"lat_deg"</span><span class="p">])</span>
+    <span class="n">lon0_deg</span>     <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dep</span><span class="p">[</span><span class="s2">"lon_deg"</span><span class="p">])</span>
+    <span class="n">alt0_msl</span>     <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dep</span><span class="p">[</span><span class="s2">"alt_ft"</span><span class="p">])</span> <span class="o">*</span> <span class="n">FT</span>
+    <span class="n">nav_bank_deg</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">dep</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"nav_bank_angle_deg"</span><span class="p">,</span> <span class="mf">25.0</span><span class="p">))</span>
+
+    <span class="k">if</span> <span class="n">tau_i</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">tau_i</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">sim</span><span class="p">[</span><span class="s2">"dt_s"</span><span class="p">])</span>
+    <span class="n">tau_imu</span> <span class="o">=</span> <span class="n">tau_i</span>
+    <span class="n">tau_i</span> <span class="o">=</span> <span class="n">tau_i</span> <span class="o">/</span> <span class="p">(</span><span class="n">oversample</span> <span class="ow">or</span> <span class="mi">1</span><span class="p">)</span>       <span class="c1"># the phases are built at this step</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">_isa_speed</span><span class="p">(</span><span class="n">mach</span><span class="p">,</span> <span class="n">alt_m_msl</span><span class="p">):</span>
+        <span class="n">T_isa</span> <span class="o">=</span> <span class="mf">288.15</span> <span class="o">-</span> <span class="mf">0.0065</span> <span class="o">*</span> <span class="n">alt_m_msl</span>
+        <span class="k">return</span> <span class="n">mach</span> <span class="o">*</span> <span class="mf">340.294</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">T_isa</span> <span class="o">/</span> <span class="mf">288.15</span><span class="p">)</span>
+
+    <span class="n">ALT_CRUISE</span>     <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">ALT_NED_CRUISE</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">v_sprint</span>       <span class="o">=</span> <span class="kc">None</span>
+    <span class="n">R_turn_global</span>  <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">state</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">"hdg_deg"</span><span class="p">:</span>  <span class="kc">None</span><span class="p">,</span>
+        <span class="s2">"speed"</span><span class="p">:</span>    <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"alt_ned"</span><span class="p">:</span>  <span class="mf">0.0</span><span class="p">,</span>
+        <span class="s2">"pos_last"</span><span class="p">:</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="n">segs_pos</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">segs_vel</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">phase</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">:</span>
+        <span class="n">ptype</span> <span class="o">=</span> <span class="n">phase</span><span class="p">[</span><span class="s2">"type"</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">"ground_roll"</span><span class="p">:</span>
+            <span class="n">v_final</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"speed_final_kt"</span><span class="p">])</span> <span class="o">*</span> <span class="n">KT</span>
+            <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">_ground_roll</span><span class="p">(</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"heading_deg"</span><span class="p">]),</span> <span class="n">v_final</span><span class="p">,</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"run_length_m"</span><span class="p">]),</span> <span class="n">tau_i</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"heading_deg"</span><span class="p">])</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span>   <span class="o">=</span> <span class="n">v_final</span>
+
+        <span class="k">elif</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">"takeoff"</span><span class="p">:</span>
+            <span class="n">v_end_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"speed_kt"</span><span class="p">])</span> <span class="o">*</span> <span class="n">KT</span>
+            <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">_takeoff</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">],</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"heading_deg"</span><span class="p">]),</span> <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">],</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"pitch_deg"</span><span class="p">]),</span> <span class="n">v_end_val</span><span class="p">,</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"duration_s"</span><span class="p">]),</span> <span class="n">tau_i</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"heading_deg"</span><span class="p">])</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span>   <span class="o">=</span> <span class="n">v_end_val</span>
+
+        <span class="k">elif</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">"climb"</span><span class="p">:</span>
+            <span class="n">ALT_CRUISE</span>     <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"to_altitude_ft"</span><span class="p">])</span> <span class="o">*</span> <span class="n">FT</span>
+            <span class="n">ALT_NED_CRUISE</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">ALT_CRUISE</span> <span class="o">-</span> <span class="n">alt0_msl</span><span class="p">)</span>
+            <span class="n">climb_speed</span>    <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"speed_kt"</span><span class="p">])</span> <span class="o">*</span> <span class="n">KT</span>
+            <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">_climb</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">],</span> <span class="n">climb_speed</span><span class="p">,</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">][</span><span class="mi">2</span><span class="p">],</span> <span class="n">ALT_NED_CRUISE</span><span class="p">,</span>
+                <span class="n">pitch_deg</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"pitch_deg"</span><span class="p">]),</span> <span class="n">dt</span><span class="o">=</span><span class="n">tau_i</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span>   <span class="o">=</span> <span class="n">climb_speed</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">]</span> <span class="o">=</span> <span class="n">ALT_NED_CRUISE</span>
+
+        <span class="k">elif</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">"waypoint"</span><span class="p">:</span>
+            <span class="n">wp_lat</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"lat_deg"</span><span class="p">])</span>
+            <span class="n">wp_lon</span>   <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"lon_deg"</span><span class="p">])</span>
+            <span class="n">wp_alt_m</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"alt_ft"</span><span class="p">])</span> <span class="o">*</span> <span class="n">FT</span>
+            <span class="c1"># speed_kt is optional: without it the leg is flown at the</span>
+            <span class="c1"># current speed (e.g. a sprint speed set by a preceding</span>
+            <span class="c1"># speed_ramp), avoiding a nonphysical speed step at the</span>
+            <span class="c1"># turn exit.</span>
+            <span class="n">wp_speed</span> <span class="o">=</span> <span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"speed_kt"</span><span class="p">])</span> <span class="o">*</span> <span class="n">KT</span>
+                        <span class="k">if</span> <span class="s2">"speed_kt"</span> <span class="ow">in</span> <span class="n">phase</span> <span class="k">else</span> <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">])</span>
+            <span class="n">wp_alt_ned</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="n">wp_alt_m</span> <span class="o">-</span> <span class="n">alt0_msl</span><span class="p">)</span>
+
+            <span class="n">curr_lat</span><span class="p">,</span> <span class="n">curr_lon</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">_approx_geodetic</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">],</span> <span class="n">lat0_deg</span><span class="p">,</span> <span class="n">lon0_deg</span><span class="p">,</span> <span class="n">alt0_msl</span><span class="p">)</span>
+            <span class="n">bearing_deg</span> <span class="o">=</span> <span class="n">_geodetic_bearing</span><span class="p">(</span><span class="n">curr_lat</span><span class="p">,</span> <span class="n">curr_lon</span><span class="p">,</span> <span class="n">wp_lat</span><span class="p">,</span> <span class="n">wp_lon</span><span class="p">)</span>
+            <span class="n">dist_h_m</span>    <span class="o">=</span> <span class="n">_geodetic_distance</span><span class="p">(</span><span class="n">curr_lat</span><span class="p">,</span> <span class="n">curr_lon</span><span class="p">,</span> <span class="n">wp_lat</span><span class="p">,</span> <span class="n">wp_lon</span><span class="p">)</span>
+
+            <span class="c1"># Turn to waypoint bearing</span>
+            <span class="n">R_nav</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">g0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">nav_bank_deg</span><span class="p">)))</span>
+            <span class="k">if</span> <span class="n">R_turn_global</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">R_turn_global</span> <span class="o">=</span> <span class="n">R_nav</span>
+            <span class="n">pos_t</span><span class="p">,</span> <span class="n">vel_t</span><span class="p">,</span> <span class="n">exit_hdg</span> <span class="o">=</span> <span class="n">_turn</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">],</span> <span class="n">bearing_deg</span><span class="p">,</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">],</span> <span class="n">R_nav</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">]</span> <span class="o">=</span> <span class="n">exit_hdg</span>
+
+            <span class="c1"># Fly to waypoint (with altitude change if needed)</span>
+            <span class="n">alt_diff</span> <span class="o">=</span> <span class="n">wp_alt_ned</span> <span class="o">-</span> <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">alt_diff</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mf">1.0</span><span class="p">:</span>
+                <span class="n">implied_pitch</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">alt_diff</span><span class="p">,</span> <span class="nb">max</span><span class="p">(</span><span class="n">dist_h_m</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">))))</span>
+                <span class="n">pos_s</span><span class="p">,</span> <span class="n">vel_s</span> <span class="o">=</span> <span class="n">_climb</span><span class="p">(</span>
+                    <span class="n">pos_t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">exit_hdg</span><span class="p">,</span> <span class="n">wp_speed</span><span class="p">,</span>
+                    <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">],</span> <span class="n">wp_alt_ned</span><span class="p">,</span>
+                    <span class="n">pitch_deg</span><span class="o">=</span><span class="n">implied_pitch</span><span class="p">,</span> <span class="n">dt</span><span class="o">=</span><span class="n">tau_i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">pos_s</span><span class="p">,</span> <span class="n">vel_s</span> <span class="o">=</span> <span class="n">_straight</span><span class="p">(</span><span class="n">pos_t</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">exit_hdg</span><span class="p">,</span> <span class="n">dist_h_m</span><span class="p">,</span> <span class="n">wp_speed</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">)</span>
+
+            <span class="n">ALT_CRUISE</span>     <span class="o">=</span> <span class="n">wp_alt_m</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span>   <span class="o">=</span> <span class="n">wp_speed</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">]</span> <span class="o">=</span> <span class="n">wp_alt_ned</span>
+
+            <span class="c1"># Concatenate turn + transit into one block</span>
+            <span class="n">sub_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">pos_t</span><span class="p">,</span> <span class="n">pos_s</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+            <span class="n">sub_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">vel_t</span><span class="p">,</span> <span class="n">vel_s</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+
+            <span class="c1"># Optional loiter on arrival</span>
+            <span class="n">loiter_cfg</span> <span class="o">=</span> <span class="n">phase</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"loiter"</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">loiter_cfg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">bank_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">loiter_cfg</span><span class="p">[</span><span class="s2">"bank_angle_deg"</span><span class="p">]))</span>
+                <span class="n">R_loit</span>   <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span> <span class="o">**</span> <span class="mi">2</span> <span class="o">/</span> <span class="p">(</span><span class="n">g0</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">tan</span><span class="p">(</span><span class="n">bank_rad</span><span class="p">))</span>
+                <span class="k">if</span> <span class="n">R_turn_global</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">R_turn_global</span> <span class="o">=</span> <span class="n">R_loit</span>
+                <span class="n">pos_l</span><span class="p">,</span> <span class="n">vel_l</span> <span class="o">=</span> <span class="n">_loiter</span><span class="p">(</span>
+                    <span class="n">sub_pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">],</span>
+                    <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">],</span> <span class="nb">int</span><span class="p">(</span><span class="n">loiter_cfg</span><span class="p">[</span><span class="s2">"n_turns"</span><span class="p">]),</span>
+                    <span class="n">R_loit</span><span class="p">,</span> <span class="n">direction</span><span class="o">=</span><span class="n">loiter_cfg</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"direction"</span><span class="p">,</span> <span class="s2">"right"</span><span class="p">),</span> <span class="n">dt</span><span class="o">=</span><span class="n">tau_i</span><span class="p">)</span>
+                <span class="n">sub_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">sub_pos</span><span class="p">,</span> <span class="n">pos_l</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+                <span class="n">sub_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">sub_vel</span><span class="p">,</span> <span class="n">vel_l</span><span class="p">[</span><span class="mi">1</span><span class="p">:]])</span>
+
+            <span class="n">pos</span> <span class="o">=</span> <span class="n">sub_pos</span>
+            <span class="n">vel</span> <span class="o">=</span> <span class="n">sub_vel</span>
+
+        <span class="k">elif</span> <span class="n">ptype</span> <span class="o">==</span> <span class="s2">"speed_ramp"</span><span class="p">:</span>
+            <span class="n">v_start</span> <span class="o">=</span> <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s2">"speed_end_mach"</span> <span class="ow">in</span> <span class="n">phase</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">ALT_CRUISE</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">"speed_end_mach needs an earlier 'climb' or "</span>
+                        <span class="s2">"'waypoint' phase to set the altitude that fixes "</span>
+                        <span class="s2">"the speed of sound"</span><span class="p">)</span>
+                <span class="n">v_end_val</span> <span class="o">=</span> <span class="n">_isa_speed</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"speed_end_mach"</span><span class="p">]),</span> <span class="n">ALT_CRUISE</span><span class="p">)</span>
+                <span class="n">v_sprint</span> <span class="o">=</span> <span class="n">v_end_val</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">v_end_val</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"speed_end_kt"</span><span class="p">])</span> <span class="o">*</span> <span class="n">KT</span>
+            <span class="n">pos</span><span class="p">,</span> <span class="n">vel</span> <span class="o">=</span> <span class="n">_speed_ramp</span><span class="p">(</span>
+                <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">],</span> <span class="n">state</span><span class="p">[</span><span class="s2">"hdg_deg"</span><span class="p">],</span>
+                <span class="n">v_start</span><span class="p">,</span> <span class="n">v_end_val</span><span class="p">,</span> <span class="n">state</span><span class="p">[</span><span class="s2">"alt_ned"</span><span class="p">],</span>
+                <span class="n">dur</span><span class="o">=</span><span class="nb">float</span><span class="p">(</span><span class="n">phase</span><span class="p">[</span><span class="s2">"duration_s"</span><span class="p">]),</span> <span class="n">dt</span><span class="o">=</span><span class="n">tau_i</span><span class="p">)</span>
+            <span class="n">state</span><span class="p">[</span><span class="s2">"speed"</span><span class="p">]</span> <span class="o">=</span> <span class="n">v_end_val</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Unknown phase type: </span><span class="si">{</span><span class="n">ptype</span><span class="si">!r}</span><span class="s2">"</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">segs_pos</span><span class="p">:</span>
+            <span class="n">segs_pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">)</span>
+            <span class="n">segs_vel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vel</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">segs_pos</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pos</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+            <span class="n">segs_vel</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">vel</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">"pos_last"</span><span class="p">]</span> <span class="o">=</span> <span class="n">pos</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="n">all_pos</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">segs_pos</span><span class="p">)</span>
+    <span class="n">all_vel</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">segs_vel</span><span class="p">)</span>
+
+    <span class="c1"># Guard heading at t=0 against zero-velocity divide</span>
+    <span class="n">hdg0_rad</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">phases</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="s2">"heading_deg"</span><span class="p">])</span>
+    <span class="n">all_vel</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">hdg0_rad</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">hdg0_rad</span><span class="p">),</span> <span class="mf">0.0</span><span class="p">])</span> <span class="o">*</span> <span class="mf">1e-9</span>
+
+    <span class="c1"># Smooth velocity to eliminate C1 kinks at phase boundaries.</span>
+    <span class="c1"># Sigma ~2 s → roll/pitch transitions over 4–6 s, matching transport-category dynamics.</span>
+    <span class="c1"># --8&lt;-- [start:velocity_smoothing]</span>
+    <span class="n">_att_sigma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">tau_i</span><span class="p">))</span>
+    <span class="n">all_vel</span> <span class="o">=</span> <span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">all_vel</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">_att_sigma</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+    <span class="c1"># --8&lt;-- [end:velocity_smoothing]</span>
+
+    <span class="n">g_ref</span> <span class="o">=</span> <span class="n">normal_gravity</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">deg2rad</span><span class="p">(</span><span class="n">lat0_deg</span><span class="p">),</span> <span class="n">alt0_msl</span><span class="p">)</span>
+    <span class="c1"># An oversampled truth is integrated sample by sample, so first-order</span>
+    <span class="c1"># differences at the ends would show up as a jump in roll there.</span>
+    <span class="n">euler</span> <span class="o">=</span> <span class="n">_euler_from_velocity</span><span class="p">(</span><span class="n">all_vel</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">g_ref</span><span class="p">,</span>
+                                 <span class="n">edge_order</span><span class="o">=</span><span class="mi">1</span> <span class="k">if</span> <span class="n">oversample</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="mi">2</span><span class="p">)</span>
+
+    <span class="c1"># The departure elevation is given above mean sea level; with no geoid</span>
+    <span class="c1"># model it is used directly as the geodetic height h_b.</span>
+    <span class="n">truth</span> <span class="o">=</span> <span class="n">TruthTrajectory</span><span class="p">(</span><span class="n">all_pos</span><span class="p">,</span> <span class="n">all_vel</span><span class="p">,</span> <span class="n">euler</span><span class="p">,</span> <span class="n">tau_imu</span><span class="p">,</span>
+                            <span class="n">L_b0_deg</span><span class="o">=</span><span class="n">lat0_deg</span><span class="p">,</span> <span class="n">lambda_b0_deg</span><span class="o">=</span><span class="n">lon0_deg</span><span class="p">,</span>
+                            <span class="n">h_b0</span><span class="o">=</span><span class="n">alt0_msl</span><span class="p">,</span> <span class="n">oversample</span><span class="o">=</span><span class="n">oversample</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">MissionTrajectory</span><span class="p">(</span><span class="n">truth</span><span class="p">,</span> <span class="n">v_sprint</span><span class="p">,</span> <span class="n">R_turn_global</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="ins_sim.trajectory.spline" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <span class="doc doc-object-name doc-module-name">ins_sim.trajectory.spline</span>
+
+
+<a href="#ins_sim.trajectory.spline" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Smooth paths through waypoints, for building test and example trajectories.</p>
+<p><code>NEDSplinePath</code> interpolates waypoints given in metres along North, East
+and Down from a start point; <code>TruthTrajectory.from_spline</code> flies such a
+path at constant speed.</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="ins_sim.trajectory.spline.NEDSplinePath" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <span class="doc doc-object-name doc-class-name">NEDSplinePath</span>
+
+
+<a href="#ins_sim.trajectory.spline.NEDSplinePath" class="headerlink" title="Permanent link">&para;</a></h3>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">NEDSplinePath</span><span class="p">(</span><span class="n">waypoints</span><span class="p">:</span> <span class="n"><span title="numpy.typing.ArrayLike">ArrayLike</span></span><span class="p">,</span> <span class="n">bc_type</span><span class="p">:</span> <span class="n"><span title="str">str</span></span> <span class="o">=</span> <span class="s1">'not-a-knot'</span><span class="p">)</span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+
+
+        <p>C2-continuous cubic spline through <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> waypoints.</p>
+<p>The spline is parameterized by cumulative chord length so that
+position(s) is evaluated at arc-length s along the path rather than
+by waypoint index.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.spline.NEDSplinePath.s_knots">s_knots</span></code></b>
+              (<code>ndarray</code>)
+          –
+          <div class="doc-md-description">
+            <p>Cumulative chord length at each waypoint
+[m], shape (N,).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.spline.NEDSplinePath.length">length</span></code></b>
+              (<code><span title="float">float</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Total chord length of the path [m].</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+          <b><code><span title="ins_sim.trajectory.spline.NEDSplinePath.cs">cs</span></code></b>
+              (<code>CubicSpline</code>)
+          –
+          <div class="doc-md-description">
+            <p>Underlying cubic spline,
+mapping arc-length s to <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> position.</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Examples:</span></p>
+    <div class="highlight"><pre><span></span><code><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.trajectory.spline</span><span class="w"> </span><span class="kn">import</span> <span class="n">NEDSplinePath</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">path</span> <span class="o">=</span> <span class="n">NEDSplinePath</span><span class="p">([[</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">],</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">12.0</span><span class="p">]])</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">float</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">length</span><span class="p">)</span>                  <span class="c1"># 5 m + 12 m of chords</span>
+<span class="go">17.0</span>
+</code></pre></div>
+
+        <p>Initializes the spline from a sequence of <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> waypoints.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>waypoints</code></b>
+              (<code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>)
+          –
+          <div class="doc-md-description">
+            <p><abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> waypoints [m] to interpolate, shape (N, 3).</p>
+          </div>
+        </li>
+        <li class="doc-section-item field-body">
+            <b><code>bc_type</code></b>
+              (<code><span title="str">str</span></code>, default:
+                  <code>&#39;not-a-knot&#39;</code>
+)
+          –
+          <div class="doc-md-description">
+            <p>Boundary condition passed to
+scipy.interpolate.CubicSpline. Defaults to "not-a-knot".</p>
+          </div>
+        </li>
+    </ul>
+
+
+
+
+
+
+
+
+                  <details class="mkdocstrings-source">
+                    <summary>Source code in <code>ins_sim/trajectory/spline.py</code></summary>
+                    <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">33</span>
+<span class="normal">34</span>
+<span class="normal">35</span>
+<span class="normal">36</span>
+<span class="normal">37</span>
+<span class="normal">38</span>
+<span class="normal">39</span>
+<span class="normal">40</span>
+<span class="normal">41</span>
+<span class="normal">42</span>
+<span class="normal">43</span>
+<span class="normal">44</span>
+<span class="normal">45</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">waypoints</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">,</span> <span class="n">bc_type</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"not-a-knot"</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">"""Initializes the spline from a sequence of NED waypoints.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        waypoints: NED waypoints [m] to interpolate, shape (N, 3).</span>
+<span class="sd">        bc_type: Boundary condition passed to</span>
+<span class="sd">            scipy.interpolate.CubicSpline. Defaults to "not-a-knot".</span>
+<span class="sd">    """</span>
+    <span class="n">pts</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">waypoints</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+    <span class="n">seg</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">pts</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">),</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">s_knots</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">r_</span><span class="p">[</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">cumsum</span><span class="p">(</span><span class="n">seg</span><span class="p">)]</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">length</span>  <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s_knots</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="bp">self</span><span class="o">.</span><span class="n">cs</span>      <span class="o">=</span> <span class="n">CubicSpline</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">s_knots</span><span class="p">,</span> <span class="n">pts</span><span class="p">,</span> <span class="n">bc_type</span><span class="o">=</span><span class="n">bc_type</span><span class="p">)</span>
+</code></pre></div></td></tr></table></div>
+                  </details>
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="ins_sim.trajectory.spline.NEDSplinePath.position" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-method"></code>            <span class="doc doc-object-name doc-function-name">position</span>
+
+
+<a href="#ins_sim.trajectory.spline.NEDSplinePath.position" class="headerlink" title="Permanent link">&para;</a></h4>
+<div class="doc-signature highlight"><pre><span></span><code><span class="nf">position</span><span class="p">(</span><span class="n">s</span><span class="p">:</span> <span class="n"><span title="numpy.typing.ArrayLike">ArrayLike</span></span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n"><span title="numpy.ndarray">ndarray</span></span>
+</code></pre></div>
+
+    <div class="doc doc-contents ">
+
+        <p>Evaluates <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> position at arc-length(s) along the path.</p>
+
+
+<p><span class="doc-section-title">Parameters:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+            <b><code>s</code></b>
+              (<code><span title="numpy.typing.ArrayLike">ArrayLike</span></code>)
+          –
+          <div class="doc-md-description">
+            <p>Arc-length parameter(s) [m], clipped to [0, self.length].</p>
+          </div>
+        </li>
+    </ul>
+
+
+<p><span class="doc-section-title">Returns:</span></p>
+    <ul>
+        <li class="doc-section-item field-body">
+              <code><span title="numpy.ndarray">ndarray</span></code>
+          –
+          <div class="doc-md-description">
+            <p>numpy.ndarray: <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> position(s) [m] at the requested
+arc-length(s).</p>
+          </div>
+        </li>
+    </ul>
+
+
+            <details class="mkdocstrings-source">
+              <summary>Source code in <code>ins_sim/trajectory/spline.py</code></summary>
+              <div class="highlight"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre><span></span><span class="normal">47</span>
+<span class="normal">48</span>
+<span class="normal">49</span>
+<span class="normal">50</span>
+<span class="normal">51</span>
+<span class="normal">52</span>
+<span class="normal">53</span>
+<span class="normal">54</span>
+<span class="normal">55</span>
+<span class="normal">56</span>
+<span class="normal">57</span></pre></div></td><td class="code"><div><pre><span></span><code><span class="k">def</span><span class="w"> </span><span class="nf">position</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">s</span><span class="p">:</span> <span class="n">npt</span><span class="o">.</span><span class="n">ArrayLike</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">:</span>
+<span class="w">    </span><span class="sd">"""Evaluates NED position at arc-length(s) along the path.</span>
+
+<span class="sd">    Args:</span>
+<span class="sd">        s: Arc-length parameter(s) [m], clipped to [0, self.length].</span>
+
+<span class="sd">    Returns:</span>
+<span class="sd">        numpy.ndarray: NED position(s) [m] at the requested</span>
+<span class="sd">            arc-length(s).</span>
+<span class="sd">    """</span>
+    <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">clip</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">))</span>
+</code></pre></div></td></tr></table></div>
+            </details>
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.tooltips", "toc.follow"], "search": "../../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

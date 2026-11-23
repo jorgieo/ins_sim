@@ -1,0 +1,2726 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Open-source desktop simulation engine for IMU trajectory generation and Monte Carlo navigation error evaluation">
+      
+      
+      
+        <link rel="canonical" href="https://jorgieo.github.io/ins_sim/0.4/theory/truth-kinematics/">
+      
+      
+        <link rel="prev" href="../earth-gravity/">
+      
+      
+        <link rel="next" href="../imu-errors/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.8.2">
+    
+    
+      
+        <title>Truth & ideal IMU - Inertial Navigation Simulation & GUI</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.57a0d79d.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.fb2fffe2.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+      <link rel="stylesheet" href="../../stylesheets/extra.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#truth-trajectory-ideal-imu" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+      <div data-md-color-scheme="default" data-md-component="outdated" hidden>
+        
+      </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-header__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            Inertial Navigation Simulation & GUI
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Truth & ideal IMU
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: light)" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="(prefers-color-scheme: dark)" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../download/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Get started
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../guide/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  User guide
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Theory & Math
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../validation/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Validation
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../reference/api/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Reference
+
+        </a>
+      </li>
+    
+  
+
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../project/changelog/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Project
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="Inertial Navigation Simulation &amp; GUI" class="md-nav__button md-logo" aria-label="Inertial Navigation Simulation & GUI" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    Inertial Navigation Simulation & GUI
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/jorgieo/ins_sim" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    jorgieo/ins_sim
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Get started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Get started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../download/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Download & install
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-run/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first simulation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../get-started/first-script/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Your first script
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../guide/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    User guide
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    User guide
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/results/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reading the results
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/missions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Writing a mission
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/imu-specs/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Modelling an IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Command-line runs
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../guide/recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Theory & Math
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Theory & Math
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../notation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Notation & conventions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../frames-attitude/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Frames & attitude
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../earth-gravity/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth & gravity
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Truth & ideal IMU
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attitude-from-velocity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attitude from velocity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-a-perfect-imu-measures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a perfect IMU measures
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="As implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integrating-imu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integrating IMU
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../imu-errors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mechanization/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Strapdown mechanization
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../vertical-channel/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Vertical channel
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../error-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    INS error model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../monte-carlo/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Monte Carlo evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../covariance/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Covariance analysis
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../validation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Validation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_6_1" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../reference/api/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_6_1" id="__nav_6_1_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_6_1_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6_1">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Python API
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/earth-model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Earth model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/trajectory/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Trajectory
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/sensors/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Sensors
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/navigation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Navigation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/evaluation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Evaluation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/api/config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/mission-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Mission YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/imu-yaml/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    IMU spec YAML
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/units-constants/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Units & constants
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/glossary/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Glossary
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../reference/bibliography/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Bibliography
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_7" >
+        
+          
+          <label class="md-nav__link" for="__nav_7" id="__nav_7_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Project
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_7_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_7">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Project
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/changelog/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Changelog
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../project/migrating-from-0.2/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Migrating from 0.2
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#physical-picture" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Physical picture
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#continuous-time-model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Continuous-time model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Continuous-time model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attitude-from-velocity" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attitude from velocity
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#what-a-perfect-imu-measures" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What a perfect IMU measures
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#as-implemented" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        As implemented
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="As implemented">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#integrating-imu" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Integrating IMU
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#what-it-looks-like" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        What it looks like
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#assumptions-limitations" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Assumptions &amp; limitations
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#in-the-code" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        In the code
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#references" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        References
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="truth-trajectory-ideal-imu">Truth trajectory &amp; ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr><a class="headerlink" href="#truth-trajectory-ideal-imu" title="Permanent link">&para;</a></h1>
+<p>To test a navigator you need to know the right answer. ins_sim builds a
+<strong>truth trajectory</strong> from a mission written in <abbr title="The plain-text file format of ins_sim's mission and IMU-spec files.">YAML</abbr>: the vehicle's actual
+position, velocity and attitude at every sample. It then works out what a
+perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> would have measured along that trajectory. Those ideal gyro and
+accelerometer outputs feed the <a href="../imu-errors/"><abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> error model</a>; the truth
+itself is what every navigation error is measured against. The mission you
+pick in the GUI is the one this page builds.</p>
+<div class="admonition abstract">
+<p class="admonition-title">Key results</p>
+<ul>
+<li>The mission is assembled phase by phase in metres along North, East
+  and Down from the start point. Its velocity is then smoothed, so every
+  manoeuvre starts and ends over a few seconds.</li>
+<li>The attitude follows the velocity: the nose points along the flight
+  path, and every turn is coordinated. There is no angle of attack, no
+  sideslip and no wind.</li>
+<li>By default the ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs are computed as the exact inverse of
+  the navigator's basic update. Fed back through the navigator, they
+  reproduce the truth to about <span class="arithmatex">\(10^{-8}\)</span> m over the whole mission.</li>
+<li>The simulator then measures how sensor errors propagate, not how
+  accurately the navigator integrates continuous motion.</li>
+<li>An <a href="#integrating-imu">oversampled truth</a> instead reports what a real,
+  integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> would: the average rates over each interval of a
+  motion that is continuous within it. Against it the navigator's own
+  integration error shows up.</li>
+</ul>
+</div>
+<h2 id="physical-picture">Physical picture<a class="headerlink" href="#physical-picture" title="Permanent link">&para;</a></h2>
+<pre class="mermaid"><code>flowchart LR
+    Y["Mission YAML&lt;br/&gt;phases"] --&gt; V["Velocity profile&lt;br/&gt;v&lt;sub&gt;eb&lt;/sub&gt;&lt;sup&gt;n&lt;/sup&gt;, smoothed"]
+    V --&gt; A["Attitude&lt;br/&gt;from velocity"]
+    V --&gt; P["Curvilinear position&lt;br/&gt;L&lt;sub&gt;b&lt;/sub&gt;, λ&lt;sub&gt;b&lt;/sub&gt;, h&lt;sub&gt;b&lt;/sub&gt;"]
+    A --&gt; I["Ideal IMU outputs&lt;br/&gt;ω&lt;sub&gt;ib&lt;/sub&gt;&lt;sup&gt;b&lt;/sup&gt;, f&lt;sub&gt;ib&lt;/sub&gt;&lt;sup&gt;b&lt;/sup&gt;"]
+    P --&gt; I
+    V --&gt; I</code></pre>
+<p>A mission is a list of phases flown one after another: a ground roll, the
+takeoff, a climb, legs to waypoints with optional loiters, and speed
+changes. Each phase produces a stretch of position and velocity in metres
+from the start point, in that point's North, East and Down axes:</p>
+<table>
+<thead>
+<tr>
+<th>Phase</th>
+<th>Motion</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>ground_roll</code></td>
+<td>Constant acceleration along the runway heading, up to the rotation speed</td>
+</tr>
+<tr>
+<td><code>takeoff</code></td>
+<td>Pitch and speed ramp up together over a set time</td>
+</tr>
+<tr>
+<td><code>climb</code></td>
+<td>Constant speed and flight-path angle, up to a target altitude</td>
+</tr>
+<tr>
+<td><code>waypoint</code></td>
+<td>A coordinated turn to the waypoint's bearing at the departure's <code>nav_bank_angle_deg</code>, then a straight or climbing leg to it; optionally a loiter of whole circles at a set bank angle</td>
+</tr>
+<tr>
+<td><code>speed_ramp</code></td>
+<td>A linear change of speed, optionally to a Mach number at the standard-atmosphere temperature of the current altitude</td>
+</tr>
+</tbody>
+</table>
+<p>A turn at speed <span class="arithmatex">\(v\)</span> and bank angle <span class="arithmatex">\(\phi\)</span> has radius
+<span class="arithmatex">\(v^2/(g_0\tan\phi)\)</span>, with <span class="arithmatex">\(g_0\)</span> = 9.80665 m/s². The phases join with
+corners in their velocity, so the whole velocity profile is smoothed with a
+Gaussian filter of 2 s standard deviation. A roll into a turn then takes
+4 to 6 s, as it would in a transport aircraft.</p>
+<h2 id="continuous-time-model">Continuous-time model<a class="headerlink" href="#continuous-time-model" title="Permanent link">&para;</a></h2>
+<h3 id="attitude-from-velocity">Attitude from velocity<a class="headerlink" href="#attitude-from-velocity" title="Permanent link">&para;</a></h3>
+<p>The truth vehicle flies like an idealized aircraft: its nose points along
+its velocity, and it banks exactly as much as a coordinated turn needs.</p>
+<div class="arithmatex">\[
+\psi_{nb} = \operatorname{atan2}\left(v_E,\, v_N\right),
+\qquad
+\theta_{nb} = \operatorname{atan2}\left(-v_D,\, v_h\right),
+\qquad
+\phi_{nb} = \operatorname{atan2}\left(v_h\,\dot\psi_{nb},\, g_\text{ref}\right)
+\]</div>
+<p>where:</p>
+<ul>
+<li><span class="arithmatex">\(\psi_{nb}\)</span>, <span class="arithmatex">\(\theta_{nb}\)</span> and <span class="arithmatex">\(\phi_{nb}\)</span> are the heading, pitch
+  and roll [rad];</li>
+<li><span class="arithmatex">\(v_N\)</span>, <span class="arithmatex">\(v_E\)</span>, <span class="arithmatex">\(v_D\)</span> are the components of <span class="arithmatex">\(\vvec{eb}{n}\)</span>, and
+  <span class="arithmatex">\(v_h = \sqrt{v_N^2 + v_E^2}\)</span> is the horizontal speed [m/s];</li>
+<li><span class="arithmatex">\(\dot\psi_{nb}\)</span> is the rate of change of heading [rad/s];</li>
+<li><span class="arithmatex">\(g_\text{ref}\)</span> is gravity at the departure point [m/s²].</li>
+</ul>
+<p>The roll formula is the coordinated-turn condition: the lift, tilted by the
+bank angle, supplies the centripetal acceleration <span class="arithmatex">\(v_h\dot\psi_{nb}\)</span>
+sideways while still balancing gravity. Nothing pushes the aircraft
+sideways relative to its own axes, so the lateral accelerometer reads
+almost zero, even in a turn.</p>
+<h3 id="what-a-perfect-imu-measures">What a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> measures<a class="headerlink" href="#what-a-perfect-imu-measures" title="Permanent link">&para;</a></h3>
+<p>A perfect gyro triad measures the body's angular rate relative to inertial
+space, <span class="arithmatex">\(\wvec{ib}{b}\)</span>. That is the body's rate relative to the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame,
+plus the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> frame's own rotation (Earth rate and transport rate):</p>
+<div class="arithmatex">\[
+\wvec{ib}{b} = \wvec{nb}{b} + \Cmat{n}{b}\left(\wvec{ie}{n} + \wvec{en}{n}\right)
+\]</div>
+<p>A perfect accelerometer triad measures specific force, <span class="arithmatex">\(\fvec{ib}{b}\)</span>: the
+acceleration the vehicle needs, relative to the rotating Earth, plus the
+Coriolis and transport terms, minus gravity:</p>
+<div class="arithmatex">\[
+\fvec{ib}{n} = \vvec[\dot]{eb}{n} + \left(2\wvec{ie}{n} + \wvec{en}{n}\right)\times\vvec{eb}{n} - \gvec{b}{n},
+\qquad
+\fvec{ib}{b} = \Cmat{n}{b}\,\fvec{ib}{n}
+\]</div>
+<p>where <span class="arithmatex">\(\Cmat{n}{b} = (\Cmat{b}{n})^{\mathsf T}\)</span> resolves <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> vectors in
+body axes, and <span class="arithmatex">\(\gvec{b}{n}\)</span> is gravity
+(see <a href="../earth-gravity/">Earth &amp; gravity</a>). These are the
+<a href="../mechanization/">navigation equations</a> solved for the sensor outputs:
+given the motion, they return the measurements that would produce it.</p>
+<h2 id="as-implemented">As implemented<a class="headerlink" href="#as-implemented" title="Permanent link">&para;</a></h2>
+<p>The truth is built on the same time grid as the navigator, one sample per
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> interval <span class="arithmatex">\(\tau_i\)</span>, and its outputs are written as the exact inverse of
+the navigator's discrete update rather than of the continuous equations.</p>
+<p><strong>1. Smoothing.</strong> The phases' velocity profile is low-pass filtered:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="1:2"><input checked="checked" id="__tabbed_1_1" name="__tabbed_1" type="radio" /><input id="__tabbed_1_2" name="__tabbed_1" type="radio" /><div class="tabbed-labels"><label for="__tabbed_1_1">Equation</label><label for="__tabbed_1_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\vvec{eb}{n}(t) \leftarrow \left(G_\sigma * \vvec{eb}{n}\right)(t),
+\qquad \sigma = 2~\text{s}
+\]</div>
+<p>where <span class="arithmatex">\(G_\sigma\)</span> is a Gaussian kernel and <span class="arithmatex">\(*\)</span> is convolution.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">_att_sigma</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="nb">int</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">/</span> <span class="n">tau_i</span><span class="p">))</span>
+<span class="n">all_vel</span> <span class="o">=</span> <span class="n">gaussian_filter1d</span><span class="p">(</span><span class="n">all_vel</span><span class="p">,</span> <span class="n">sigma</span><span class="o">=</span><span class="n">_att_sigma</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>2. Attitude from velocity.</strong> The heading rate is a finite difference of
+the sampled heading:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="2:2"><input checked="checked" id="__tabbed_2_1" name="__tabbed_2" type="radio" /><input id="__tabbed_2_2" name="__tabbed_2" type="radio" /><div class="tabbed-labels"><label for="__tabbed_2_1">Equation</label><label for="__tabbed_2_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\psi_{nb} = \operatorname{atan2}(v_E, v_N),
+\quad
+\theta_{nb} = \operatorname{atan2}(-v_D, v_h),
+\quad
+\phi_{nb} = \operatorname{atan2}(v_h\,\dot\psi_{nb},\, g_\text{ref})
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">psi</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unwrap</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">],</span> <span class="n">v_eb_n</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]))</span>
+<span class="n">v_h</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linalg</span><span class="o">.</span><span class="n">norm</span><span class="p">(</span><span class="n">v_eb_n</span><span class="p">[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">],</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">theta</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">v_eb_n</span><span class="p">[:,</span> <span class="mi">2</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">maximum</span><span class="p">(</span><span class="n">v_h</span><span class="p">,</span> <span class="mf">1e-6</span><span class="p">))</span>
+<span class="n">psi_dot</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">gradient</span><span class="p">(</span><span class="n">psi</span><span class="p">,</span> <span class="n">tau_i</span><span class="p">,</span> <span class="n">edge_order</span><span class="o">=</span><span class="n">edge_order</span><span class="p">)</span>
+<span class="n">phi</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">v_h</span> <span class="o">*</span> <span class="n">psi_dot</span><span class="p">,</span> <span class="n">g_ref</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>3. Curvilinear position.</strong> Latitude, longitude and height are integrated
+from the velocity, one forward-Euler step per sample, exactly as the
+navigator integrates them:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="3:2"><input checked="checked" id="__tabbed_3_1" name="__tabbed_3" type="radio" /><input id="__tabbed_3_2" name="__tabbed_3" type="radio" /><div class="tabbed-labels"><label for="__tabbed_3_1">Equation</label><label for="__tabbed_3_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+L_{b,k+1} = L_{b,k} + \frac{v_{N,k}\,\tau_i}{R_N + h_{b,k}},
+\quad
+\lambda_{b,k+1} = \lambda_{b,k} + \frac{v_{E,k}\,\tau_i}{(R_E + h_{b,k})\cos L_{b,k}},
+\quad
+h_{b,k+1} = h_{b,k} - v_{D,k}\,\tau_i
+\]</div>
+<p>with the radii evaluated at <span class="arithmatex">\(L_{b,k}\)</span>.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">L_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">);</span> <span class="n">lambda_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">);</span> <span class="n">h_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">M</span><span class="p">)</span>
+<span class="n">L_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">lambda_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b0</span><span class="p">,</span> <span class="n">lambda_b0</span><span class="p">,</span> <span class="n">h_b0</span>
+<span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">M</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">wgs84_radii</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span>
+    <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">0</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_i</span>
+    <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">lambda_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">+</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">1</span><span class="p">]</span> <span class="o">/</span>
+                                   <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">])</span> <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">L_b</span><span class="p">[</span><span class="n">k</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_i</span>
+    <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">h_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">tau_i</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>4. Specific force.</strong> The velocity's rate of change over each step is a
+forward difference, the same difference the navigator's velocity update
+will take:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="4:2"><input checked="checked" id="__tabbed_4_1" name="__tabbed_4" type="radio" /><input id="__tabbed_4_2" name="__tabbed_4" type="radio" /><div class="tabbed-labels"><label for="__tabbed_4_1">Equation</label><label for="__tabbed_4_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\fvec{ib}{n}(k) = \frac{\vvec{eb}{n}(k+1) - \vvec{eb}{n}(k)}{\tau_i}
++ \left(2\wvec{ie}{n} + \wvec{en}{n}\right)_k \times \vvec{eb}{n}(k)
+- \gvec{b}{n}(k),
+\qquad
+\fvec{ib}{b}(k) = \Cmat{n}{b}(k)\,\fvec{ib}{n}(k)
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">v_eb_n_rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">M</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span>
+<span class="n">v_eb_n_rate</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">tau_i</span>
+<span class="n">v_eb_n_rate</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>  <span class="o">=</span> <span class="n">v_eb_n_rate</span><span class="p">[</span><span class="o">-</span><span class="mi">2</span><span class="p">]</span>
+<span class="n">f_ib_n</span> <span class="o">=</span> <span class="n">v_eb_n_rate</span> <span class="o">+</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="mf">2.0</span> <span class="o">*</span> <span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">)</span> <span class="o">-</span> <span class="n">g_b_n</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">f_ib_b</span> <span class="o">=</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">f_ib_n</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>5. Angular rate.</strong> The body's rotation over each step is taken from the
+two attitudes at either end of it, exactly, as a rotation vector:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="5:2"><input checked="checked" id="__tabbed_5_1" name="__tabbed_5" type="radio" /><input id="__tabbed_5_2" name="__tabbed_5" type="radio" /><div class="tabbed-labels"><label for="__tabbed_5_1">Equation</label><label for="__tabbed_5_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\wvec{nb}{b}(k) = \frac{1}{\tau_i}\operatorname{rotvec}\left(\Cmat{n}{b}(k)\,\Cmat{b}{n}(k+1)\right),
+\qquad
+\wvec{ib}{b}(k) = \wvec{nb}{b}(k) + \Cmat{n}{b}(k)\,\wvec{in}{n}(k)
+\]</div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">dC_b</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>       <span class="c1"># C_b(k+1)^b(k)</span>
+<span class="n">omega_nb_b_fwd</span> <span class="o">=</span> <span class="n">dC_b</span><span class="o">.</span><span class="n">as_rotvec</span><span class="p">()</span> <span class="o">/</span> <span class="n">tau_i</span>            <span class="c1"># (M-1, 3)</span>
+<span class="n">omega_nb_b</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">omega_nb_b_fwd</span><span class="p">,</span> <span class="n">omega_nb_b_fwd</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">:]])</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">omega_ib_b</span> <span class="o">=</span> <span class="n">omega_nb_b</span> <span class="o">+</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_en_n</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The navigator undoes each of these steps exactly: its attitude update
+applies the same rotation vector, its velocity update the same difference,
+and its position update the same Euler step. The last sample, which has no
+next sample to difference against, repeats the previous outputs.</p>
+<div class="admonition note">
+<p class="admonition-title">Compared with Groves (2013)</p>
+<p>The specific force and angular rate are the kinematic definitions of
+Groves' navigation equations<sup id="fnref:groves"><a class="footnote-ref" href="#fn:groves">1</a></sup>, solved for the sensor outputs.
+What is specific to ins_sim is that they are discretized to invert the
+navigator's own first-order update, so the truth and the navigator
+agree exactly when the sensors are perfect.</p>
+</div>
+<h3 id="integrating-imu">Integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr><a class="headerlink" href="#integrating-imu" title="Permanent link">&para;</a></h3>
+<p>The default outputs describe a vehicle that moves in jumps, one step at a
+time. To test how well the navigator integrates continuous motion, ins_sim
+can instead give the outputs of a real <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr>, which integrates the rates over
+each interval. With <code>oversample</code> set to <span class="arithmatex">\(M\)</span>, the mission is built at the
+finer step <span class="arithmatex">\(\tau_f = \tau_i/M\)</span>, and the truth is the continuous motion
+through those fine samples: between two of them the body turns relative to
+<abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> at a constant rate, the velocity changes at a constant rate, and the
+specific force in <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> is constant, with gravity and the Coriolis term at
+the mean of their values at the two samples. The states are kept every <span class="arithmatex">\(M\)</span>-th
+sample, and the outputs are the averages of <span class="arithmatex">\(\wvec{ib}{b}\)</span> and
+<span class="arithmatex">\(\fvec{ib}{b}\)</span> over each interval <span class="arithmatex">\(\tau_i\)</span>, which is what an integrating
+<abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> reports.</p>
+<p><strong>1. Position</strong>, by the trapezoidal rule, since the velocity changes
+linearly between fine samples:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="6:2"><input checked="checked" id="__tabbed_6_1" name="__tabbed_6" type="radio" /><input id="__tabbed_6_2" name="__tabbed_6" type="radio" /><div class="tabbed-labels"><label for="__tabbed_6_1">Equation</label><label for="__tabbed_6_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+h_{b,j+1} = h_{b,j} - \tfrac12\left(v_{D,j} + v_{D,j+1}\right)\tau_f,
+\qquad
+L_{b,j+1} = L_{b,j} + \tfrac12\left(\frac{v_{N,j}}{R_{N,j} + h_{b,j}} + \frac{v_{N,j+1}}{R_{N,j+1} + h_{b,j+1}}\right)\tau_f
+\]</div>
+<p>and likewise for <span class="arithmatex">\(\lambda_b\)</span>. The radii at the end of the step are
+taken at a latitude predicted with the start values, which keeps the
+update second order.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">n_fine</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+    <span class="n">h</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">-</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_D</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_D</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_f</span><span class="p">)</span>
+    <span class="c1"># Radii at a predicted endpoint latitude keep the update second order.</span>
+    <span class="n">L_pred</span> <span class="o">=</span> <span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="n">v_N</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">tau_f</span>
+    <span class="n">R_N_next</span><span class="p">,</span> <span class="n">R_E_next</span> <span class="o">=</span> <span class="n">_radii</span><span class="p">(</span><span class="n">L_pred</span><span class="p">)</span>
+    <span class="n">L</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_N</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                           <span class="o">+</span> <span class="n">v_N</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">(</span><span class="n">R_N_next</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]))</span> <span class="o">*</span> <span class="n">tau_f</span><span class="p">)</span>
+    <span class="n">lam</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">lam</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">v_E</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="p">])</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="p">]))</span>
+                               <span class="o">+</span> <span class="n">v_E</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">]</span> <span class="o">/</span> <span class="p">((</span><span class="n">R_E_next</span> <span class="o">+</span> <span class="n">h</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="n">cos</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])))</span> <span class="o">*</span> <span class="n">tau_f</span><span class="p">)</span>
+    <span class="n">R_N</span><span class="p">,</span> <span class="n">R_E</span> <span class="o">=</span> <span class="n">_radii</span><span class="p">(</span><span class="n">L</span><span class="p">[</span><span class="n">j</span><span class="o">+</span><span class="mi">1</span><span class="p">])</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p><strong>2. Integrated outputs.</strong> Over the fine step <span class="arithmatex">\(j\)</span> the body turns through
+<span class="arithmatex">\(\boldsymbol{\phi}_j = \operatorname{rotvec}(\Cmat{n}{b}(j)\,\Cmat{b}{n}(j+1))\)</span>
+relative to <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>, so the <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr>-to-body matrix is
+<span class="arithmatex">\(\exp(-s\skew{\boldsymbol{\phi}_j})\Cmat{n}{b}(j)\)</span> a fraction <span class="arithmatex">\(s\)</span> of
+the way through it. Averaging that over the step gives the matrix
+<span class="arithmatex">\(\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\Cmat{n}{b}(j)\)</span>, with
+<span class="arithmatex">\(\boldsymbol{\Gamma}(\mathbf{x}) = \Ithree + \frac{1 - \cos x}{x^2}\skew{\mathbf{x}} +
+\frac{x - \sin x}{x^3}\skew{\mathbf{x}}^2\)</span> and <span class="arithmatex">\(x = |\mathbf{x}|\)</span>:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="7:2"><input checked="checked" id="__tabbed_7_1" name="__tabbed_7" type="radio" /><input id="__tabbed_7_2" name="__tabbed_7" type="radio" /><div class="tabbed-labels"><label for="__tabbed_7_1">Equation</label><label for="__tabbed_7_2">Code</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="arithmatex">\[
+\avec{ib,j}{b} = \boldsymbol{\phi}_j + \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\bar{\boldsymbol{\omega}}_{in}^n(j),
+\qquad
+\uvec{ib,j}{b} = \tau_f\,\boldsymbol{\Gamma}(-\boldsymbol{\phi}_j)\,\Cmat{n}{b}(j)\,\fvec{ib}{n}(j)
+\]</div>
+<p>with <span class="arithmatex">\(\fvec{ib}{n}(j)\)</span> as in step 4 above, at the fine step, but with
+gravity and the Coriolis term averaged over the two samples, and
+<span class="arithmatex">\(\bar{\boldsymbol{\omega}}_{in}^n(j)\)</span> the mean of <span class="arithmatex">\(\wvec{in}{n}\)</span> at
+the two samples. The outputs are the sums over the <span class="arithmatex">\(M\)</span> fine steps of each interval,
+divided by <span class="arithmatex">\(\tau_i\)</span>.</p>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="n">phi</span> <span class="o">=</span> <span class="p">(</span><span class="n">C_b_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">inv</span><span class="p">()</span> <span class="o">*</span> <span class="n">C_b_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span><span class="o">.</span><span class="n">as_rotvec</span><span class="p">()</span>     <span class="c1"># (n_fine-1, 3)</span>
+<span class="n">coriolis_minus_g</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span><span class="n">omega_ie_n</span> <span class="o">+</span> <span class="n">omega_in_n</span><span class="p">,</span> <span class="n">v_eb_n</span><span class="p">)</span> <span class="o">-</span> <span class="n">g_b_n</span>
+<span class="n">f_ib_n</span> <span class="o">=</span> <span class="p">((</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">-</span> <span class="n">v_eb_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span> <span class="o">/</span> <span class="n">tau_f</span>
+          <span class="o">+</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">coriolis_minus_g</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">coriolis_minus_g</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+<span class="n">omega_in_mid</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">omega_in_n</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">omega_in_n</span><span class="p">[</span><span class="mi">1</span><span class="p">:])</span>
+<span class="n">alpha_fine</span> <span class="o">=</span> <span class="n">phi</span> <span class="o">+</span> <span class="n">tau_f</span> <span class="o">*</span> <span class="n">_gamma_apply</span><span class="p">(</span><span class="o">-</span><span class="n">phi</span><span class="p">,</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">omega_in_mid</span><span class="p">))</span>
+<span class="n">upsilon_fine</span> <span class="o">=</span> <span class="n">tau_f</span> <span class="o">*</span> <span class="n">_gamma_apply</span><span class="p">(</span><span class="o">-</span><span class="n">phi</span><span class="p">,</span> <span class="n">C_n_b</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">f_ib_n</span><span class="p">))</span>
+<span class="n">alpha</span> <span class="o">=</span> <span class="n">alpha_fine</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_out</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">oversample</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">upsilon</span> <span class="o">=</span> <span class="n">upsilon_fine</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">n_out</span> <span class="o">-</span> <span class="mi">1</span><span class="p">,</span> <span class="n">oversample</span><span class="p">,</span> <span class="mi">3</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>The truth is still built from fine samples, so it is continuous motion only
+to the extent that the fine step resolves it. Against it, a navigator at
+<span class="arithmatex">\(\tau_i\)</span> shows its own error plus a floor from the fine step that falls
+as <span class="arithmatex">\(\tau_f\)</span> shrinks: on the packaged mission, about 2 m of horizontal
+error at <span class="arithmatex">\(\tau_f\)</span> = 0.01 s, and 0.6 m at 0.005 s. Keep <span class="arithmatex">\(M\)</span> large enough that the
+floor stays below the error you want to see. The
+<a href="../mechanization/#precision-mechanization">Strapdown mechanization</a> page
+describes the navigator that integrates these outputs accurately.</p>
+<h2 id="what-it-looks-like">What it looks like<a class="headerlink" href="#what-it-looks-like" title="Permanent link">&para;</a></h2>
+<p><img alt="The ideal gyro and accelerometer outputs, in body axes, along the packaged mission" src="../../assets/theory/truth_imu.png" /></p>
+<p>What a perfect <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> measures along the packaged mission, at the app's default
+<span class="arithmatex">\(\tau_i\)</span> = 0.1 s. Every feature has a simple physical reading:</p>
+<ul>
+<li><strong>Accelerometer z</strong>: −9.8 m/s² in level flight, the reaction to gravity.
+  It reaches −11.3 m/s² in the 30° banks of the two loiters,
+  <span class="arithmatex">\(g/\cos 30°\)</span>, and −10.8 m/s² in the 25° turns to the waypoints. In the
+  10° climb it is <span class="arithmatex">\(-g\cos 10°\)</span> = −9.6 m/s².</li>
+<li><strong>Accelerometer x</strong>: the takeoff run, then +1.7 m/s² during the climb,
+  where the pitched-up accelerometer feels <span class="arithmatex">\(g\sin 10°\)</span> of gravity. Later
+  come the two speed changes.</li>
+<li><strong>Accelerometer y</strong> stays close to zero throughout, because every turn is
+  coordinated.</li>
+<li><strong>Gyros</strong>: in a banked turn the turn rate splits between the body's z axis
+  (<span class="arithmatex">\(\dot\psi_{nb}\cos\phi_{nb}\)</span>) and its y axis
+  (<span class="arithmatex">\(\dot\psi_{nb}\sin\phi_{nb}\)</span>). The x gyro shows the brief roll into and
+  out of each turn.</li>
+</ul>
+<p>Earth rate, 15 °/h or 0.004 °/s, is in the gyro outputs too, but far too
+small to see at this scale.</p>
+<p>The <a href="../../validation/#zero-noise-round-trip">zero-noise round trip</a>
+on the Validation page feeds these outputs back through the navigator, which
+reproduces the truth to <span class="arithmatex">\(2.3 \times 10^{-8}\)</span> m. The
+<a href="../mechanization/#what-it-looks-like">Strapdown mechanization</a> page plots
+that residual.</p>
+<h2 id="assumptions-limitations">Assumptions &amp; limitations<a class="headerlink" href="#assumptions-limitations" title="Permanent link">&para;</a></h2>
+<div class="admonition warning">
+<p class="admonition-title">Assumptions &amp; limitations</p>
+<ul>
+<li><strong>Point-mass flight.</strong> The body axes follow the velocity: no angle of
+  attack, no sideslip, no wind, no vibration, and no lever arm between
+  the <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> and the vehicle's reference point.</li>
+<li><strong>No integration error to find, by default.</strong> The default outputs are
+  piecewise constant over each step and invert the navigator's own
+  basic discretization. The navigator's integration errors, such as
+  coning, sculling and its first-order velocity update, are therefore
+  invisible: the simulator behaves as if the navigation algorithm were
+  perfect. An <a href="#integrating-imu">oversampled truth</a> makes them visible.</li>
+<li><strong>The sample interval shows up in turns.</strong> The specific force is the
+  forward difference across a step, so during a turn it has a small
+  component along the direction of flight, about
+  <span class="arithmatex">\(-v_h\dot\psi_{nb}^2\tau_i/2\)</span>. At <span class="arithmatex">\(\tau_i\)</span> = 1 s that is about
+  −0.1 m/s² in the loiters, as the example below prints; at 0.1 s it is
+  ten times smaller. The navigator undoes it exactly.</li>
+<li><strong>Waypoints are approximate.</strong> Bearings and distances to waypoints use
+  a spherical Earth, and legs are straight lines in the start point's
+  <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> axes, so a distant waypoint is reached only approximately.</li>
+<li><strong>Standard atmosphere.</strong> Mach numbers are converted to speed with the
+  <abbr title="International Standard Atmosphere: the reference profile of temperature and pressure with altitude.">ISA</abbr> temperature at the current altitude. The departure altitude, given
+  above mean sea level, is used as the ellipsoidal height.</li>
+</ul>
+</div>
+<h2 id="in-the-code">In the code<a class="headerlink" href="#in-the-code" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Quantity</th>
+<th>Equation</th>
+<th>Implemented in</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Mission phases and smoothing</td>
+<td>Phase table, <span class="arithmatex">\(G_\sigma * \vvec{eb}{n}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;build_trajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.build_trajectory"><code>build_trajectory</code></a></td>
+</tr>
+<tr>
+<td>Attitude from velocity</td>
+<td><span class="arithmatex">\(\psi_{nb}\)</span>, <span class="arithmatex">\(\theta_{nb}\)</span>, <span class="arithmatex">\(\phi_{nb}\)</span></td>
+<td><code>_euler_from_velocity</code> in <code>ins_sim/trajectory/kinematics.py</code></td>
+</tr>
+<tr>
+<td>Curvilinear position</td>
+<td>Forward-Euler <span class="arithmatex">\(L_b\)</span>, <span class="arithmatex">\(\lambda_b\)</span>, <span class="arithmatex">\(h_b\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory"><code>TruthTrajectory</code></a></td>
+</tr>
+<tr>
+<td>Ideal <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr> outputs</td>
+<td><span class="arithmatex">\(\fvec{ib}{b}\)</span>, <span class="arithmatex">\(\wvec{ib}{b}\)</span></td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory"><code>TruthTrajectory</code></a></td>
+</tr>
+<tr>
+<td>Integrating <abbr title="Inertial measurement unit: three gyros and three accelerometers on orthogonal axes.">IMU</abbr></td>
+<td><span class="arithmatex">\(\avec{ib}{b}\)</span>, <span class="arithmatex">\(\uvec{ib}{b}\)</span> over each interval</td>
+<td><code>oversample</code> in <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;TruthTrajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory"><code>TruthTrajectory</code></a> and <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-function&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;build_trajectory&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.build_trajectory"><code>build_trajectory</code></a></td>
+</tr>
+<tr>
+<td>Smooth test paths</td>
+<td>Cubic spline through <abbr title="North-East-Down: the local navigation frame (n) used throughout ins_sim.">NED</abbr> waypoints, flown at constant speed</td>
+<td><a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-class&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-class-name&quot;&gt;NEDSplinePath&lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.spline.NEDSplinePath"><code>NEDSplinePath</code></a>, <a class="autorefs autorefs-internal" title="&lt;code class=&quot;doc-symbol doc-symbol-heading doc-symbol-method&quot;&gt;&lt;/code&gt;            &lt;span class=&quot;doc doc-object-name doc-function-name&quot;&gt;from_spline&lt;/span&gt;
+
+
+  &lt;span class=&quot;doc doc-labels&quot;&gt;
+      &lt;small class=&quot;doc doc-label doc-label-classmethod&quot;&gt;&lt;code&gt;classmethod&lt;/code&gt;&lt;/small&gt;
+  &lt;/span&gt;" href="../../reference/api/trajectory/#ins_sim.trajectory.kinematics.TruthTrajectory.from_spline"><code>TruthTrajectory.from_spline</code></a></td>
+</tr>
+</tbody>
+</table>
+<p>This example builds the packaged mission at <span class="arithmatex">\(\tau_i\)</span> = 1 s, prints the
+ideal accelerometer output in level flight and in the most steeply banked
+turn, and runs the zero-noise round trip:</p>
+<div class="tabbed-set tabbed-alternate" data-tabs="8:2"><input checked="checked" id="__tabbed_8_1" name="__tabbed_8" type="radio" /><input id="__tabbed_8_2" name="__tabbed_8" type="radio" /><div class="tabbed-labels"><label for="__tabbed_8_1">Script</label><label for="__tabbed_8_2">Output</label></div>
+<div class="tabbed-content">
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code><span class="sd">"""What a perfect IMU measures along the packaged mission, and the zero-noise round trip."""</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.config</span><span class="w"> </span><span class="kn">import</span> <span class="n">default_trajectory_path</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.navigation.strapdown</span><span class="w"> </span><span class="kn">import</span> <span class="n">NavState</span><span class="p">,</span> <span class="n">strapdown_navgrade</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">ins_sim.trajectory.kinematics</span><span class="w"> </span><span class="kn">import</span> <span class="n">build_trajectory</span>
+
+<span class="n">np</span><span class="o">.</span><span class="n">set_printoptions</span><span class="p">(</span><span class="n">precision</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">suppress</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">floatmode</span><span class="o">=</span><span class="s2">"fixed"</span><span class="p">)</span>
+
+<span class="n">truth</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">build_trajectory</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">default_trajectory_path</span><span class="p">()),</span> <span class="n">tau_i</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+<span class="n">roll</span> <span class="o">=</span> <span class="n">truth</span><span class="o">.</span><span class="n">euler_nb</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+<span class="c1"># Straight and level at Mach 0.8 (75 minutes in): the accelerometers sense</span>
+<span class="c1"># the reaction to gravity, along the body z axis, and almost nothing else.</span>
+<span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="mi">75</span> <span class="o">*</span> <span class="mf">60.0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"t = </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">2.0f</span><span class="si">}</span><span class="s2"> min, roll </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">roll</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="si">:</span><span class="s2">4.1f</span><span class="si">}</span><span class="s2">°: "</span>
+      <span class="sa">f</span><span class="s2">"f_ib^b = </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">f_ib_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.0</span><span class="si">}</span><span class="s2"> m/s²"</span><span class="p">)</span>
+
+<span class="c1"># An hour in, the aircraft is in its most steeply banked turn. The specific</span>
+<span class="c1"># force tilts with the aircraft, so it stays on the body z axis and grows</span>
+<span class="c1"># to g / cos(roll).</span>
+<span class="n">k</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">searchsorted</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">,</span> <span class="mi">60</span> <span class="o">*</span> <span class="mf">60.0</span><span class="p">))</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"t = </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">t</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="mi">60</span><span class="si">:</span><span class="s2">2.0f</span><span class="si">}</span><span class="s2"> min, roll </span><span class="si">{</span><span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">roll</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="si">:</span><span class="s2">4.1f</span><span class="si">}</span><span class="s2">°: "</span>
+      <span class="sa">f</span><span class="s2">"f_ib^b = </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">f_ib_b</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="o">.</span><span class="n">round</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mf">0.0</span><span class="si">}</span><span class="s2"> m/s²"</span><span class="p">)</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"g / cos(roll) = </span><span class="si">{</span><span class="n">truth</span><span class="o">.</span><span class="n">g</span><span class="p">[</span><span class="n">k</span><span class="p">]</span><span class="w"> </span><span class="o">/</span><span class="w"> </span><span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">roll</span><span class="p">[</span><span class="n">k</span><span class="p">])</span><span class="si">:</span><span class="s2">.3f</span><span class="si">}</span><span class="s2"> m/s²"</span><span class="p">)</span>
+
+<span class="c1"># The ideal outputs are the exact inverse of the navigator's update, so</span>
+<span class="c1"># navigating with them reproduces the truth.</span>
+<span class="n">start</span> <span class="o">=</span> <span class="n">NavState</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">L_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">truth</span><span class="o">.</span><span class="n">lambda_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                 <span class="n">truth</span><span class="o">.</span><span class="n">v_eb_n</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">truth</span><span class="o">.</span><span class="n">C_b_n</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">as_quat</span><span class="p">())</span>
+<span class="n">nav</span> <span class="o">=</span> <span class="n">strapdown_navgrade</span><span class="p">(</span><span class="n">truth</span><span class="o">.</span><span class="n">omega_ib_b</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">f_ib_b</span><span class="p">,</span> <span class="n">start</span><span class="p">,</span> <span class="n">truth</span><span class="o">.</span><span class="n">tau_i</span><span class="p">,</span>
+                         <span class="n">meas_h_b</span><span class="o">=</span><span class="n">truth</span><span class="o">.</span><span class="n">h_b</span><span class="p">)</span>
+<span class="n">largest</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">nav</span><span class="o">.</span><span class="n">r_lb_l</span> <span class="o">-</span> <span class="n">truth</span><span class="o">.</span><span class="n">r_lb_l</span><span class="p">)</span><span class="o">.</span><span class="n">max</span><span class="p">()</span>
+<span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Round trip reproduces the truth to within a micrometre: </span><span class="si">{</span><span class="nb">bool</span><span class="p">(</span><span class="n">largest</span><span class="w"> </span><span class="o">&lt;</span><span class="w"> </span><span class="mf">1e-6</span><span class="p">)</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+</code></pre></div>
+</div>
+<div class="tabbed-block">
+<div class="highlight"><pre><span></span><code>t = 75 min, roll  0.0°: f_ib^b = [ 0.000 -0.008 -9.782] m/s²
+t = 60 min, roll 30.0°: f_ib^b = [ -0.104   0.012 -11.259] m/s²
+g / cos(roll) = 11.281 m/s²
+Round trip reproduces the truth to within a micrometre: True
+</code></pre></div>
+</div>
+</div>
+</div>
+<p>In level flight the accelerometers also sense 0.008 m/s² sideways and a
+little more than gravity vertically. Holding a constant velocity relative
+to the rotating, curved Earth is an accelerated motion in inertial space,
+and those are the Coriolis and transport terms of the specific force.</p>
+<h2 id="references">References<a class="headerlink" href="#references" title="Permanent link">&para;</a></h2>
+<div class="footnote">
+<hr />
+<ol>
+<li id="fn:groves">
+<p><a href="../../reference/bibliography/#groves2013">Groves (2013)</a>, Chapter 2,
+for specific force and the kinematics of rotating frames, and Chapter 5
+for the navigation equations that the ideal outputs invert.&#160;<a class="footnote-backref" href="#fnref:groves" title="Jump back to footnote 1 in the text">&#8617;</a></p>
+</li>
+</ol>
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.top", "navigation.indexes", "search.suggest", "search.highlight", "content.code.copy", "content.tabs.link", "content.tooltips", "toc.follow"], "search": "../../assets/javascripts/workers/search.a7633da7.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": {"provider": "mike"}}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.a5f9d56c.min.js"></script>
+      
+        <script src="../../javascripts/mathjax.js"></script>
+      
+        <script src="https://unpkg.com/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
+      
+    
+  </body>
+</html>

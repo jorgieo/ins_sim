@@ -1,0 +1,29 @@
+name: Industrial MEMS IMU
+
+# Illustrative values for an industrial-grade MEMS IMU, the kind found in
+# drones and vehicle navigation units. Without aiding, from GNSS for
+# example, it navigates for minutes rather than hours. All values in
+# datasheet units; load_imu_spec() converts them to SI.
+
+gyro:
+  arw_deg_per_rt_hr:        0.3     # Angular Random Walk [°/√hr]
+  bias_instab_deg_per_hr:   10.0    # Bias instability, datasheet Allan-deviation floor [°/hr]
+  bias_tau_s:               100.0   # Correlation time of the Gauss-Markov bias model [s]
+  repeatability_deg_per_hr: 20.0    # Turn-on bias left after a stationary startup calibration [°/hr]
+  scale_factor_ppm:         2000.0  # Scale-factor error 1σ, per axis [ppm] (0.2%)
+  misalignment_urad:        1000.0  # Axis misalignment 1σ, per element [µrad] (1 mrad)
+
+accel:
+  vrw_m_per_s_per_rt_hr:    0.06    # Velocity Random Walk [m/s/√hr]
+  bias_instab_ug:           50.0    # Bias instability, datasheet Allan-deviation floor [µg]
+  bias_tau_s:               100.0   # Correlation time of the Gauss-Markov bias model [s]
+  repeatability_ug:         5000.0  # Turn-on bias repeatability [µg] (5 mg)
+  scale_factor_ppm:         2000.0  # Scale-factor error 1σ, per axis [ppm]
+  misalignment_urad:        1000.0  # Axis misalignment 1σ, per element [µrad]
+
+# Tilt ≈ accel repeatability / g = 0.3°. These gyro biases are as large as
+# the Earth's rotation rate (15 °/hr), so the gyros cannot find north;
+# heading comes from a magnetometer instead, here to 2°.
+alignment:
+  tilt_std_deg:    0.3     # N/E tilt misalignment 1σ [°]
+  heading_std_deg: 2.0     # Azimuth misalignment 1σ [°]

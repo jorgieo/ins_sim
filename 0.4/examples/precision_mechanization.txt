@@ -1,0 +1,6 @@
+Truth oversampling: off
+  basic      largest horizontal error       0 m
+  precision  largest horizontal error   20321 m
+Truth oversampling: 10
+  basic      largest horizontal error   19936 m
+  precision  largest horizontal error     198 m
