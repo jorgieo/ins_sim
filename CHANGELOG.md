@@ -7,6 +7,16 @@ version may change the API.
 
 ## [Unreleased]
 
+## [0.4.0] - 2026-11-22
+
+Version 0.4.0 makes the simulation more realistic and adds a second way
+to evaluate a navigator: a barometer that errs like a real one, a
+precision navigation algorithm for testing the algorithm itself, and a
+covariance analysis that predicts the errors and splits them by source
+without random trials. The Python API only grows: code written for 0.3.0
+runs unchanged. The app's default results change, because the packaged
+IMU spec now has a barometer (see *Changed*).
+
 ### Added
 
 - **A barometer error model.** The barometric altimeter that aids the
@@ -157,7 +167,8 @@ The first release.
 - A command-line run with a summary figure and an interactive map.
 - Downloadable apps for Windows and Linux.
 
-[Unreleased]: https://github.com/jorgieo/ins_sim/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/jorgieo/ins_sim/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/jorgieo/ins_sim/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/jorgieo/ins_sim/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/jorgieo/ins_sim/compare/v0.1.1...v0.2.0
 [0.1.1]: https://github.com/jorgieo/ins_sim/compare/v0.1.0...v0.1.1

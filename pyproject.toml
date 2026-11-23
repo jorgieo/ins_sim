@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ins_sim"
-version = "0.3.0"
+version = "0.4.0"
 description = "Navigation-grade IMU/strapdown inertial navigation simulation"
 authors = [{name = "J.L. Otero"}]
 license = {text = "MIT"}
