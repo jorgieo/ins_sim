@@ -20,7 +20,7 @@ the error tabs and the **Error Budget** tab.
       constant errors, the linear model follows the navigator to within 1%.
     - On the packaged mission, the spread of 200 Monte Carlo trials lies
       within the 95% sampling band of the prediction, 34 times out of 36 (see
-      [Validation](../validation/index.md#covariance-analysis)).
+      [Validation](../validation/index.md#covariance-checks)).
     - The error budget gives each source's share of the variance; the
       shares add up to the total exactly.
 
@@ -245,7 +245,7 @@ source is propagated on its own, and the total is their sum.
 The packaged mission, flown 200 times at \(\tau_i\) = 1 s, against the
 prediction. The Monte Carlo spreads differ from the prediction by a few
 percent, as 200 trials should; the
-[Validation](../validation/index.md#covariance-analysis) page checks all
+[Validation](../validation/index.md#covariance-checks) page checks all
 nine errors.
 
 ![Each error source's share of the predicted horizontal position variance over the packaged mission](../assets/plots/error_budget.png)

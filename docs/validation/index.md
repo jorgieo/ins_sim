@@ -329,7 +329,7 @@ Each Monte Carlo trial draws its alignment error from its own random
 stream, and the attitude error at the first sample must equal that draw.
 `tests/evaluation/test_monte_carlo.py` checks it to \(10^{-12}\) rad.
 
-## Covariance analysis
+## Covariance analysis {#covariance-checks}
 
 The [covariance analysis](../theory/covariance.md) predicts the spread of
 the navigation errors from a linearized error model. Two checks test it:
