@@ -7,7 +7,7 @@ version may change the API.
 
 ## [Unreleased]
 
-## [0.4.0] - 2026-11-22
+## [0.4.0] - 2026-11-23
 
 Version 0.4.0 makes the simulation more realistic and adds a second way
 to evaluate a navigator: a barometer that errs like a real one, a
