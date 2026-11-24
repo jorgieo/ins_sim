@@ -7,9 +7,10 @@ background QThread via SimulationWorker so the UI stays responsive.
 """
 
 import sys
+from importlib.resources import files
 
 from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QFontDatabase
+from PySide6.QtGui import QFontDatabase, QIcon
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -43,6 +44,11 @@ from ins_sim.gui.workers import SimulationResult, SimulationWorker
 CONTROL_PANEL_WIDTH = 320
 
 
+def app_icon() -> QIcon:
+    """Load the packaged raster icon for the window and taskbar."""
+    return QIcon(str(files("ins_sim.gui").joinpath("assets/app.png")))
+
+
 class MainWindow(QMainWindow):
     """Top-level window: control panel on the left, visualization tabs on the right.
 
@@ -56,6 +62,7 @@ class MainWindow(QMainWindow):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setWindowTitle("INS Monte Carlo Simulator")
+        self.setWindowIcon(app_icon())
         self.resize(1200, 700)
 
         self.last_result: SimulationResult | None = None
@@ -204,6 +211,7 @@ class MainWindow(QMainWindow):
 def main() -> None:
     """Launches the GUI event loop (blocks until the window closes)."""
     app = QApplication(sys.argv)
+    app.setWindowIcon(app_icon())
     window = MainWindow()
     window.show()
     sys.exit(app.exec())

@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <title>INS simulator</title>
+  <defs>
+    <linearGradient id="ground" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#132740"/>
+      <stop offset="1" stop-color="#071525"/>
+    </linearGradient>
+    <linearGradient id="track" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#63E7E0"/>
+      <stop offset="1" stop-color="#299FCE"/>
+    </linearGradient>
+  </defs>
+  <rect x="12" y="12" width="488" height="488" rx="112" fill="url(#ground)"/>
+  <circle cx="256" cy="256" r="155" fill="none" stroke="#29435C" stroke-width="10"/>
+  <path d="M101 256h52m206 0h52M256 101v52m0 206v52" stroke="#49677C" stroke-width="9" stroke-linecap="round"/>
+  <path d="M135 319c42 38 87 53 121 53 87 0 157-77 157-165" fill="none" stroke="url(#track)" stroke-width="27" stroke-linecap="round"/>
+  <path d="m413 207-7 51-41-32" fill="none" stroke="url(#track)" stroke-width="27" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M203 299 256 170l53 129-53-24z" fill="#F2BA61" stroke="#FFE4AE" stroke-width="8" stroke-linejoin="round"/>
+  <circle cx="256" cy="256" r="12" fill="#0A1A2A"/>
+</svg>

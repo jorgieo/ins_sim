@@ -63,12 +63,14 @@ if not notice_file.exists() or not license_files:
     )
 license_datas = [(str(notice_file), ".")]
 license_datas += [(str(p), "licenses") for p in license_files]
+icon_files = sorted((spec_dir / "ins_sim" / "gui" / "assets").glob("*"))
+icon_datas = [(str(p), "ins_sim/gui/assets") for p in icon_files if p.suffix in {".svg", ".png", ".ico"}]
 
 a = Analysis(
     [str(spec_dir / "launcher.py")],
     pathex=[],
     binaries=[],
-    datas=config_datas + license_datas,
+    datas=config_datas + license_datas + icon_datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -157,6 +159,7 @@ exe = EXE(
     upx=False,      # UPX corrupts Qt/Chromium DLLs — keep off
     console=False,  # windowed on Windows; inert on Linux. The smoke
                     # test's contract is the exit code, not stdout.
+    icon=str(spec_dir / "ins_sim" / "gui" / "assets" / "app.ico") if sys.platform == "win32" else None,
 )
 
 coll = COLLECT(

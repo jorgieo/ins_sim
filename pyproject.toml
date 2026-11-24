@@ -35,7 +35,7 @@ docs = [
 include = ["ins_sim*"]
 
 [tool.setuptools.package-data]
-ins_sim = ["config/*.yaml"]
+ins_sim = ["config/*.yaml", "gui/assets/*.svg", "gui/assets/*.png", "gui/assets/*.ico"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests", "ins_sim"]

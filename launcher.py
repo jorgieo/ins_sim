@@ -16,9 +16,10 @@ def _smoke_test() -> int:
     from PySide6.QtWebEngineWidgets import QWebEngineView
     from PySide6.QtWidgets import QApplication
 
-    from ins_sim.gui.main_window import MainWindow
+    from ins_sim.gui.main_window import MainWindow, app_icon
 
     app = QApplication(sys.argv)
+    app.setWindowIcon(app_icon())
     window = MainWindow()
     window.show()
 
