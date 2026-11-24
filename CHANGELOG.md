@@ -7,6 +7,17 @@ version may change the API.
 
 ## [Unreleased]
 
+### Fixed
+
+- **The app no longer fills the temp folder with plot pages.** Each
+  session wrote its plots and a 4.5 MB copy of plotly.js to a new temp
+  folder and never removed it. The app now deletes its folder when it
+  quits, and on start it removes the folders that earlier sessions left
+  behind, including those from older versions. A folder that another
+  open window is still using is left alone. ([#11])
+
+[#11]: https://github.com/jorgieo/ins_sim/issues/11
+
 ## [0.4.0] - 2026-11-23
 
 Version 0.4.0 makes the simulation more realistic and adds a second way

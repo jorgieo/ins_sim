@@ -5,7 +5,9 @@ page (hover, zoom, pan, modebar) per selected visualization, from the
 SimulationResult a SimulationWorker emits. Figures are built by the
 Qt-free ins_sim.gui.figures module, written as HTML into a per-session
 temp directory (plotly.js copied there once), and displayed in
-QWebEngineView pages.
+QWebEngineView pages. The directory is deleted when the app quits, and
+directories left behind by earlier sessions (after a crash) are deleted
+when the panel is created; see ins_sim.gui.session_dir.
 
 Note: QtWebEngineWidgets must be imported before QApplication is
 created, which is why the import lives at module level — every entry
@@ -13,7 +15,6 @@ point imports this module (via main_window) before constructing the
 application object.
 """
 
-import tempfile
 import threading
 import time
 from functools import partial
@@ -21,7 +22,7 @@ from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 import numpy as np
-from PySide6.QtCore import Qt, QUrl
+from PySide6.QtCore import QCoreApplication, Qt, QUrl
 from PySide6.QtWidgets import (
     QAbstractItemView,
     QHeaderView,
@@ -41,6 +42,7 @@ except ImportError as exc:   # pragma: no cover - no Qt WebEngine, or a
     _WEBENGINE_ERROR = str(exc)
 
 from ins_sim.gui import figures
+from ins_sim.gui.session_dir import SessionDir, remove_abandoned
 
 
 class _QuietHandler(SimpleHTTPRequestHandler):
@@ -75,9 +77,26 @@ class VisualizationPanel(QTabWidget):
 
     def __init__(self, parent=None):
         super().__init__(parent)
-        self._html_dir: Path | None = None
+        self._session: SessionDir | None = None
         self._server: ThreadingHTTPServer | None = None
+        remove_abandoned()
+        app = QCoreApplication.instance()
+        if app is not None:
+            app.aboutToQuit.connect(self.shutdown)
         self.show_placeholder()
+
+    def shutdown(self) -> None:
+        """Stops the page server and deletes this session's HTML directory.
+
+        Runs when the application quits. Safe to call more than once.
+        """
+        if self._server is not None:
+            self._server.shutdown()
+            self._server.server_close()
+            self._server = None
+        if self._session is not None:
+            self._session.close()
+            self._session = None
 
     def show_placeholder(self) -> None:
         """Clears all tabs and shows the pre-run placeholder."""
@@ -134,9 +153,9 @@ class VisualizationPanel(QTabWidget):
 
     def _ensure_html_dir(self) -> Path:
         """Returns the per-session HTML output directory, creating it once."""
-        if self._html_dir is None:
-            self._html_dir = Path(tempfile.mkdtemp(prefix="ins_sim_"))
-        return self._html_dir
+        if self._session is None:
+            self._session = SessionDir()
+        return self._session.path
 
     def _server_port(self) -> int:
         """Starts (once) a localhost HTTP server for the figure pages.
