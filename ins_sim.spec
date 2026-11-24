@@ -39,6 +39,7 @@ Architecture invariants (why this spec looks the way it does):
 
 import sys
 from pathlib import Path
+from PyInstaller.utils.hooks import copy_metadata
 
 # Anchor to the spec's own directory (SPECPATH is provided by
 # PyInstaller) so builds work from any cwd, and fail at build time —
@@ -63,12 +64,15 @@ if not notice_file.exists() or not license_files:
     )
 license_datas = [(str(notice_file), ".")]
 license_datas += [(str(p), "licenses") for p in license_files]
+version_datas = []
+for distribution in ("ins_sim", "PySide6", "numpy", "scipy", "plotly"):
+    version_datas += copy_metadata(distribution)
 
 a = Analysis(
     [str(spec_dir / "launcher.py")],
     pathex=[],
     binaries=[],
-    datas=config_datas + license_datas,
+    datas=config_datas + license_datas + version_datas,
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},

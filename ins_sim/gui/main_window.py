@@ -26,6 +26,7 @@ from PySide6.QtWidgets import (
 )
 
 from ins_sim.gui.canvas import VisualizationPanel
+from ins_sim.gui.about_dialog import AboutDialog
 from ins_sim.gui.paths import imu_specs_dir, trajectories_dir
 from ins_sim.gui.widgets import (
     AdvancedOptions,
@@ -57,6 +58,10 @@ class MainWindow(QMainWindow):
         super().__init__(parent)
         self.setWindowTitle("INS Monte Carlo Simulator")
         self.resize(1200, 700)
+
+        help_menu = self.menuBar().addMenu("Help")
+        about_action = help_menu.addAction("About…")
+        about_action.triggered.connect(self._show_about)
 
         self.last_result: SimulationResult | None = None
         self._thread: QThread | None = None
@@ -153,6 +158,9 @@ class MainWindow(QMainWindow):
             "oversample": self.advanced_options.oversample(),
             "visualizations": self.visualization_options.selected_options(),
         }
+
+    def _show_about(self) -> None:
+        AboutDialog(self).exec()
 
     # ---- Simulation run lifecycle -----------------------------------------
 
