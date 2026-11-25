@@ -61,6 +61,7 @@ class MainWindow(QMainWindow):
         self.last_result: SimulationResult | None = None
         self._thread: QThread | None = None
         self._worker: SimulationWorker | None = None
+        self._closing = False   # the user chose to quit; close once the run stops
 
         # ---- Left control panel -------------------------------------------
         self.file_selector = YamlFileSelector(
@@ -172,6 +173,7 @@ class MainWindow(QMainWindow):
 
         self._worker.simulation_finished.connect(self._thread.quit)
         self._worker.error_occurred.connect(self._thread.quit)
+        self._worker.simulation_cancelled.connect(self._thread.quit)
         self._thread.finished.connect(self._worker.deleteLater)
         self._thread.finished.connect(self._thread.deleteLater)
         self._thread.finished.connect(self._on_thread_finished)
@@ -179,16 +181,54 @@ class MainWindow(QMainWindow):
         self._thread.start()
 
     def _on_finished(self, result: SimulationResult) -> None:
+        if self._closing:
+            return
         self.last_result = result
         self.visualization_panel.render(result)
 
     def _on_error(self, message: str) -> None:
+        if self._closing:
+            return
         QMessageBox.critical(self, "Simulation failed", message)
 
     def _on_thread_finished(self) -> None:
         self._thread = None
         self._worker = None
+        if self._closing:
+            self.close()
+            return
         self._set_controls_enabled(True)
+
+    # ---- Closing ------------------------------------------------------------
+
+    def closeEvent(self, event) -> None:
+        """Stops a running simulation before the window closes.
+
+        Closing while the worker thread runs would destroy the running
+        QThread and end the process abnormally. Instead, after the user
+        confirms, the run is cancelled and the window stays open until the
+        thread finishes (at most one trial), then closes itself.
+        """
+        if self._thread is None:
+            event.accept()
+            return
+        event.ignore()
+        if self._closing:
+            return                                   # already stopping
+        if not self._confirm_stop():
+            return
+        self._closing = True
+        self.log_view.appendPlainText(
+            "Stopping the simulation; the window closes when the current "
+            "trial ends...")
+        self._worker.request_cancel()
+
+    def _confirm_stop(self) -> bool:
+        answer = QMessageBox.question(
+            self, "Simulation running",
+            "A simulation is running. Stop it and quit?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        return answer == QMessageBox.Yes
 
     def _set_controls_enabled(self, enabled: bool) -> None:
         for widget in (self.file_selector, self.imu_spec_selector,

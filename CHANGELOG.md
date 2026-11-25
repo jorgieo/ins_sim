@@ -15,7 +15,11 @@ version may change the API.
   quits, and on start it removes the folders that earlier sessions left
   behind, including those from older versions. A folder that another
   open window is still using is left alone. ([#11])
+- **Closing the window during a run no longer crashes the app.** The app
+  asks whether to stop the simulation; if you agree, it stops after the
+  current trial and then closes. ([#10])
 
+[#10]: https://github.com/jorgieo/ins_sim/issues/10
 [#11]: https://github.com/jorgieo/ins_sim/issues/11
 
 ## [0.4.0] - 2026-11-23
