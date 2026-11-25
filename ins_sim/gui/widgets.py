@@ -113,6 +113,7 @@ class YamlFileSelector(QWidget):
     def __init__(self, default_name: str, dialog_title: str = "Select YAML file",
                  file_filter=None, user_dir=None, parent=None):
         super().__init__(parent)
+        self._default_name = default_name
         self._dialog_title = dialog_title
         self._file_filter = file_filter
         self._user_dir = Path(user_dir) if user_dir is not None else None
@@ -137,6 +138,12 @@ class YamlFileSelector(QWidget):
     def current_path(self) -> str | None:
         """Returns the absolute path of the selected file, or None if empty."""
         return self._combo.currentData()
+
+    def reset(self) -> None:
+        """Selects the default file again, when it is listed."""
+        idx = self._combo.findText(self._default_name)
+        if idx >= 0:
+            self._combo.setCurrentIndex(idx)
 
     def _populate(self) -> None:
         """Adds any not-yet-listed config files, preserving the selection.
@@ -192,11 +199,17 @@ class IterationsSpinBox(QSpinBox):
     Emits the built-in ``valueChanged(int)`` signal.
     """
 
+    DEFAULT = 50
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setRange(1, 1000)
-        self.setValue(50)
+        self.setValue(self.DEFAULT)
         self.setSuffix(" trials")
+
+    def reset(self) -> None:
+        """Sets the default trial count."""
+        self.setValue(self.DEFAULT)
 
 
 class DtSpinBox(QDoubleSpinBox):
@@ -205,13 +218,19 @@ class DtSpinBox(QDoubleSpinBox):
     Emits the built-in ``valueChanged(float)`` signal.
     """
 
+    DEFAULT = 0.1
+
     def __init__(self, parent=None):
         super().__init__(parent)
         self.setRange(0.01, 10.0)
         self.setDecimals(2)
         self.setSingleStep(0.05)
-        self.setValue(0.1)
+        self.setValue(self.DEFAULT)
         self.setSuffix(" s")
+
+    def reset(self) -> None:
+        """Sets the default time step."""
+        self.setValue(self.DEFAULT)
 
 
 class AdvancedOptions(QWidget):
@@ -282,6 +301,14 @@ class AdvancedOptions(QWidget):
         value = self.oversample_spinbox.value()
         return None if value == self.oversample_spinbox.minimum() else value
 
+    def reset(self) -> None:
+        """Selects the Basic mechanization and turns oversampling off.
+
+        Leaves the section expanded or collapsed as it is.
+        """
+        self.mechanization_combo.setCurrentIndex(0)
+        self.oversample_spinbox.setValue(self.oversample_spinbox.minimum())
+
     def _on_toggled(self, expanded: bool) -> None:
         self.toggle_button.setArrowType(
             Qt.ArrowType.DownArrow if expanded else Qt.ArrowType.RightArrow)
@@ -316,6 +343,11 @@ class VisualizationOptions(QGroupBox):
     def selected_options(self) -> dict[str, bool]:
         """Returns the checked state of every visualization option."""
         return {key: box.isChecked() for key, box in self._checkboxes.items()}
+
+    def reset(self) -> None:
+        """Checks every visualization, the default."""
+        for box in self._checkboxes.values():
+            box.setChecked(True)
 
     def _on_toggled(self, _checked: bool) -> None:
         self.optionsChanged.emit(self.selected_options())

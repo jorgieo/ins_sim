@@ -19,8 +19,11 @@ yet, start with [Your first simulation](../get-started/first-run.md).
 The **control panel** on the left holds the settings, from top to bottom:
 the mission, the simulation settings, the result tabs to build, the
 **Run Simulation** and **Clear results** buttons, and the progress bar
-and log. The **results
-area** on the right shows one tab per result once a run finishes.
+and log. The **results area** on the right shows one tab per result once
+a run finishes. **Settings → Reset settings to defaults** puts every
+setting back to its default (the packaged mission and IMU spec, 50 trials,
+a 0.1 s time step, baro aiding on, the Basic mechanization without
+oversampling, and every result tab) and leaves the results on screen.
 
 ## Missions and IMU specs
 
