@@ -101,6 +101,9 @@ class MainWindow(QMainWindow):
         simulation_layout.addRow(self.advanced_options)
 
         self.run_button = QPushButton(RUN_TEXT)
+        self.clear_button = QPushButton("Clear results")
+        self.clear_button.setToolTip(
+            "Remove the plots, clear the log and reset the progress bar")
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
@@ -117,7 +120,10 @@ class MainWindow(QMainWindow):
         control_layout.addWidget(trajectory_group)
         control_layout.addWidget(simulation_group)
         control_layout.addWidget(self.visualization_options)
-        control_layout.addWidget(self.run_button)
+        run_row = QHBoxLayout()
+        run_row.addWidget(self.run_button, stretch=2)
+        run_row.addWidget(self.clear_button, stretch=1)
+        control_layout.addLayout(run_row)
         control_layout.addWidget(self.progress_bar)
         control_layout.addWidget(self.log_view)
         control_layout.addStretch()
@@ -139,6 +145,7 @@ class MainWindow(QMainWindow):
         self.advanced_options.optionsChanged.connect(self._on_config_changed)
         self.visualization_options.optionsChanged.connect(self._on_config_changed)
         self.run_button.clicked.connect(self._on_run_button_clicked)
+        self.clear_button.clicked.connect(self.clear_results)
         QShortcut(QKeySequence(Qt.Key.Key_Escape), self,
                   activated=self.cancel_run)
 
@@ -296,6 +303,19 @@ class MainWindow(QMainWindow):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         return answer == QMessageBox.Yes
 
+    def clear_results(self) -> None:
+        """Removes the results, clears the log and resets the progress bar.
+
+        The window then looks as it does on start, apart from the settings.
+        Does nothing while a run is active.
+        """
+        if self.is_running():
+            return
+        self.last_result = None
+        self.visualization_panel.show_placeholder()
+        self.log_view.clear()
+        self._set_progress(0)
+
     def _set_progress(self, value: int, text: str = "%p%") -> None:
         self.progress_bar.setValue(value)
         self.progress_bar.setFormat(text)
@@ -304,7 +324,7 @@ class MainWindow(QMainWindow):
         for widget in (self.file_selector, self.imu_spec_selector,
                        self.iterations_spinbox, self.dt_spinbox,
                        self.baro_aiding_checkbox, self.advanced_options,
-                       self.visualization_options):
+                       self.visualization_options, self.clear_button):
             widget.setEnabled(enabled)
 
     def _on_config_changed(self, *_args) -> None:

@@ -16,6 +16,9 @@ version may change the API.
   results stay on screen. In Python, `run_monte_carlo` takes
   `should_stop`, a callable that ends the run early and returns the
   trials completed so far. ([#18])
+- **A Clear results button**, next to **Run Simulation**. It removes the
+  result tabs, empties the log and resets the progress bar; the settings
+  stay as they are. ([#41])
 
 ### Fixed
 
@@ -32,6 +35,7 @@ version may change the API.
 [#10]: https://github.com/jorgieo/ins_sim/issues/10
 [#11]: https://github.com/jorgieo/ins_sim/issues/11
 [#18]: https://github.com/jorgieo/ins_sim/issues/18
+[#41]: https://github.com/jorgieo/ins_sim/issues/41
 
 ## [0.4.0] - 2026-11-23
 

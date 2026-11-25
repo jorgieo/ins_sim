@@ -17,8 +17,9 @@ yet, start with [Your first simulation](../get-started/first-run.md).
 ![The app after a run](../assets/gui/main_window.png)
 
 The **control panel** on the left holds the settings, from top to bottom:
-the mission, the simulation settings, the result tabs to build, and the
-**Run Simulation** button with its progress bar and log. The **results
+the mission, the simulation settings, the result tabs to build, the
+**Run Simulation** and **Clear results** buttons, and the progress bar
+and log. The **results
 area** on the right shows one tab per result once a run finishes.
 
 ## Missions and IMU specs
@@ -114,7 +115,9 @@ responsive. The controls are disabled until it finishes, and the button
 becomes **Cancel**: click it, or press Esc, to stop the run after the
 current trial. If at least two trials finished, the app asks whether to
 show their results; otherwise, or if you decline, the previous results
-stay on screen. Closing the window during a run asks whether to stop it first. The log reports
+stay on screen. Closing the window during a run asks whether to stop it first.
+**Clear results** removes the result tabs, empties the log and resets the
+progress bar, leaving the settings as they are. The log reports
 the mission's length and duration, each completed trial, and the run
 time with the final 95th-percentile error. If a file has a mistake, a
 *Simulation failed* message names the problem; see
