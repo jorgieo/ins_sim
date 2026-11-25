@@ -42,8 +42,29 @@ class SimulationResult:
     budget: object = None     # ErrorBudget of the covariance analysis, or None
 
 
+@dataclass
+class PartialRun:
+    """The trials a run completed, enough to finish the run.
+
+    A cancelled run hands one to the GUI; passing it to a new
+    `SimulationWorker` as ``partial`` computes the envelope and the
+    covariance analysis for these trials only.
+    """
+
+    truth: object
+    spec: object
+    mc: object                # MonteCarloResult holding the completed trials
+    n_done: int
+    n_requested: int
+    config: dict
+    elapsed_s: float
+
+
 class SimulationCancelled(Exception):
-    """Raised inside the worker when a cancellation request is honoured."""
+    """Raised inside the worker when a cancellation request is honoured.
+
+    Its only argument is the PartialRun with the completed trials, or None.
+    """
 
 
 class SimulationWorker(QObject):
@@ -51,26 +72,38 @@ class SimulationWorker(QObject):
 
     Construct with the config dict from MainWindow.current_config(),
     move to a QThread, and invoke run() via the thread's started signal.
+    With ``partial`` (from a cancelled run), it skips the trials and only
+    finishes the run from the trials already completed.
 
     Signals:
         progress_updated (int): Percent complete, 0-100.
         log_message (str): Human-readable stage/progress lines.
         simulation_finished (object): A SimulationResult on success.
         error_occurred (str): Error description on failure.
-        simulation_cancelled: The run stopped after `request_cancel`.
+        simulation_cancelled (object): The run stopped after
+            `request_cancel`. Carries a PartialRun with the completed
+            trials, or None when no trial completed or the finishing stage
+            was cancelled.
     """
 
     progress_updated = Signal(int)
     log_message = Signal(str)
     simulation_finished = Signal(object)
     error_occurred = Signal(str)
-    simulation_cancelled = Signal()
+    simulation_cancelled = Signal(object)
 
-    def __init__(self, config: dict, seed: int = 42, parent=None):
+    def __init__(self, config: dict, seed: int = 42, parent=None,
+                 partial: PartialRun | None = None):
         super().__init__(parent)
         self._config = config
         self._seed = seed
+        self._partial = partial
         self._cancel_requested = False
+
+    @property
+    def cancel_requested(self) -> bool:
+        """True once `request_cancel` has been called."""
+        return self._cancel_requested
 
     def request_cancel(self) -> None:
         """Asks the run to stop at the next checkpoint.
@@ -82,24 +115,26 @@ class SimulationWorker(QObject):
         """
         self._cancel_requested = True
 
-    def _check_cancel(self) -> None:
-        if self._cancel_requested:
-            raise SimulationCancelled
-
     def run(self) -> None:
-        """Executes the full pipeline, emitting signals along the way."""
+        """Executes the pipeline, emitting signals along the way."""
         try:
-            result = self._run_pipeline()
-        except SimulationCancelled:
-            self.log_message.emit("Simulation stopped.")
-            self.simulation_cancelled.emit()
+            run = self._partial if self._partial is not None else self._run_trials()
+            result = self._finish(run)
+        except SimulationCancelled as cancelled:
+            self.simulation_cancelled.emit(cancelled.args[0])
             return
         except Exception as e:
             self.error_occurred.emit(f"{type(e).__name__}: {e}")
             return
         self.simulation_finished.emit(result)
 
-    def _run_pipeline(self) -> SimulationResult:
+    def _run_trials(self) -> PartialRun:
+        """Builds the truth and runs the trials.
+
+        Raises:
+            SimulationCancelled: When cancelled, carrying the completed
+                trials (None when there are none).
+        """
         start = time.monotonic()
 
         trajectory_path = self._config["trajectory_path"]
@@ -116,7 +151,9 @@ class SimulationWorker(QObject):
                               f"(dt = {dt} s{sampling})")
         truth, _, _ = build_trajectory(str(trajectory_path), tau_i=dt,
                                        oversample=oversample)
-        self._check_cancel()
+        if self._cancel_requested:
+            self.log_message.emit(f"Cancelled after 0/{n_trials} trials.")
+            raise SimulationCancelled(None)
         if mechanization == "precision" and oversample is None:
             self.log_message.emit(f"Note: {PRECISION_WITHOUT_OVERSAMPLING}.")
 
@@ -141,29 +178,48 @@ class SimulationWorker(QObject):
         mc = run_monte_carlo(
             truth, spec, n_trials=n_trials, seed=self._seed,
             progress_callback=self._on_progress, baro_aiding=baro_aiding,
-            mechanization=mechanization)
+            mechanization=mechanization,
+            should_stop=lambda: self._cancel_requested)
+        n_done = mc.est_L_b.shape[0]
+        run = PartialRun(truth=truth, spec=spec, mc=mc, n_done=n_done,
+                         n_requested=n_trials, config=dict(self._config),
+                         elapsed_s=time.monotonic() - start)
+        if self._cancel_requested:          # also during the last trial
+            self.log_message.emit(f"Cancelled after {n_done}/{n_trials} trials.")
+            raise SimulationCancelled(run if n_done else None)
+        return run
+
+    def _finish(self, run: PartialRun) -> SimulationResult:
+        """Computes the error envelope and the covariance analysis."""
+        start = time.monotonic()
+        truth, mc = run.truth, run.mc
+        if run.n_done < run.n_requested:
+            self.log_message.emit(f"Showing results from {run.n_done} of "
+                                  f"{run.n_requested} trials.")
         delta_r_eb_n = position_error(mc.est_L_b, mc.est_lambda_b, mc.est_h_b,
                                       truth.L_b, truth.lambda_b, truth.h_b)
         r95 = percentile_envelope(delta_r_eb_n, q=95)
 
-        self._check_cancel()
+        if self._cancel_requested:
+            self.log_message.emit("Cancelled before the covariance analysis.")
+            raise SimulationCancelled(None)
         self.log_message.emit("Running the covariance analysis...")
-        budget = error_budget(truth, spec, baro_aiding=baro_aiding,
-                              step_s=max(dt, 1.0))
+        budget = error_budget(truth, run.spec,
+                              baro_aiding=run.config.get("baro_aiding", True),
+                              step_s=max(run.config.get("dt_s", 0.1), 1.0))
         self.log_message.emit(
             f"Predicted CEP at the end: {budget.total.cep[-1] / NM:.2f} NM")
 
-        elapsed = time.monotonic() - start
+        elapsed = run.elapsed_s + time.monotonic() - start
         self.log_message.emit(
             f"Done in {elapsed:.1f} s — 95th-pct error "
             f"start: {r95[0]:.3f} m, end: {r95[-1]:.1f} m")
 
         return SimulationResult(
             truth=truth, **mc._asdict(), r95=r95,
-            n_trials=n_trials, config=dict(self._config), elapsed_s=elapsed,
+            n_trials=run.n_done, config=run.config, elapsed_s=elapsed,
             budget=budget)
 
     def _on_progress(self, n_done: int, n_total: int) -> None:
         self.progress_updated.emit(n_done * 100 // n_total)
         self.log_message.emit(f"Trial {n_done}/{n_total} complete")
-        self._check_cancel()

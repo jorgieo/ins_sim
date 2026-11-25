@@ -7,6 +7,16 @@ version may change the API.
 
 ## [Unreleased]
 
+### Added
+
+- **A running simulation can be cancelled.** While a run is active, the
+  **Run Simulation** button becomes **Cancel**; click it or press Esc to
+  stop the run after the current trial. The app then offers to show the
+  results of the trials that finished; if you decline, the previous
+  results stay on screen. In Python, `run_monte_carlo` takes
+  `should_stop`, a callable that ends the run early and returns the
+  trials completed so far. ([#18])
+
 ### Fixed
 
 - **The app no longer fills the temp folder with plot pages.** Each
@@ -21,6 +31,7 @@ version may change the API.
 
 [#10]: https://github.com/jorgieo/ins_sim/issues/10
 [#11]: https://github.com/jorgieo/ins_sim/issues/11
+[#18]: https://github.com/jorgieo/ins_sim/issues/18
 
 ## [0.4.0] - 2026-11-23
 
