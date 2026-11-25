@@ -137,6 +137,12 @@ class MainWindow(QMainWindow):
         central_layout.addWidget(self.visualization_panel, stretch=1)
         self.setCentralWidget(central)
 
+        # ---- Menu bar -----------------------------------------------------
+        settings_menu = self.menuBar().addMenu("&Settings")
+        self.reset_settings_action = settings_menu.addAction(
+            "&Reset settings to defaults")
+        self.reset_settings_action.triggered.connect(self.reset_settings)
+
         self.file_selector.fileSelected.connect(self._on_config_changed)
         self.imu_spec_selector.fileSelected.connect(self._on_config_changed)
         self.iterations_spinbox.valueChanged.connect(self._on_config_changed)
@@ -303,6 +309,24 @@ class MainWindow(QMainWindow):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
         return answer == QMessageBox.Yes
 
+    def reset_settings(self) -> None:
+        """Puts every setting back to its default.
+
+        The default mission and IMU spec, 50 trials, dt = 0.1 s, baro aiding
+        on, the Basic mechanization, oversampling off and every
+        visualization checked. The results on screen stay. Does nothing
+        while a run is active.
+        """
+        if self.is_running():
+            return
+        self.file_selector.reset()
+        self.imu_spec_selector.reset()
+        self.iterations_spinbox.reset()
+        self.dt_spinbox.reset()
+        self.baro_aiding_checkbox.setChecked(True)
+        self.advanced_options.reset()
+        self.visualization_options.reset()
+
     def clear_results(self) -> None:
         """Removes the results, clears the log and resets the progress bar.
 
@@ -321,6 +345,7 @@ class MainWindow(QMainWindow):
         self.progress_bar.setFormat(text)
 
     def _set_controls_enabled(self, enabled: bool) -> None:
+        self.reset_settings_action.setEnabled(enabled)
         for widget in (self.file_selector, self.imu_spec_selector,
                        self.iterations_spinbox, self.dt_spinbox,
                        self.baro_aiding_checkbox, self.advanced_options,

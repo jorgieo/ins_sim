@@ -19,6 +19,9 @@ version may change the API.
 - **A Clear results button**, next to **Run Simulation**. It removes the
   result tabs, empties the log and resets the progress bar; the settings
   stay as they are. ([#41])
+- **Settings → Reset settings to defaults** puts the mission, IMU spec,
+  trials, time step, baro aiding, the Advanced options and the result tabs
+  back to their defaults, and leaves the results on screen. ([#42])
 
 ### Fixed
 
@@ -36,6 +39,7 @@ version may change the API.
 [#11]: https://github.com/jorgieo/ins_sim/issues/11
 [#18]: https://github.com/jorgieo/ins_sim/issues/18
 [#41]: https://github.com/jorgieo/ins_sim/issues/41
+[#42]: https://github.com/jorgieo/ins_sim/issues/42
 
 ## [0.4.0] - 2026-11-23
 
