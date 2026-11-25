@@ -42,6 +42,10 @@ class SimulationResult:
     budget: object = None     # ErrorBudget of the covariance analysis, or None
 
 
+class SimulationCancelled(Exception):
+    """Raised inside the worker when a cancellation request is honoured."""
+
+
 class SimulationWorker(QObject):
     """Runs the Monte Carlo pipeline off the GUI thread.
 
@@ -53,25 +57,43 @@ class SimulationWorker(QObject):
         log_message (str): Human-readable stage/progress lines.
         simulation_finished (object): A SimulationResult on success.
         error_occurred (str): Error description on failure.
+        simulation_cancelled: The run stopped after `request_cancel`.
     """
 
     progress_updated = Signal(int)
     log_message = Signal(str)
     simulation_finished = Signal(object)
     error_occurred = Signal(str)
+    simulation_cancelled = Signal()
 
     def __init__(self, config: dict, seed: int = 42, parent=None):
         super().__init__(parent)
         self._config = config
         self._seed = seed
-        # TODO(phase-3): check self._cancel_requested in the progress
-        # callback and abort cleanly once a Cancel button exists.
         self._cancel_requested = False
+
+    def request_cancel(self) -> None:
+        """Asks the run to stop at the next checkpoint.
+
+        Call it directly from the GUI thread: the worker's own thread is busy
+        running the pipeline, so a queued signal would never be delivered.
+        The run stops after the current trial, or before the covariance
+        analysis, and emits `simulation_cancelled` instead of a result.
+        """
+        self._cancel_requested = True
+
+    def _check_cancel(self) -> None:
+        if self._cancel_requested:
+            raise SimulationCancelled
 
     def run(self) -> None:
         """Executes the full pipeline, emitting signals along the way."""
         try:
             result = self._run_pipeline()
+        except SimulationCancelled:
+            self.log_message.emit("Simulation stopped.")
+            self.simulation_cancelled.emit()
+            return
         except Exception as e:
             self.error_occurred.emit(f"{type(e).__name__}: {e}")
             return
@@ -94,6 +116,7 @@ class SimulationWorker(QObject):
                               f"(dt = {dt} s{sampling})")
         truth, _, _ = build_trajectory(str(trajectory_path), tau_i=dt,
                                        oversample=oversample)
+        self._check_cancel()
         if mechanization == "precision" and oversample is None:
             self.log_message.emit(f"Note: {PRECISION_WITHOUT_OVERSAMPLING}.")
 
@@ -123,6 +146,7 @@ class SimulationWorker(QObject):
                                       truth.L_b, truth.lambda_b, truth.h_b)
         r95 = percentile_envelope(delta_r_eb_n, q=95)
 
+        self._check_cancel()
         self.log_message.emit("Running the covariance analysis...")
         budget = error_budget(truth, spec, baro_aiding=baro_aiding,
                               step_s=max(dt, 1.0))
@@ -142,3 +166,4 @@ class SimulationWorker(QObject):
     def _on_progress(self, n_done: int, n_total: int) -> None:
         self.progress_updated.emit(n_done * 100 // n_total)
         self.log_message.emit(f"Trial {n_done}/{n_total} complete")
+        self._check_cancel()
