@@ -8,8 +8,8 @@ background QThread via SimulationWorker so the UI stays responsive.
 
 import sys
 
-from PySide6.QtCore import QThread, Signal
-from PySide6.QtGui import QFontDatabase
+from PySide6.QtCore import QThread, Qt, Signal
+from PySide6.QtGui import QFontDatabase, QKeySequence, QShortcut
 from PySide6.QtWidgets import (
     QApplication,
     QCheckBox,
@@ -38,9 +38,14 @@ from ins_sim.gui.widgets import (
     is_imu_spec_yaml,
     is_trajectory_yaml,
 )
-from ins_sim.gui.workers import SimulationResult, SimulationWorker
+from ins_sim.gui.workers import PartialRun, SimulationResult, SimulationWorker
 
 CONTROL_PANEL_WIDTH = 320
+RUN_TEXT = "Run Simulation"
+CANCEL_TEXT = "Cancel"
+CANCELLING_TEXT = "Cancelling..."
+#: Fewest completed trials worth plotting: the 3-sigma bands need 2.
+MIN_TRIALS_TO_SHOW = 2
 
 
 class MainWindow(QMainWindow):
@@ -61,6 +66,7 @@ class MainWindow(QMainWindow):
         self.last_result: SimulationResult | None = None
         self._thread: QThread | None = None
         self._worker: SimulationWorker | None = None
+        self._pending_partial: PartialRun | None = None
         self._closing = False   # the user chose to quit; close once the run stops
 
         # ---- Left control panel -------------------------------------------
@@ -94,7 +100,7 @@ class MainWindow(QMainWindow):
         simulation_layout.addRow("", self.baro_aiding_checkbox)
         simulation_layout.addRow(self.advanced_options)
 
-        self.run_button = QPushButton("Run Simulation")
+        self.run_button = QPushButton(RUN_TEXT)
         self.progress_bar = QProgressBar()
         self.progress_bar.setRange(0, 100)
         self.progress_bar.setValue(0)
@@ -132,7 +138,9 @@ class MainWindow(QMainWindow):
         self.baro_aiding_checkbox.toggled.connect(self._on_config_changed)
         self.advanced_options.optionsChanged.connect(self._on_config_changed)
         self.visualization_options.optionsChanged.connect(self._on_config_changed)
-        self.run_button.clicked.connect(self._on_run_clicked)
+        self.run_button.clicked.connect(self._on_run_button_clicked)
+        QShortcut(QKeySequence(Qt.Key.Key_Escape), self,
+                  activated=self.cancel_run)
 
     def current_config(self) -> dict:
         """Returns the full configuration state in one dict.
@@ -157,12 +165,41 @@ class MainWindow(QMainWindow):
 
     # ---- Simulation run lifecycle -----------------------------------------
 
+    def is_running(self) -> bool:
+        """True while a simulation runs, including while it is cancelling."""
+        return self._thread is not None
+
+    def cancel_run(self) -> None:
+        """Asks the running simulation to stop after the current trial.
+
+        The previous results stay on screen. Does nothing when no run is
+        active or a cancellation is already pending.
+        """
+        if self._worker is None or self._worker.cancel_requested:
+            return
+        self._worker.request_cancel()
+        self.run_button.setEnabled(False)
+        self.run_button.setText(CANCELLING_TEXT)
+        self.log_view.appendPlainText("Cancelling after the current trial...")
+
+    def _on_run_button_clicked(self) -> None:
+        if self.is_running():
+            self.cancel_run()
+        else:
+            self._on_run_clicked()
+
     def _on_run_clicked(self) -> None:
+        self._set_progress(0)
+        self._start_worker(SimulationWorker(self.current_config()))
+
+    def _start_worker(self, worker: SimulationWorker) -> None:
         self._set_controls_enabled(False)
-        self.progress_bar.setValue(0)
+        self.run_button.setText(CANCEL_TEXT)
+        self.run_button.setToolTip("Stop after the current trial (Esc)")
+        self.run_button.setEnabled(True)
 
         self._thread = QThread(self)
-        self._worker = SimulationWorker(self.current_config())
+        self._worker = worker
         self._worker.moveToThread(self._thread)
 
         self._thread.started.connect(self._worker.run)
@@ -170,6 +207,7 @@ class MainWindow(QMainWindow):
         self._worker.log_message.connect(self.log_view.appendPlainText)
         self._worker.simulation_finished.connect(self._on_finished)
         self._worker.error_occurred.connect(self._on_error)
+        self._worker.simulation_cancelled.connect(self._on_cancelled)
 
         self._worker.simulation_finished.connect(self._thread.quit)
         self._worker.error_occurred.connect(self._thread.quit)
@@ -191,13 +229,33 @@ class MainWindow(QMainWindow):
             return
         QMessageBox.critical(self, "Simulation failed", message)
 
+    def _on_cancelled(self, partial: PartialRun | None) -> None:
+        self._set_progress(0, "Cancelled")
+        if not self._closing:
+            self._pending_partial = partial     # offered once the thread ends
+
     def _on_thread_finished(self) -> None:
         self._thread = None
         self._worker = None
         if self._closing:
             self.close()
             return
+        partial, self._pending_partial = self._pending_partial, None
+        if partial is not None:
+            if partial.n_done < MIN_TRIALS_TO_SHOW:
+                self.log_view.appendPlainText(
+                    f"Only {partial.n_done} trial completed; at least "
+                    f"{MIN_TRIALS_TO_SHOW} are needed to show results.")
+            elif self._confirm_partial(partial.n_done, partial.n_requested):
+                self._set_progress(100, f"{partial.n_done}/"
+                                        f"{partial.n_requested} trials")
+                self._start_worker(SimulationWorker(partial.config,
+                                                    partial=partial))
+                return
         self._set_controls_enabled(True)
+        self.run_button.setText(RUN_TEXT)
+        self.run_button.setToolTip("")
+        self.run_button.setEnabled(True)
 
     # ---- Closing ------------------------------------------------------------
 
@@ -215,13 +273,13 @@ class MainWindow(QMainWindow):
         event.ignore()
         if self._closing:
             return                                   # already stopping
-        if not self._confirm_stop():
+        if not self._worker.cancel_requested and not self._confirm_stop():
             return
         self._closing = True
         self.log_view.appendPlainText(
             "Stopping the simulation; the window closes when the current "
             "trial ends...")
-        self._worker.request_cancel()
+        self.cancel_run()
 
     def _confirm_stop(self) -> bool:
         answer = QMessageBox.question(
@@ -230,11 +288,23 @@ class MainWindow(QMainWindow):
             QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         return answer == QMessageBox.Yes
 
+    def _confirm_partial(self, n_done: int, n_requested: int) -> bool:
+        answer = QMessageBox.question(
+            self, "Simulation cancelled",
+            f"Show results from the {n_done} completed trials "
+            f"(of {n_requested})?",
+            QMessageBox.Yes | QMessageBox.No, QMessageBox.Yes)
+        return answer == QMessageBox.Yes
+
+    def _set_progress(self, value: int, text: str = "%p%") -> None:
+        self.progress_bar.setValue(value)
+        self.progress_bar.setFormat(text)
+
     def _set_controls_enabled(self, enabled: bool) -> None:
         for widget in (self.file_selector, self.imu_spec_selector,
                        self.iterations_spinbox, self.dt_spinbox,
                        self.baro_aiding_checkbox, self.advanced_options,
-                       self.visualization_options, self.run_button):
+                       self.visualization_options):
             widget.setEnabled(enabled)
 
     def _on_config_changed(self, *_args) -> None:

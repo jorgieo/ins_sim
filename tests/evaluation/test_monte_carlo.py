@@ -71,6 +71,26 @@ def test_trial_draws_do_not_depend_on_the_number_of_trials():
     np.testing.assert_array_equal(two.est_L_b, four.est_L_b[:2])
 
 
+def test_should_stop_returns_the_completed_trials():
+    """A run stopped after 2 trials equals the first 2 trials of a full run."""
+    truth = _short_truth()
+    done = []
+    stopped = run_monte_carlo(truth, IMUSpec(), n_trials=4, seed=3,
+                              progress_callback=lambda n, _: done.append(n),
+                              should_stop=lambda: len(done) >= 2)
+    full = run_monte_carlo(truth, IMUSpec(), n_trials=4, seed=3)
+    assert done == [1, 2]
+    for got, want in zip(stopped, full):
+        assert got.shape[0] == 2
+        np.testing.assert_array_equal(got, want[:2])
+
+
+def test_should_stop_before_the_first_trial_returns_no_trials():
+    truth = _short_truth()
+    mc = run_monte_carlo(truth, IMUSpec(), n_trials=3, should_stop=lambda: True)
+    assert all(field.shape[0] == 0 for field in mc)
+
+
 def test_percentile_envelope_of_known_errors():
     # Trials with 3D error magnitudes 1..5 m at every sample.
     mags = np.arange(1.0, 6.0)

@@ -61,6 +61,7 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
                     progress_callback: Callable[[int, int], None] | None = None,
                     baro_aiding: bool = True,
                     mechanization: Literal["basic", "precision"] = "basic",
+                    should_stop: Callable[[], bool] | None = None,
                     ) -> MonteCarloResult:
     """Runs n_trials independent noisy-IMU strapdown realizations.
 
@@ -86,9 +87,16 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
             Defaults to True.
         mechanization: Strapdown update, "basic" or "precision"; see
             `strapdown_navgrade`. Defaults to "basic".
+        should_stop: Optional callable checked before each trial; when it
+            returns True, the run stops and returns the trials completed so
+            far. Because each trial has its own random stream, those trials
+            equal the first trials of a full run. Defaults to None (run all
+            trials).
 
     Returns:
-        MonteCarloResult: estimates and attitude errors for every trial.
+        MonteCarloResult: estimates and attitude errors for every completed
+            trial: `n_trials` of them, or fewer when `should_stop` ended the
+            run early.
 
     Examples:
         >>> from ins_sim.evaluation.monte_carlo import run_monte_carlo
@@ -114,7 +122,11 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
     trial_rngs = np.random.default_rng(seed).spawn(n_trials)
     C_b_n0 = truth.C_b_n[0]
 
+    n_done = n_trials
     for i, trial_rng in enumerate(trial_rngs):
+        if should_stop is not None and should_stop():
+            n_done = i
+            break
         rng_alignment, rng_imu, rng_baro = trial_rng.spawn(3)
         # Per-trial initial-alignment error delta_psi_nb^n: small NED tilts
         # plus an azimuth error, applied to the truth attitude (zero-mean
@@ -149,8 +161,10 @@ def run_monte_carlo(truth: "TruthTrajectory", spec: IMUSpec,
         if progress_callback is not None:
             progress_callback(i + 1, n_trials)
 
-    return MonteCarloResult(est_r_lb_l, est_euler_nb, est_L_b, est_lambda_b,
-                            est_v_eb_n, est_h_b, delta_psi_nb_n)
+    return MonteCarloResult(est_r_lb_l[:n_done], est_euler_nb[:n_done],
+                            est_L_b[:n_done], est_lambda_b[:n_done],
+                            est_v_eb_n[:n_done], est_h_b[:n_done],
+                            delta_psi_nb_n[:n_done])
 
 
 def percentile_envelope(delta_r_eb_n: np.ndarray, q: float = 95) -> np.ndarray:

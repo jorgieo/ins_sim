@@ -110,7 +110,11 @@ the trials; it takes a few seconds.
 ## Running
 
 **Run Simulation** starts the run in the background, so the window stays
-responsive. The controls are disabled until it finishes. The log reports
+responsive. The controls are disabled until it finishes, and the button
+becomes **Cancel**: click it, or press Esc, to stop the run after the
+current trial. If at least two trials finished, the app asks whether to
+show their results; otherwise, or if you decline, the previous results
+stay on screen. Closing the window during a run asks whether to stop it first. The log reports
 the mission's length and duration, each completed trial, and the run
 time with the final 95th-percentile error. If a file has a mistake, a
 *Simulation failed* message names the problem; see

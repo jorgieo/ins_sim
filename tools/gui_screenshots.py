@@ -77,7 +77,7 @@ def _run_tutorial(out_dir: Path) -> None:
         """Clicks Run and waits until the results are shown."""
         previous = window.last_result
         window.run_button.click()
-        while window.last_result is previous or not window.run_button.isEnabled():
+        while window.last_result is previous or window.is_running():
             yield POLL_MS
 
     def steps():
