@@ -1829,6 +1829,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -1905,7 +1922,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -2066,6 +2083,23 @@
     </span>
   </a>
   
+    <nav class="md-nav" aria-label="Unreleased">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#fixed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Fixed
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
 </li>
       
         <li class="md-nav__item">
@@ -2142,7 +2176,7 @@
 </li>
         
           <li class="md-nav__item">
-  <a href="#fixed" class="md-nav__link">
+  <a href="#fixed_1" class="md-nav__link">
     <span class="md-ellipsis">
       
         Fixed
@@ -2250,6 +2284,15 @@
 numbers <a href="https://semver.org/">Semantic Versioning</a>: before 1.0, a new minor
 version may change the API.</p>
 <h2 id="unreleased"><a href="https://github.com/jorgieo/ins_sim/compare/v0.4.0...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Permanent link">&para;</a></h2>
+<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>The app no longer fills the temp folder with plot pages.</strong> Each
+  session wrote its plots and a 4.5 MB copy of plotly.js to a new temp
+  folder and never removed it. The app now deletes its folder when it
+  quits, and on start it removes the folders that earlier sessions left
+  behind, including those from older versions. A folder that another
+  open window is still using is left alone. (<a href="https://github.com/jorgieo/ins_sim/issues/11">#11</a>)</li>
+</ul>
 <h2 id="040-2026-11-23"><a href="https://github.com/jorgieo/ins_sim/compare/v0.3.0...v0.4.0">0.4.0</a> - 2026-11-23<a class="headerlink" href="#040-2026-11-23" title="Permanent link">&para;</a></h2>
 <p>Version 0.4.0 makes the simulation more realistic and adds a second way
 to evaluate a navigator: a barometer that errs like a real one, a
@@ -2355,7 +2398,7 @@ guide lists every change.</p>
   <code>attitude_error</code>, <code>velocity_error</code> and <code>position_error</code>.</li>
 <li>Runnable examples in the docstrings.</li>
 </ul>
-<h3 id="fixed">Fixed<a class="headerlink" href="#fixed" title="Permanent link">&para;</a></h3>
+<h3 id="fixed_1">Fixed<a class="headerlink" href="#fixed_1" title="Permanent link">&para;</a></h3>
 <ul>
 <li>Missions can descend. A waypoint leg to a lower altitude used to stay
   level, and a <code>climb</code> phase to a lower altitude climbed.</li>
